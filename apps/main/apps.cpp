@@ -2548,7 +2548,12 @@ extern int rpc_service_setup(void);
         app_key_init();
         app_battery_start();
 #if defined(__BTIF_EARPHONE__) && defined(__BTIF_AUTOPOWEROFF__)
-        app_start_10_second_timer(APP_POWEROFF_TIMER_ID);
+		/* Modify by lewis */
+#if 0
+		app_start_10_second_timer(APP_POWEROFF_TIMER_ID);
+#endif
+		//TODO: use app_set_10_second_timer here
+		/* End Modify by lewis */
 #endif
 
 #ifdef __THIRDPARTY
@@ -2700,7 +2705,7 @@ extern int rpc_service_setup(void);
                     app_enter_fastpairing_mode();
 #endif
 #if defined(__BTIF_AUTOPOWEROFF__)
-                    app_start_10_second_timer(APP_PAIR_TIMER_ID);
+                    //app_start_10_second_timer(APP_PAIR_TIMER_ID); //Disable by lewis
 #endif
 #endif
 #ifdef __THIRDPARTY

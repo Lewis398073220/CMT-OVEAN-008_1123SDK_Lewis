@@ -2812,11 +2812,11 @@ void app_bt_global_handle(const btif_event_t *Event)
 #if defined(__BTIF_EARPHONE__) && defined(__BTIF_AUTOPOWEROFF__)  && !defined(FPGA)
             if (active_cons == 0)
             {
-                app_start_10_second_timer(APP_POWEROFF_TIMER_ID);
+                //app_start_10_second_timer(APP_POWEROFF_TIMER_ID); //Disable by lewis
             }
             else
             {
-                app_stop_10_second_timer(APP_POWEROFF_TIMER_ID);
+                //app_stop_10_second_timer(APP_POWEROFF_TIMER_ID); //Disable by lewis
             }
 #endif
 
@@ -2877,7 +2877,7 @@ void app_bt_global_handle(const btif_event_t *Event)
 #if defined(__BTIF_EARPHONE__) && defined(__BTIF_AUTOPOWEROFF__) && !defined(FPGA)
             if (active_cons == 0)
             {
-                app_start_10_second_timer(APP_POWEROFF_TIMER_ID);
+                //app_start_10_second_timer(APP_POWEROFF_TIMER_ID); //Disable by lewis
             }
 #endif
 
