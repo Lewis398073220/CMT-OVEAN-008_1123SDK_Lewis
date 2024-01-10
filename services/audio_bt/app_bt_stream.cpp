@@ -8442,7 +8442,7 @@ int app_bt_stream_volumeset(int8_t vol)
     if ((!app_bt_stream_isrun(APP_PLAY_BACK_AUDIO)) &&
         (audio_prompt_is_allow_update_volume()))
 #else
-    if (!app_bt_stream_isrun(APP_PLAY_BACK_AUDIO))
+    //if (!app_bt_stream_isrun(APP_PLAY_BACK_AUDIO)) //Disable by lewis
 #endif
     {
         app_bt_stream_volumeset_handler(vol);
