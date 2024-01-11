@@ -319,8 +319,9 @@ static void jack_detn_handler(void const *param)
 
 			if(user_module_data.jack_pluginout_debounce_cnt == JACK_PLUGINOUT_DEBOUNCE_CNT)
 			{
+#ifdef CMT_008_CST820_TOUCH
 				hal_set_cst820_rst_low(); //TODO: when new PCBA done, delete it
-
+#endif
 #if defined(BT_USB_AUDIO_DUAL_MODE) || defined(BTUSB_AUDIO_MODE)
 				if(app_battery_is_charging()) {
 					TRACE(0,"!!!jack is plugged in when charging-->Shutdown");
@@ -376,9 +377,9 @@ static void jack_detn_handler(void const *param)
 		else
 		{
 			user_module_data.is3_5JackInplug = false;
-
+#ifdef CMT_008_CST820_TOUCH
 			hal_set_cst820_rst_high(); //TODO: when new PCBA done, delete it
-
+#endif
 			app_key_init();
 			
 #ifdef AUDIO_LINEIN

@@ -214,6 +214,14 @@ const uint8_t EN_BT_DOUBLE_BEEP_TONE_16000[] = {
 #include "res/en/SOUND_DOUBLE_BEEP_TONE_16000.txt"
 };
 
+const uint8_t EN_BT_VOLMIN_TONE_16000[] = {
+#include "res/en/SOUND_VOLMIN_TONE_16000.txt"
+};
+
+const uint8_t EN_BT_VOLMAX_TONE_16000[] = {
+#include "res/en/SOUND_VOLMAX_TONE_16000.txt"
+};
+
 const uint8_t EN_BT_ANC_ON_16000[] = {
 #include "res/en/SOUND_ANC_ON_16000.txt"
 };

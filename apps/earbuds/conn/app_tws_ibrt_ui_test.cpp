@@ -2139,11 +2139,13 @@ void app_tws_ibrt_raw_ui_test_key_init(void)
 /* Add by lewis */
 const APP_KEY_HANDLE  app_audio_linein_key_cfg[] =
 {
+#ifdef CMT_008_UI
 	{{APP_KEY_CODE_PWR,APP_KEY_EVENT_LONGLONGPRESS},"pwr key", (APP_KEY_HANDLE_CB_T)app_shutdown, NULL},
 	{{APP_KEY_CODE_ANC,APP_KEY_EVENT_CLICK},"anc key", app_anc_key, NULL},
 #ifdef CMT_008_CST820_TOUCH
 	{{APP_KEY_CODE_TOUCH_PANEL,APP_KEY_EVENT_COVER_PRESS},"touch key", (APP_KEY_HANDLE_CB_T)app_switch_to_quick_conversation_mode, NULL},
 	{{APP_KEY_CODE_TOUCH_PANEL,APP_KEY_EVENT_COVER_LEAVE},"touch key", (APP_KEY_HANDLE_CB_T)app_exit_quick_conversation_mode, NULL},
+#endif
 #endif
 };
 

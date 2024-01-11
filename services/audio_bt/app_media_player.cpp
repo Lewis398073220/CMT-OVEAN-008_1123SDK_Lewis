@@ -315,6 +315,8 @@ enum sound_id {
 #ifdef CMT_008_UI
 	BT_SINGLE_BEEP_TONE_16000,
 	BT_DOUBLE_BEEP_TONE_16000,
+	BT_VOLMIN_TONE_16000,
+	BT_VOLMAX_TONE_16000,
     BT_ANC_ON_16000,
     BT_ANC_OFF_16000,
     BT_AWARENESS_ON_16000,
@@ -449,6 +451,8 @@ static const media_sound_map_t media_sound_map_en[] =
 #ifdef CMT_008_UI
 	SOUND_ITEM_DEF(EN_, BT_SINGLE_BEEP_TONE_16000),
 	SOUND_ITEM_DEF(EN_, BT_DOUBLE_BEEP_TONE_16000),
+	SOUND_ITEM_DEF(EN_, BT_VOLMIN_TONE_16000),
+	SOUND_ITEM_DEF(EN_, BT_VOLMAX_TONE_16000),
     SOUND_ITEM_DEF(EN_, BT_ANC_ON_16000),
     SOUND_ITEM_DEF(EN_, BT_ANC_OFF_16000),
     SOUND_ITEM_DEF(EN_, BT_AWARENESS_ON_16000),
@@ -1531,6 +1535,14 @@ void media_runtime_audio_prompt_update(uint16_t id, uint8_t** ptr, uint32_t* len
 		get_sound_id_info(BT_DOUBLE_BEEP_TONE_16000, &sound_data, &length);
         break;
 
+	case AUD_ID_BT_VOLMIN_TONE:
+		get_sound_id_info(BT_VOLMIN_TONE_16000, &sound_data, &length);
+		break;
+
+	case AUD_ID_BT_VOLMAX_TONE:
+		get_sound_id_info(BT_VOLMAX_TONE_16000, &sound_data, &length);
+		break;
+	
 	case AUD_ID_BT_ANC_ON:
         get_sound_id_info(BT_ANC_ON_16000, &sound_data, &length);
     	break;

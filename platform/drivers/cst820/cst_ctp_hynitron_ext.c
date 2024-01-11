@@ -64,7 +64,7 @@ static int16_t cst820_enter_bootmode(void)
      return -1;
  }
 
-int16_t cst820_update(uint16_t startAddr,uint16_t len,uint8_t* src){
+int16_t cst820_update(uint16_t startAddr,uint16_t len, const uint8_t* src){
      uint16_t sum_len;
 	 uint16_t i=0;
      uint8_t cmd[514];	 

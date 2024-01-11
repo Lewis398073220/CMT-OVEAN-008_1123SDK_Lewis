@@ -677,7 +677,7 @@ const  APP_KEY_HANDLE  pwron_key_handle_cfg[] = {
     {{APP_KEY_CODE_PWR,APP_KEY_EVENT_INITUP},           "power on: normal"     , app_poweron_normal, NULL},
 #if !defined(BLE_ONLY_ENABLED)
     {{APP_KEY_CODE_PWR,APP_KEY_EVENT_INITLONGPRESS},    "power on: both scan"  , app_poweron_scan  , NULL},
-    {{APP_KEY_CODE_PWR,APP_KEY_EVENT_INITLONGLONGPRESS},"power on: factory mode", app_poweron_factorymode  , NULL},
+    //{{APP_KEY_CODE_PWR,APP_KEY_EVENT_INITLONGLONGPRESS},"power on: factory mode", app_poweron_factorymode  , NULL},//Disable by lewis
 #endif
     {{APP_KEY_CODE_PWR,APP_KEY_EVENT_INITFINISHED},     "power on: finished"   , app_poweron_finished  , NULL},
 #endif
@@ -1729,14 +1729,18 @@ void app_usb_key(APP_KEY_STATUS *status, void *param)
 
 	switch(status->code)
 	{
+#ifdef CMT_008_UI
 		case APP_KEY_CODE_ANC:
 			app_anc_key(NULL, NULL);
 		break;
-		
+#endif
+
+#ifdef CMT_008_CST820_TOUCH	
 		case APP_KEY_CODE_TOUCH_PANEL:
 			app_handle_usb_touch_key(status, NULL);
 		break;
-		
+#endif
+
 		default:
 			TRACE(2,"%s undefined key code", __func__);
 		break;

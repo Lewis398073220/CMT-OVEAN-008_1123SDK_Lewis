@@ -1418,6 +1418,8 @@ static const char * const aud_id_str[] =
 	/* Add by lewis */
 	"[SINGLE_BEEP_TONE]",
 	"[DOUBLE_BEEP_TONE]",
+	"[VOLMIN_TONE]",
+	"[VOLMAX_TONE]",
 	"[ANC_ON]",
 	"[ANC_OFF]",
 	"[AWARENESS_ON]",

@@ -24,6 +24,7 @@
 #include "nvrecord_ble.h"
 #include "bt_drv_reg_op.h"
 #include "hci_i.h"
+#include "app_battery.h"//Add by lewis
 #ifndef BLE_ONLY_ENABLED
 #include "sdp_service.h"
 #endif
@@ -1906,6 +1907,63 @@ void app_ble_dt_add_adv_data(ble_adv_activity_t *adv, BLE_ADV_PARAM_T *a, const 
         gap_dt_add_raw_data(dest_adv_data, left_adv_data_b, left_adv_data_len_b);
     }
 
+	/* Add by lewis */
+	//manufacturer data
+	gap_dt_head_t head;
+	head.length = 26 + 1;
+	head.ad_type = GAP_DT_MANUFACTURER_DATA;
+	gap_dt_add_raw_data(dest_adv_data, (uint8_t *)&head, sizeof(head));
+
+	uint8_t temp = 0;
+	uint8_t checksum = 0;
+	uint8_t i = 0;
+	uint8_t manuf_data[29] = {0};
+	manuf_data[0] = 0x64; //Company ID
+	manuf_data[1] = 0x09; //Company ID
+	manuf_data[2] = 0x00; //Reserved
+	manuf_data[3] = 0x08; //Machine model, "0x08" means CMT-OVEAN-008
+	manuf_data[5] = 0x02; //TODO
+	
+	temp = (app_bt_count_connected_device()? 1 : 0) << 2;
+	manuf_data[6] = temp;
+	
+	manuf_data[7] = (app_battery_current_level()+1) * 10;
+	manuf_data[8] = (app_battery_current_level()+1) * 10;
+	manuf_data[9] = 0xFF;
+	manuf_data[10] = 0x00;
+	manuf_data[11] = 0x00;
+	manuf_data[12] = 0x00;
+	
+    for(i = 5; i < 13; i++)
+    {
+        checksum += manuf_data[i];
+    }
+	manuf_data[4] = checksum, //Byte5-Byte12Take the lower 8 bits of the addition result
+
+	memcpy(&manuf_data[13], ble_global_addr, 6);
+	manuf_data[13] = ble_global_addr[5];
+	manuf_data[14] = ble_global_addr[4];
+	manuf_data[15] = ble_global_addr[3];
+	manuf_data[16] = ble_global_addr[2];
+	manuf_data[17] = ble_global_addr[1];
+	manuf_data[18] = ble_global_addr[0];
+	manuf_data[19] = 0x00;//TOTD;
+	manuf_data[20] = ble_global_addr[5];
+	manuf_data[21] = ble_global_addr[4];
+	manuf_data[22] = ble_global_addr[3];
+	manuf_data[23] = ble_global_addr[2];
+	manuf_data[24] = ble_global_addr[1];
+	manuf_data[25] = ble_global_addr[0];
+	
+	gap_dt_add_raw_data(dest_adv_data, manuf_data, 26);
+
+	//BLE name
+	head.length = strlen(BLE_DEFAULT_NAME) + 1;
+	head.ad_type = GAP_DT_COMPLETE_LOCAL_NAME;
+	gap_dt_add_raw_data(dest_scan_rsp, (uint8_t *)&head, sizeof(head));
+	gap_dt_add_raw_data(dest_scan_rsp, (const uint8_t *)BLE_DEFAULT_NAME, strlen(BLE_DEFAULT_NAME));
+	/* End Add by lewis */
+	
     /**
      * scan rsp data
      *

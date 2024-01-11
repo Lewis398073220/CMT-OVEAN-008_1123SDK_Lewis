@@ -270,7 +270,7 @@ static void user_custom_tota_ble_command_get_handle(PACKET_STRUCTURE *ptrPacket)
 
 		case TOTA_BLE_CMT_COMMAND_GET_BATTERY_LEVEL:
             {
-            	uint8_t percent = app_battery_current_level() * 10;
+            	uint8_t percent = (app_battery_current_level()+1) * 10;
 				uint8_t temp[3] = {percent, percent, 0xFF};
 				
                 rsp_status = NO_NEED_STATUS_RESP;

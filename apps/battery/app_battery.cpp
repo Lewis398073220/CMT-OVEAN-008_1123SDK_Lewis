@@ -453,7 +453,7 @@ int app_battery_handle_process_normal(uint32_t status,  union APP_BATTERY_MSG_PR
 			{
 				app_battery_measure.prelevel = app_battery_measure.currlevel;
 #ifdef CMT_008_BLE_ENABLE
-				battery_level_change_notify(app_battery_current_level());
+				battery_level_change_notify(app_battery_current_level() + 1);
 #endif
 			}
 			/* End Add by lewis */
