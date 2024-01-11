@@ -447,8 +447,8 @@ const uint16_t rf_init_hw_agc_config_t2[][3] =
     {0x020F,0x0006,0},        // wait APD time,0.5us
     {0x0210,0x025A,0},        // wait EDR guard time,52.5us
 
-    {0x0049,0x9384,0},        // peak detector thresholdï¼Œ0x0049[9:7] = 0x7ï¼›
-    {0x00D2,0x3140,0},        // peak detector threshold,  0x00D2[13:12] = 0x3ï¼›
+    {0x0049,0x9384,0},        // peak detector thresholdï¼?x0049[9:7] = 0x7ï¼?
+    {0x00D2,0x3140,0},        // peak detector threshold,  0x00D2[13:12] = 0x3ï¼?
 };
 #endif
 
@@ -733,10 +733,10 @@ void btdtv_rf_image_calib(void)
 }
 
 #define BT_TX_PWR_PAGE TX_PWR_8DBM
-#define BT_TX_PWR_LV3 TX_PWR_15DBM
-#define BT_TX_PWR_LV2 TX_PWR_10DBM
-#define BT_TX_PWR_LV1 TX_PWR_5DBM
-#define BT_TX_PWR_LV0 TX_PWR_0DBM
+#define BT_TX_PWR_LV3 TX_PWR_10DBM //Modify by lewis
+#define BT_TX_PWR_LV2 TX_PWR_6DBM //Modify by lewis
+#define BT_TX_PWR_LV1 TX_PWR_2DBM //Modify by lewis
+#define BT_TX_PWR_LV0 TX_PWR_N2DBM //Modify by lewis
 #define LE_TX_PWR_LV3 TX_PWR_15DBM
 #define LE_TX_PWR_LV2 TX_PWR_10DBM
 #define LE_TX_PWR_LV1 TX_PWR_5DBM
@@ -756,6 +756,8 @@ void bt_drv_rf_sdk_init(void)
     btdrv_rf_customer_config.config_tx_pwr_en = true;
 
     if (metal_id >= HAL_CHIP_METAL_ID_2) {
+		TRACE(0,"44444");
+	
         btdrv_rf_customer_config.bt_tx_idx3_pwr = BT_TX_PWR_PAGE;//in dbm(mapping to page)
 
         btdrv_rf_customer_config.bt_tx_idx7_pwr  = BT_TX_PWR_LV3;//in dbm(mapping to idx3)
@@ -777,6 +779,8 @@ void bt_drv_rf_sdk_init(void)
         btdrv_txpwr_conv_tbl[6] = btdrv_rf_customer_config.le_tx_idx6_pwr;
         btdrv_txpwr_conv_tbl[7] = btdrv_rf_customer_config.le_tx_idx7_pwr;
     } else {
+		TRACE(0,"333333");
+		
         btdrv_rf_customer_config.config_tx_pwr_en = true;
         btdrv_rf_customer_config.bt_tx_page_pwr = BT_TX_PWR_PAGE;//in dbm
 
