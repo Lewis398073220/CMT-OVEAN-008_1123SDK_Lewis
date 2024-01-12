@@ -61,7 +61,7 @@ extern void gsound_send_control_rx_cfm(uint8_t conidx);
 extern void app_ota_send_rx_cfm(uint8_t conidx);
 
 static void ota_ble_rx_handler_thread(const void *arg);
-osThreadDef(ota_ble_rx_handler_thread, osPriorityNormal, 1, 2048, "ota_ble_rx");
+osThreadDef(ota_ble_rx_handler_thread, osPriorityNormal, 1, 1024*6, "ota_ble_rx"); //Modify by lewis from 2048 to 1024*6, fix crash when OTA via ble
 
 osMailQDef (ota_ble_rx_event_mailbox, OTA_BLE_RX_EVENT_MAX_MAILBOX, BLE_RX_EVENT_T);
 static osMailQId ota_ble_rx_event_mailbox_id = NULL;
