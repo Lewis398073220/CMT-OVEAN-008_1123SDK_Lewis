@@ -147,6 +147,25 @@ void user_custom_set_prompt_volume_level(uint8_t vol, bool isSave)
 	}
 }
 
+uint8_t user_custom_get_LR_balance_value(void)
+{
+	return user_data.LR_balance_val;
+}
+
+void user_custom_set_LR_balance_value(uint8_t val, bool isSave)
+{
+	user_data.LR_balance_val = val;
+
+	if(isSave)
+	{
+		struct nvrecord_user_t *nvrecord_user;
+
+		nv_record_user_info_get(&nvrecord_user);
+		nvrecord_user->LR_balance_val = val;
+		nv_record_user_info_set(nvrecord_user);
+	}
+}
+
 void nvrecord_user_info_init_for_ota(struct nvrecord_user_t *pUserInfo)
 {
 	uint8_t saved_user_info_ver[13];
@@ -165,6 +184,9 @@ void nvrecord_user_info_init_for_ota(struct nvrecord_user_t *pUserInfo)
 		//default prompt volume config
 		pUserInfo->prompt_vol_en = true;
 		pUserInfo->prompt_vol_level = MEDIA_VOLUME_LEVEL_WARNINGTONE;
+
+		//default LR balance config
+		pUserInfo->LR_balance_val = 50;
 	}
 	
 	//update user info's history
@@ -207,12 +229,25 @@ void user_custom_nvrecord_user_info_get(void)
 	user_data.prompt_vol_en = nvrecord_user->prompt_vol_en;
 	user_data.prompt_vol_level = nvrecord_user->prompt_vol_level;
 	TRACE(0, "*** [%s] prompt en/level: %d/%d", __func__, user_data.prompt_vol_en, user_data.prompt_vol_level);
+
+	user_data.LR_balance_val = nvrecord_user->LR_balance_val;
+	TRACE(0, "*** [%s] LR balance: %d", __func__, user_data.LR_balance_val);
 }
 
 void user_custom_nvrecord_rebuild_user_info(uint8_t *pUserInfo, bool isRebuildAll)
 {
 	struct nvrecord_user_t *user_info = (struct nvrecord_user_t *)pUserInfo;
 
+	//default touch config
+	user_info->touch_lock = false;
+	
+	//default prompt volume config
+	user_info->prompt_vol_en = true;
+	user_info->prompt_vol_level = MEDIA_VOLUME_LEVEL_WARNINGTONE;
+
+	//default LR balance config
+	user_info->LR_balance_val = 50;
+	
 	//when BES chip is blank, nv_record_extension_init
 	if(isRebuildAll)
 	{
@@ -224,15 +259,12 @@ void user_custom_nvrecord_rebuild_user_info(uint8_t *pUserInfo, bool isRebuildAl
 	//factory reset, nvrecord_rebuild_sdk_info
 	else
 	{
-		
+		//update local user infor
+		user_data.touch_lock = user_info->touch_lock;
+		user_data.prompt_vol_en = user_info->prompt_vol_en;
+		user_data.prompt_vol_level = user_info->prompt_vol_level;
+		user_data.LR_balance_val = user_info->LR_balance_val;
 	}
-
-	//default touch config
-	user_info->touch_lock = false;
-	
-	//default prompt volume config
-	user_info->prompt_vol_en = true;
-	user_info->prompt_vol_level = MEDIA_VOLUME_LEVEL_WARNINGTONE;
 }
 /********************************************** User Info End **********************************************/
 

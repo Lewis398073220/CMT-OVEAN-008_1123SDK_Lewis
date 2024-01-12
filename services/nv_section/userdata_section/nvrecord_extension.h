@@ -262,6 +262,8 @@ struct nvrecord_user_t {
 	
 	uint8_t prompt_vol_en:1;
 	uint8_t prompt_vol_level:7;
+
+	uint8_t LR_balance_val;
 };
 /* End Add by lewis */
 

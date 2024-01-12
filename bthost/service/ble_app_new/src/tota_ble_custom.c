@@ -188,7 +188,20 @@ static void user_custom_tota_ble_command_set_handle(PACKET_STRUCTURE *ptrPacket)
 
 			user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_SET, ptrPacket->cmdID, rsp_status, NULL, 0);
         break;
-		
+
+		case TOTA_BLE_CMT_COMMAND_SET_L_R_CHANNEL_BALANCE:
+			if((ptrPacket->payload[0] >= 0x00) && (ptrPacket->payload[0] <= 0x64))
+			{
+				user_custom_set_LR_balance_value(ptrPacket->payload[0], true);
+				rsp_status = SUCCESS_STATUS;
+			}
+			else{
+				rsp_status = PARAMETER_ERROR_STATUS;
+			}
+
+			user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_SET, ptrPacket->cmdID, rsp_status, NULL, 0);
+		break;
+
     	case TOTA_BLE_CMT_COMMAND_SET_SOUND_PROMPTS_LEVEL:
 #ifdef CODEC_DAC_PROMPT_ALONE_VOLUME_TABLE
 			if(ptrPacket->payload[0] < TGT_PROMPT_VOL_LEVEL_QTY)
@@ -247,15 +260,42 @@ static void user_custom_tota_ble_command_get_handle(PACKET_STRUCTURE *ptrPacket)
 		break;
 
 		case TOTA_BLE_CMT_COMMAND_GET_TOUCH_FUNC_ON_OFF:
-        {
-            uint8_t temp[1] = {0};
-			
-            temp[0] = user_custom_is_touch_locked();
-            rsp_status = NO_NEED_STATUS_RESP;
+	        {
+	            uint8_t temp[1] = {0};
+				
+	            temp[0] = user_custom_is_touch_locked();
+	            rsp_status = NO_NEED_STATUS_RESP;
 
-			user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_GET, ptrPacket->cmdID, rsp_status, temp, sizeof(temp));
-        } 
+				user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_GET, ptrPacket->cmdID, rsp_status, temp, sizeof(temp));
+	        } 
         break;
+
+		case TOTA_BLE_CMT_COMMAND_GET_HEADSET_ADDRESS:
+			{
+				uint8_t temp[6] = {0};
+
+				temp[0] = bt_global_addr[5];
+				temp[1] = bt_global_addr[4];
+				temp[2] = bt_global_addr[3];
+				temp[3] = bt_global_addr[2];
+				temp[4] = bt_global_addr[1];
+				temp[5] = bt_global_addr[0];
+                rsp_status = NO_NEED_STATUS_RESP;
+
+				user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_GET, ptrPacket->cmdID, rsp_status, temp, sizeof(temp));
+            }
+		break;
+
+		case TOTA_BLE_CMT_COMMAND_GET_L_R_CHANNEL_BALANCE:
+			{
+        		uint8_t temp[1] = {0};
+				
+        		temp[0] = user_custom_get_LR_balance_value();
+				rsp_status = NO_NEED_STATUS_RESP;
+
+				user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_GET, ptrPacket->cmdID, rsp_status, temp, sizeof(temp));
+			}
+		break;
 		
     	case TOTA_BLE_CMT_COMMAND_GET_SOUND_PROMPTS_LEVEL:
         	{
@@ -278,6 +318,19 @@ static void user_custom_tota_ble_command_get_handle(PACKET_STRUCTURE *ptrPacket)
 				user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_GET, ptrPacket->cmdID, rsp_status, temp, sizeof(temp));
             }
         break;
+
+		case TOTA_BLE_CMT_COMMAND_GET_FIRMWARE_VERSION:
+			{
+				uint8_t temp[3] = {0};
+
+				temp[0] = REVISION_FW_H;
+				temp[1] = REVISION_FW_M;
+				temp[2] = REVISION_FW_L;
+				rsp_status = NO_NEED_STATUS_RESP;
+
+				user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_GET, ptrPacket->cmdID, rsp_status, temp, sizeof(temp));
+			}
+		break;
 		
 		default:
 			//if the cmd is unsupport, not need to response

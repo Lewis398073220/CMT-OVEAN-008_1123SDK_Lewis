@@ -14,8 +14,9 @@ ccflags-y := \
 	-Imultimedia/inc/audio/process/floatlimiter/include \
 	-Iplatform/drivers/ana \
 	-Imultimedia/inc/audio/process/filters/cfg \
-	-Imultimedia/inc/audio/process/filters/include
-
+	-Imultimedia/inc/audio/process/filters/include \
+    -Iapps/user
+    
 ifeq ($(DMA_RPC_CLI),1)
 ccflags-y += -Iplatform/drivers/stream_dma_rpc
 endif

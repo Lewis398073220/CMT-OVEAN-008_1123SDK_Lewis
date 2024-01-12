@@ -36,7 +36,9 @@ typedef struct {
 	
 	uint8_t prompt_vol_en:1;
 	uint8_t prompt_vol_level:7;
-	
+
+	uint8_t LR_balance_val;
+		
 	uint8_t quick_conversation_mode;
 } app_user_custom_data_t;
 
@@ -132,6 +134,8 @@ bool user_custom_is_prompt_en(void);
 void user_custom_en_dis_prompt(bool isEn, bool isSave);
 uint8_t user_custom_get_prompt_volume_level(void);
 void user_custom_set_prompt_volume_level(uint8_t vol, bool isSave);
+uint8_t user_custom_get_LR_balance_value(void);
+void user_custom_set_LR_balance_value(uint8_t val, bool isSave);
 void user_custom_nvrecord_rebuild_user_info(uint8_t *pUserInfo, bool isRebuildAll);
 void user_custom_nvrecord_user_info_get(void);
 

@@ -21,6 +21,7 @@
 /* Add by lewis */
 #include <math.h>
 #include "../../services/audio_bt/app_bt_stream.h"
+#include "app_user.h"
 /* End add by lewis */
 
 #ifdef AF_DEVICE_INT_CODEC
@@ -462,7 +463,6 @@ void af_unlock_thread(void)
 }
 
 /* Add by lewis. */
-#if defined(RTOS) && defined(AF_STREAM_PLAYBACK_FADEINOUT)
 void convert_left_2_right_justified_mode(uint8_t *buf, 
                                                      enum AUD_BITS_T bits,
                                                      uint32_t data_len)
@@ -497,6 +497,7 @@ void convert_right_2_left_justified_mode(uint8_t *buf,
 	}
 }
 
+#if defined(RTOS) && defined(AF_STREAM_PLAYBACK_FADEINOUT)
 int af_stream_fadein_start(uint32_t fadein_sample)
 {
     TRACE(2,"%s, fadein sample: %d", __func__, fadein_sample);
@@ -1076,6 +1077,98 @@ exit:
     return ret;
 }
 
+#endif
+
+#ifdef EN_LR_BALANCE
+const float LR_balance_db[] = {   
+	   0,   -0.3,  -0.7,  -1.0,  -1.4,  -1.7,  -2.1,  -2.4,  -2.8,  -3.2,
+	 -3.5,  -3.9,  -4.3,  -4.6,  -5.0,  -5.4,  -5.8,  -6.2,  -6.5,  -6.9,
+	 -7.4,  -7.8,  -8.2,  -8.6,  -9.1,  -9.5, -10.0, -10.5, -11.0, -11.5,
+	-12.0, -12.6, -13.2, -13.8, -14.4, -15.1, -15.8, -16.5, -17.3, -18.2,
+	-19.1, -20.1, -21.2, -22.5, -23.9, -25.6, -27.6, -30.2, -33.8, -39.9, -60
+};
+
+float get_LR_balance_gain_db(uint8_t index)
+{
+    return LR_balance_db[index];
+}
+
+static uint32_t LR_balance_processing(uint8_t *buf, uint32_t len, enum AUD_CHANNEL_NUM_T num, enum AUD_BITS_T bits)
+{
+	uint32_t data_num = 0;
+	uint32_t i = 0;
+	uint8_t LR_balance_val = user_custom_get_LR_balance_value();
+	float LR_balance_gain = 0.0f;
+	float LR_balance_weight = 0.0f;
+		
+    if (bits == AUD_BITS_16){
+        data_num = len/2;
+    }else if (bits >= AUD_BITS_16){
+        data_num = len/4;
+    }
+	
+	if((LR_balance_val > 50) && (LR_balance_val <= 100))//R decrease
+	{
+		LR_balance_gain = get_LR_balance_gain_db(LR_balance_val - 50);
+		LR_balance_weight = powf(10.f, (LR_balance_gain) / 20.f);
+
+		if ((bits == AUD_BITS_16) && (num == AUD_CHANNEL_NUM_2)) {
+			int16_t *data_p = (int16_t *)buf;
+			for (i = 0; i < data_num; i += 2)
+			{
+				data_p[1 + i] = (int16_t)(data_p[1 + i] * LR_balance_weight);
+			}
+		} else if((bits >= AUD_BITS_16) && (num == AUD_CHANNEL_NUM_2)){
+			int32_t *data_p = (int32_t *)buf;
+			for (i = 0; i < data_num; i += 2)
+			{
+				data_p[1 + i] = (int32_t)(data_p[1 + i] * LR_balance_weight);
+			}
+		}
+	}
+	else if((LR_balance_val < 50) && (LR_balance_val >= 0))//L decrease
+	{
+		LR_balance_gain = get_LR_balance_gain_db(50 - LR_balance_val);
+		LR_balance_weight = powf(10.f, (LR_balance_gain) / 20.f);
+
+		if ((bits == AUD_BITS_16) && (num == AUD_CHANNEL_NUM_2)) {
+			int16_t *data_p = (int16_t *)buf;
+			for (i = 0; i < data_num; i += 2)
+			{
+				data_p[0 + i] = (int16_t)(data_p[1 + i] * LR_balance_weight);
+			}
+		} else if((bits >= AUD_BITS_16) && (num == AUD_CHANNEL_NUM_2)){
+			int32_t *data_p = (int32_t *)buf;
+			for (i = 0; i < data_num; i += 2)
+			{
+				data_p[0 + i] = (int32_t)(data_p[1 + i] * LR_balance_weight);
+			}
+		}
+	}
+	
+	return 0;
+}
+
+void LR_balance_process(struct af_stream_cfg_t *af_cfg, uint8_t *buf, uint32_t len)
+{
+	//TRACE(0,"[%s] ch:%d size:%d len:%d", __func__,
+		//af_cfg->cfg.channel_num, af_cfg->cfg.data_size, len);
+
+#ifdef AUDIO_LINEIN
+	//because audio linein's stream data is left justified mode, we need to convert
+	//it to right justified mode, then process data
+	if(af_cfg->handler == app_linein_need_pcm_data)
+		convert_left_2_right_justified_mode(buf, af_cfg->cfg.bits, len);
+#endif
+
+	LR_balance_processing(buf, len, af_cfg->cfg.channel_num, af_cfg->cfg.bits);
+
+#ifdef AUDIO_LINEIN
+	//after process stream data, we need to convert it back to left justified mode
+	if(af_cfg->handler == app_linein_need_pcm_data)
+		convert_right_2_left_justified_mode(buf, af_cfg->cfg.bits, len);
+#endif
+}
 #endif
 /* Add by lewis end. */
 
@@ -2241,6 +2334,13 @@ static inline void af_thread_stream_handler(enum AUD_STREAM_ID_T id, enum AUD_ST
         }
 
 /* Add by lewis. */
+#ifdef EN_LR_BALANCE
+		if (((id == AUD_STREAM_ID_0) || (id == AUD_STREAM_ID_1)) && (stream == AUD_STREAM_PLAYBACK)
+			&& (role->ctl.use_device == AUD_STREAM_USE_INT_CODEC)) {
+			LR_balance_process(role, buf, len);
+		}
+#endif
+
 #if defined(RTOS) && defined(AF_STREAM_PLAYBACK_FADEINOUT)
 		//TRACE(0, "***%d	%d	 %d", id,role->ctl.use_device,stream);
 		if (((id == AUD_STREAM_ID_0) || (id == AUD_STREAM_ID_1)) && (stream == AUD_STREAM_PLAYBACK)
