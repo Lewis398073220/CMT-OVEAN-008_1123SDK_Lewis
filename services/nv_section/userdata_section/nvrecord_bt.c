@@ -31,6 +31,7 @@
 #include "factory_section.h"
 #include "heap_api.h"
 #include "besbt.h"
+#include "app_user.h" //Add by lewis
 
 #define nv_record_verbose_log
 
@@ -1008,7 +1009,20 @@ bool nvrec_dev_localname_addr_init(dev_addr_name *dev)
         {
             memcpy((void *) dev->btd_addr,(void *)&p_devdata_cache[rev2_dev_bt_addr],BTIF_BD_ADDR_SIZE);
             memcpy((void *) dev->ble_addr,(void *)&p_devdata_cache[rev2_dev_ble_addr],BTIF_BD_ADDR_SIZE);
-            dev->localname = (char *)&p_devdata_cache[rev2_dev_name];
+/* Modify by lewis */
+#ifdef CMT_008_BLE_ENABLE
+			if(0 != strlen(user_custom_get_BT_name()))
+			{
+				dev->localname = user_custom_get_BT_name();
+			}
+			else
+			{
+				dev->localname = (char *)&p_devdata_cache[rev2_dev_name];
+			}
+#else
+			dev->localname = (char *)&p_devdata_cache[rev2_dev_name];
+#endif
+/* End Modify by lewis */
             dev->ble_name = (char *)&p_devdata_cache[rev2_dev_ble_name];
         }
 

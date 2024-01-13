@@ -264,6 +264,8 @@ struct nvrecord_user_t {
 	uint8_t prompt_vol_level:7;
 
 	uint8_t LR_balance_val;
+
+	char redefine_BT_name[30];
 };
 /* End Add by lewis */
 

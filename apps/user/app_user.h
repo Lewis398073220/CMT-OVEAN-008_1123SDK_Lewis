@@ -38,14 +38,19 @@ typedef struct {
 	uint8_t prompt_vol_level:7;
 
 	uint8_t LR_balance_val;
-		
+
+	char redefine_BT_name[30];
+	
 	uint8_t quick_conversation_mode;
 } app_user_custom_data_t;
 
 //Record user info's history
 #define NV_USER_VERSION_H       0
 #define NV_USER_VERSION_M       0
-#define NV_USER_VERSION_L       1
+#define NV_USER_VERSION_L       2
+
+#define BT_NAME_LEN             27 //27 = CLASSIC_BTNAME_LEN
+
 
 typedef enum {
 #ifdef CMT_008_3_5JACK_CTR
@@ -136,6 +141,8 @@ uint8_t user_custom_get_prompt_volume_level(void);
 void user_custom_set_prompt_volume_level(uint8_t vol, bool isSave);
 uint8_t user_custom_get_LR_balance_value(void);
 void user_custom_set_LR_balance_value(uint8_t val, bool isSave);
+const char *user_custom_get_BT_name(void);
+void user_custom_set_BT_name(char* name, bool isSave);
 void user_custom_nvrecord_rebuild_user_info(uint8_t *pUserInfo, bool isRebuildAll);
 void user_custom_nvrecord_user_info_get(void);
 

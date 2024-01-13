@@ -202,6 +202,24 @@ static void user_custom_tota_ble_command_set_handle(PACKET_STRUCTURE *ptrPacket)
 			user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_SET, ptrPacket->cmdID, rsp_status, NULL, 0);
 		break;
 
+		case TOTA_BLE_CMT_COMMAND_SET_CHANGE_DEVICE_NAME:
+			{
+				char temp[BT_NAME_LEN] = {0};
+				uint16_t name_len = 0;
+
+				name_len = ptrPacket->payloadLen;
+				if(name_len < BT_NAME_LEN) {
+					;
+				} else{
+					name_len = BT_NAME_LEN - 1;
+				}
+				memcpy(temp, ptrPacket->payload, name_len);
+				user_custom_set_BT_name(temp, true);
+					
+				user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_SET, ptrPacket->cmdID, rsp_status, NULL, 0);
+			}
+		break;
+		
     	case TOTA_BLE_CMT_COMMAND_SET_SOUND_PROMPTS_LEVEL:
 #ifdef CODEC_DAC_PROMPT_ALONE_VOLUME_TABLE
 			if(ptrPacket->payload[0] < TGT_PROMPT_VOL_LEVEL_QTY)
@@ -291,6 +309,23 @@ static void user_custom_tota_ble_command_get_handle(PACKET_STRUCTURE *ptrPacket)
         		uint8_t temp[1] = {0};
 				
         		temp[0] = user_custom_get_LR_balance_value();
+				rsp_status = NO_NEED_STATUS_RESP;
+
+				user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_GET, ptrPacket->cmdID, rsp_status, temp, sizeof(temp));
+			}
+		break;
+
+		case TOTA_BLE_CMT_COMMAND_GET_DEVICE_NAME:
+			{
+        		uint8_t temp[BT_NAME_LEN] = {0};
+				uint16_t name_len = 0;
+
+				if(strlen(BT_LOCAL_NAME) < BT_NAME_LEN) {
+					name_len = strlen(BT_LOCAL_NAME);
+				} else{
+					name_len = BT_NAME_LEN - 1;
+				}
+				memcpy(temp, BT_LOCAL_NAME, name_len);
 				rsp_status = NO_NEED_STATUS_RESP;
 
 				user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_GET, ptrPacket->cmdID, rsp_status, temp, sizeof(temp));

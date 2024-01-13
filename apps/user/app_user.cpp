@@ -166,6 +166,35 @@ void user_custom_set_LR_balance_value(uint8_t val, bool isSave)
 	}
 }
 
+const char *user_custom_get_BT_name(void)
+{
+	return user_data.redefine_BT_name;
+}
+
+void user_custom_set_BT_name(char* name, bool isSave)
+{
+	uint16_t name_len = 0;
+
+	if(strlen(name) < BT_NAME_LEN) {
+		name_len = strlen(name);
+	} else{
+		name_len = BT_NAME_LEN - 1;
+	}
+
+	memset(user_data.redefine_BT_name, 0, sizeof(user_data.redefine_BT_name));
+	memcpy(user_data.redefine_BT_name, name, name_len);
+
+	if(isSave)
+	{
+		struct nvrecord_user_t *nvrecord_user;
+
+		nv_record_user_info_get(&nvrecord_user);
+		memset(nvrecord_user->redefine_BT_name, 0, sizeof(nvrecord_user->redefine_BT_name));
+		memcpy(nvrecord_user->redefine_BT_name, name, name_len);
+		nv_record_user_info_set(nvrecord_user);
+	}
+}
+
 void nvrecord_user_info_init_for_ota(struct nvrecord_user_t *pUserInfo)
 {
 	uint8_t saved_user_info_ver[13];
@@ -187,6 +216,11 @@ void nvrecord_user_info_init_for_ota(struct nvrecord_user_t *pUserInfo)
 
 		//default LR balance config
 		pUserInfo->LR_balance_val = 50;
+	}
+	else if(strncmp((const char *)saved_user_info_ver, "V0.0.1", strlen("V0.0.1")) == 0)
+	{
+		//default user BT name config
+		memset(pUserInfo->redefine_BT_name, 0, sizeof(pUserInfo->redefine_BT_name));
 	}
 	
 	//update user info's history
@@ -232,6 +266,10 @@ void user_custom_nvrecord_user_info_get(void)
 
 	user_data.LR_balance_val = nvrecord_user->LR_balance_val;
 	TRACE(0, "*** [%s] LR balance: %d", __func__, user_data.LR_balance_val);
+
+	memset(user_data.redefine_BT_name, 0, sizeof(user_data.redefine_BT_name));
+	memcpy(user_data.redefine_BT_name, nvrecord_user->redefine_BT_name, strlen(nvrecord_user->redefine_BT_name));
+	TRACE(0, "*** [%s] user BT name: %s", __func__, user_data.redefine_BT_name);
 }
 
 void user_custom_nvrecord_rebuild_user_info(uint8_t *pUserInfo, bool isRebuildAll)
@@ -248,6 +286,9 @@ void user_custom_nvrecord_rebuild_user_info(uint8_t *pUserInfo, bool isRebuildAl
 	//default LR balance config
 	user_info->LR_balance_val = 50;
 	
+	//default user BT name config
+	memset(user_info->redefine_BT_name, 0, sizeof(user_info->redefine_BT_name));
+
 	//when BES chip is blank, nv_record_extension_init
 	if(isRebuildAll)
 	{
@@ -264,6 +305,8 @@ void user_custom_nvrecord_rebuild_user_info(uint8_t *pUserInfo, bool isRebuildAl
 		user_data.prompt_vol_en = user_info->prompt_vol_en;
 		user_data.prompt_vol_level = user_info->prompt_vol_level;
 		user_data.LR_balance_val = user_info->LR_balance_val;
+		memset(user_data.redefine_BT_name, 0, sizeof(user_data.redefine_BT_name));
+		memcpy(user_data.redefine_BT_name, user_info->redefine_BT_name, strlen(user_info->redefine_BT_name));
 	}
 }
 /********************************************** User Info End **********************************************/
