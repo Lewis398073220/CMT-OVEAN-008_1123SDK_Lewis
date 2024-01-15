@@ -36,6 +36,7 @@
 #ifdef CMT_008_SPP_TOTA_V2
 #include "tota_spp_custom.h"
 #endif /*CMT_008_SPP_TOTA_V2*/
+#include "app_user.h"
 /* End Add by jay */
 
 #ifdef ANC_APP
@@ -2079,6 +2080,23 @@ void app_le_set_dac_eq(void)
 #endif
 }
 
+/* Add by lewis */
+void app_ble_eq_set(void)
+{
+	app_anc_mode_t anc_mode = app_anc_get_curr_mode();
+
+	if (bt_a2dp_is_run())
+	{
+		TRACE(0, "[%s] Music is playing, apply EQ", __func__);
+#if defined(__HW_DAC_IIR_EQ_PROCESS__)
+        bt_audio_set_eq(AUDIO_EQ_TYPE_HW_DAC_IIR,bt_audio_get_eq_index(AUDIO_EQ_TYPE_HW_DAC_IIR,anc_mode));
+#endif
+	} else {
+		TRACE(0, "[%s] Music isn't playing, just save EQ", __func__);
+	}
+}
+/* End Add by lewis */
+
 #ifdef ANC_APP
 static uint8_t app_user_eq_index = 0xFF;
 uint8_t bt_audio_updata_eq_for_anc(uint8_t anc_status)
@@ -2089,7 +2107,7 @@ uint8_t bt_audio_updata_eq_for_anc(uint8_t anc_status)
 		anc_status = app_anc_get_curr_mode();
 #endif
 
-    if((app_user_eq_index == 0xFF || app_user_eq_index < 2) && anc_status_record != anc_status)
+    if((app_user_eq_index == 0xFF || app_user_eq_index < 10) && anc_status_record != anc_status)
     {
         hal_sysfreq_req(HAL_SYSFREQ_USER_ANC, HAL_CMU_FREQ_104M);
 
@@ -2171,6 +2189,7 @@ extern "C" uint32_t bt_audio_set_adaptive_fir_eq(FIR_CFG_T *fir_cfg)
 uint8_t bt_audio_get_eq_index(AUDIO_EQ_TYPE_T audio_eq_type,uint8_t anc_status)
 {
     uint8_t index_eq=0;
+	TOTA_BLE_EQ_MAP eq_mode = BLE_EQ_MAP_STUDIO; //Add by lewis
 
 #if defined(__SW_IIR_EQ_PROCESS__) || defined(__HW_FIR_EQ_PROCESS__)|| defined(__HW_DAC_IIR_EQ_PROCESS__)|| defined(__HW_IIR_EQ_PROCESS__)
     switch (audio_eq_type)
@@ -2227,27 +2246,43 @@ uint8_t bt_audio_get_eq_index(AUDIO_EQ_TYPE_T audio_eq_type,uint8_t anc_status)
 				index_eq=audio_eq_hw_dac_iir_index;
 			}
 #else
+			eq_mode = user_custom_get_EQ_mode();
+			
 			switch(anc_status)
 			{
 				case APP_ANC_MODE1:
-					audio_eq_hw_dac_iir_index = 1;
-				break;
-
-				case APP_ANC_MODE2:
-					audio_eq_hw_dac_iir_index = 0;
-				break;
-
 				case APP_ANC_MODE3:
-					audio_eq_hw_dac_iir_index = 1;
+					if(eq_mode == BLE_EQ_MAP_USER) {
+						audio_eq_hw_dac_iir_index = USER_EQ_ANC_ON;
+					} else if(eq_mode == BLE_EQ_MAP_BASS) {
+						audio_eq_hw_dac_iir_index = BASS_EQ_ANC_ON;
+					} else if(eq_mode == BLE_EQ_MAP_JAZZ) {
+						audio_eq_hw_dac_iir_index = JAZZ_EQ_ANC_ON;
+					} else if(eq_mode == BLE_EQ_MAP_POP) {
+						audio_eq_hw_dac_iir_index = POP_EQ_ANC_ON;
+					} else {
+						audio_eq_hw_dac_iir_index = STUDIO_EQ_ANC_ON;
+					}
 				break;
 				
+				case APP_ANC_MODE2:
 				case APP_ANC_MODE_OFF:
 				default:
-					audio_eq_hw_dac_iir_index = 0;
+					if(eq_mode == BLE_EQ_MAP_USER) {
+						audio_eq_hw_dac_iir_index = USER_EQ_ANC_OFF;
+					} else if(eq_mode == BLE_EQ_MAP_BASS) {
+						audio_eq_hw_dac_iir_index = BASS_EQ_ANC_OFF;
+					} else if(eq_mode == BLE_EQ_MAP_JAZZ) {
+						audio_eq_hw_dac_iir_index = JAZZ_EQ_ANC_OFF;
+					} else if(eq_mode == BLE_EQ_MAP_POP) {
+						audio_eq_hw_dac_iir_index = POP_EQ_ANC_OFF;
+					} else {
+						audio_eq_hw_dac_iir_index = STUDIO_EQ_ANC_OFF;
+					}
 				break;
 			}
 			if (audio_eq_hw_dac_iir_index >= EQ_HW_DAC_IIR_LIST_NUM) {
-				index_eq = 0;
+				index_eq = STUDIO_EQ_ANC_OFF;
 			} else{
 				index_eq = audio_eq_hw_dac_iir_index;
 			}
@@ -2288,6 +2323,10 @@ uint32_t bt_audio_set_eq(AUDIO_EQ_TYPE_T audio_eq_type, uint8_t index)
 
 #if defined(__HW_FIR_EQ_PROCESS_2CH__)
     const FIR_CFG_T *fir_cfg_2 = NULL;
+#endif
+
+#ifdef ANC_APP
+	app_user_eq_index = index;
 #endif
 
     TRACE_AUD_STREAM_I("[EQ] set type=%d,index=%d",  audio_eq_type,index);

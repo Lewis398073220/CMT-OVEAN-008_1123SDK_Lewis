@@ -190,16 +190,20 @@ static void user_custom_tota_ble_command_set_handle(PACKET_STRUCTURE *ptrPacket)
         break;
 
 		case TOTA_BLE_CMT_COMMAND_SET_L_R_CHANNEL_BALANCE:
-			if((ptrPacket->payload[0] >= 0x00) && (ptrPacket->payload[0] <= 0x64))
 			{
-				user_custom_set_LR_balance_value(ptrPacket->payload[0], true);
-				rsp_status = SUCCESS_STATUS;
-			}
-			else{
-				rsp_status = PARAMETER_ERROR_STATUS;
-			}
+				uint8_t val = ptrPacket->payload[0];
+				
+				if((val >= 0x00) && (val <= 0x64))
+				{
+					user_custom_set_LR_balance_value(ptrPacket->payload[0], true);
+					rsp_status = SUCCESS_STATUS;
+				}
+				else{
+					rsp_status = PARAMETER_ERROR_STATUS;
+				}
 
-			user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_SET, ptrPacket->cmdID, rsp_status, NULL, 0);
+				user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_SET, ptrPacket->cmdID, rsp_status, NULL, 0);
+			}
 		break;
 
 		case TOTA_BLE_CMT_COMMAND_SET_CHANGE_DEVICE_NAME:
@@ -250,6 +254,110 @@ static void user_custom_tota_ble_command_set_handle(PACKET_STRUCTURE *ptrPacket)
 			
             user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_SET, ptrPacket->cmdID, rsp_status, NULL, 0);
         break;
+
+		case TOTA_BLE_CMT_COMMAND_SET_EQ_MODE:
+			{
+				TOTA_BLE_EQ_MAP eq_mode = ptrPacket->payload[0];
+
+				switch(eq_mode)
+				{
+					case BLE_EQ_MAP_STUDIO:
+					case BLE_EQ_MAP_BASS:
+					case BLE_EQ_MAP_JAZZ:
+					case BLE_EQ_MAP_POP:
+					case BLE_EQ_MAP_USER:
+						TOTA_LOG_DBG(0, "[%s] EQ mode:%d", __func__, eq_mode);
+						user_custom_set_EQ_mode(eq_mode, true);
+						app_ble_eq_set();
+						rsp_status = SUCCESS_STATUS;
+					break;
+					
+					default:
+						rsp_status = PARAMETER_ERROR_STATUS;
+					break;
+				}
+
+				user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_SET, ptrPacket->cmdID, rsp_status, NULL, 0);
+			}
+		break;
+
+		case TOTA_BLE_CMT_COMMAND_SET_USER_DEFINED_EQ:
+			{
+				int32_t bands_num = 0;
+				float master_gain = 0.0f;
+				IIR_TYPE_T eq_type = IIR_TYPE_PEAK;
+				float eq_gain = 0.0f;
+				float eq_fc = 0.0f;
+				float eq_Q = 0.0f;
+				uint8_t temp[2] = {0};
+				uint8_t i = 0, j = 0;
+				USER_IIR_CFG_T user_eq  = {
+				    .gain0 = 0,
+				    .gain1 = 0,
+				    .num = USER_EQ_BANDS,
+				    .param = {
+				        {IIR_TYPE_PEAK,       0,   30.0,   0.7},
+				        {IIR_TYPE_PEAK,       0,   64.0,   0.7},
+				        {IIR_TYPE_PEAK,       0,  125.0,   0.7},
+				        {IIR_TYPE_PEAK,       0,  250.0,   0.7},
+				        {IIR_TYPE_PEAK,       0,  500.0,   0.7},
+				        {IIR_TYPE_PEAK,       0, 1000.0,   0.7},
+				        {IIR_TYPE_PEAK,       0, 2000.0,   0.7},
+				        {IIR_TYPE_PEAK,       0, 4000.0,   0.7},
+				        {IIR_TYPE_PEAK,       0, 8000.0,   0.7},
+				        {IIR_TYPE_PEAK,       0,16000.0,   0.7},
+				    }
+				};
+
+				rsp_status = SUCCESS_STATUS;
+				
+				bands_num = ptrPacket->payload[2];
+				
+				temp[0] = ptrPacket->payload[1];
+				temp[1] = ptrPacket->payload[0];
+				master_gain = *((int16_t *)temp) / 100.0f;
+				
+				user_eq.gain0 = user_eq.gain1 = master_gain;
+				//user_eq.num = bands_num; //don't need 
+				for(i = 0; i < bands_num; i++)
+				{
+					eq_type = ptrPacket->payload[3 + 7*i];
+					if((eq_type < IIR_TYPE_LOW_SHELF) || (eq_type > IIR_TYPE_HIGH_PASS))
+					{
+						rsp_status = PARAMETER_ERROR_STATUS;
+						break;
+					}
+					
+					temp[0] = ptrPacket->payload[5 + 7*i];
+					temp[1] = ptrPacket->payload[4 + 7*i];
+					eq_fc = *((int16_t *)temp);
+					
+					temp[0] = ptrPacket->payload[7 + 7*i];
+					temp[1] = ptrPacket->payload[6 + 7*i];
+					eq_gain = *((int16_t *)temp) / 100.0f;
+
+					temp[0] = ptrPacket->payload[9 + 7*i];
+					temp[1] = ptrPacket->payload[8 + 7*i];
+					eq_Q = *((int16_t *)temp) / 100.0f;
+
+					//Find the corresponding fc
+					for(j = 0; j < USER_EQ_BANDS; j++)
+					{
+						if(user_eq.param[j].fc == eq_fc)
+						{
+							user_eq.param[j].type = eq_type;
+							user_eq.param[j].gain = eq_gain;
+							user_eq.param[j].Q = eq_Q;
+							break;
+						}
+					}
+				}
+				
+				if(rsp_status == SUCCESS_STATUS) user_custom_set_user_EQ(user_eq, true);
+				
+				user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_SET, ptrPacket->cmdID, rsp_status, NULL, 0);
+			}
+		break;
 		
 		default:
 			user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_SET, ptrPacket->cmdID, NOT_SUPPORT_STATUS, NULL, 0);
@@ -343,6 +451,17 @@ static void user_custom_tota_ble_command_get_handle(PACKET_STRUCTURE *ptrPacket)
 			}
         break;
 
+		case TOTA_BLE_CMT_COMMAND_GET_EQ_MODE:
+			{
+        		uint8_t temp[1] = {0};
+				
+        		temp[0] = user_custom_get_EQ_mode();
+				rsp_status = NO_NEED_STATUS_RESP;
+
+				user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_GET, ptrPacket->cmdID, rsp_status, temp, sizeof(temp));
+			}
+		break;
+
 		case TOTA_BLE_CMT_COMMAND_GET_BATTERY_LEVEL:
             {
             	uint8_t percent = (app_battery_current_level()+1) * 10;
@@ -377,6 +496,8 @@ static void user_custom_tota_ble_command_get_handle(PACKET_STRUCTURE *ptrPacket)
 void user_custom_tota_ble_data_handle(uint8_t* ptrData, uint32_t length)
 {
 	PACKET_STRUCTURE *ptrPacket = (PACKET_STRUCTURE *)ptrData;
+
+	TOTA_LOG_DBG(2 ,"[%s] receive data length:%d", __func__, length);
 
 	if(ptrPacket->bootCode != BOOTCODE)
 	{

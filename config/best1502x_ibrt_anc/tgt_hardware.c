@@ -2015,6 +2015,131 @@ const IIR_CFG_T audio_eq_anc_hw_dac_iir_cfg = {
     }
 };
 
+/* Add by lewis */
+const IIR_CFG_T audio_eq_bass_hw_dac_iir_cfg = {
+    .gain0 = 0,
+    .gain1 = 0,
+    .num = 7,
+    .param = {
+    	{IIR_TYPE_HIGH_PASS,  0,   20.0,   0.6},
+        {IIR_TYPE_PEAK,     -13,  230.0,   0.7},
+        {IIR_TYPE_PEAK,      -4,  700.0,   0.7},
+        {IIR_TYPE_HIGH_SHELF,-8, 5000.0,   1.0},
+        {IIR_TYPE_PEAK,      -5,  900.0,   0.7},
+        {IIR_TYPE_PEAK,      -4,  120.0,   0.7},
+        {IIR_TYPE_PEAK,      -4,   30.0,   0.8},
+    }
+};
+
+const IIR_CFG_T audio_eq_bass_anc_hw_dac_iir_cfg = {
+    .gain0 = 0,
+    .gain1 = 0,
+    .num = 6,
+    .param = {
+        {IIR_TYPE_HIGH_PASS, 0,   20.0,   0.6},
+        {IIR_TYPE_PEAK,    -15,  230.0,   0.7},
+        {IIR_TYPE_PEAK,     -4,  700.0,   0.7},
+        {IIR_TYPE_PEAK,     -8, 5000.0,   1.0},
+        {IIR_TYPE_PEAK,   -6.5,  900.0,   0.7},
+        {IIR_TYPE_PEAK,     -1,  100.0,   0.7},
+    }
+};
+
+const IIR_CFG_T audio_eq_jazz_hw_dac_iir_cfg = {
+    .gain0 = 0,
+    .gain1 = 0,
+    .num = 7,
+    .param = {
+    	{IIR_TYPE_HIGH_PASS,  0,   20.0,   0.6},
+        {IIR_TYPE_PEAK,     -13,  230.0,   0.7},
+        {IIR_TYPE_PEAK,      -4,  700.0,   0.7},
+        {IIR_TYPE_HIGH_SHELF,-8, 5000.0,   1.0},
+        {IIR_TYPE_PEAK,      -5,  900.0,   0.7},
+        {IIR_TYPE_PEAK,      -4,  120.0,   0.7},
+        {IIR_TYPE_PEAK,      -4,   30.0,   0.8},
+    }
+};
+
+const IIR_CFG_T audio_eq_jazz_anc_hw_dac_iir_cfg = {
+    .gain0 = 0,
+    .gain1 = 0,
+    .num = 6,
+    .param = {
+        {IIR_TYPE_HIGH_PASS, 0,   20.0,   0.6},
+        {IIR_TYPE_PEAK,    -15,  230.0,   0.7},
+        {IIR_TYPE_PEAK,     -4,  700.0,   0.7},
+        {IIR_TYPE_PEAK,     -8, 5000.0,   1.0},
+        {IIR_TYPE_PEAK,   -6.5,  900.0,   0.7},
+        {IIR_TYPE_PEAK,     -1,  100.0,   0.7},
+    }
+};
+
+const IIR_CFG_T audio_eq_pop_hw_dac_iir_cfg = {
+    .gain0 = 0,
+    .gain1 = 0,
+    .num = 7,
+    .param = {
+    	{IIR_TYPE_HIGH_PASS,  0,   20.0,   0.6},
+        {IIR_TYPE_PEAK,     -13,  230.0,   0.7},
+        {IIR_TYPE_PEAK,      -4,  700.0,   0.7},
+        {IIR_TYPE_HIGH_SHELF,-8, 5000.0,   1.0},
+        {IIR_TYPE_PEAK,      -5,  900.0,   0.7},
+        {IIR_TYPE_PEAK,      -4,  120.0,   0.7},
+        {IIR_TYPE_PEAK,      -4,   30.0,   0.8},
+    }
+};
+
+const IIR_CFG_T audio_eq_pop_anc_hw_dac_iir_cfg = {
+    .gain0 = 0,
+    .gain1 = 0,
+    .num = 6,
+    .param = {
+        {IIR_TYPE_HIGH_PASS, 0,   20.0,   0.6},
+        {IIR_TYPE_PEAK,    -15,  230.0,   0.7},
+        {IIR_TYPE_PEAK,     -4,  700.0,   0.7},
+        {IIR_TYPE_PEAK,     -8, 5000.0,   1.0},
+        {IIR_TYPE_PEAK,   -6.5,  900.0,   0.7},
+        {IIR_TYPE_PEAK,     -1,  100.0,   0.7},
+    }
+};
+
+IIR_CFG_T audio_eq_user_hw_dac_iir_cfg = {
+    .gain0 = 0,
+    .gain1 = 0,
+    .num = USER_EQ_BANDS,
+    .param = {
+        {IIR_TYPE_PEAK,       0,   30.0,   0.7},
+        {IIR_TYPE_PEAK,       0,   64.0,   0.7},
+        {IIR_TYPE_PEAK,       0,  125.0,   0.7},
+        {IIR_TYPE_PEAK,       0,  250.0,   0.7},
+        {IIR_TYPE_PEAK,       0,  500.0,   0.7},
+        {IIR_TYPE_PEAK,       0, 1000.0,   0.7},
+        {IIR_TYPE_PEAK,       0, 2000.0,   0.7},
+        {IIR_TYPE_PEAK,       0, 4000.0,   0.7},
+        {IIR_TYPE_PEAK,       0, 8000.0,   0.7},
+        {IIR_TYPE_PEAK,       0,16000.0,   0.7},
+    }
+};
+
+IIR_CFG_T audio_eq_user_anc_hw_dac_iir_cfg = {
+    .gain0 = 0,
+    .gain1 = 0,
+    .num = USER_EQ_BANDS,
+    .param = {
+        {IIR_TYPE_PEAK,       0,   30.0,   0.7},
+        {IIR_TYPE_PEAK,       0,   64.0,   0.7},
+        {IIR_TYPE_PEAK,       0,  125.0,   0.7},
+        {IIR_TYPE_PEAK,       0,  250.0,   0.7},
+        {IIR_TYPE_PEAK,       0,  500.0,   0.7},
+        {IIR_TYPE_PEAK,       0, 1000.0,   0.7},
+        {IIR_TYPE_PEAK,       0, 2000.0,   0.7},
+        {IIR_TYPE_PEAK,       0, 4000.0,   0.7},
+        {IIR_TYPE_PEAK,       0, 8000.0,   0.7},
+        {IIR_TYPE_PEAK,       0,16000.0,   0.7},
+    }
+};
+/* End Add by lewis */
+
 IIR_CFG_T audio_eq_hw_dac_iir_adaptive_eq_cfg = {
     .gain0 = 0,
     .gain1 = 0,
@@ -2027,6 +2152,16 @@ IIR_CFG_T audio_eq_hw_dac_iir_adaptive_eq_cfg = {
 const IIR_CFG_T * const POSSIBLY_UNUSED audio_eq_hw_dac_iir_cfg_list[EQ_HW_DAC_IIR_LIST_NUM]={
     &audio_eq_hw_dac_iir_cfg,
 	&audio_eq_anc_hw_dac_iir_cfg,
+	/* Add by lewis */
+	&audio_eq_bass_hw_dac_iir_cfg,
+	&audio_eq_bass_anc_hw_dac_iir_cfg,
+	&audio_eq_jazz_hw_dac_iir_cfg,
+	&audio_eq_jazz_anc_hw_dac_iir_cfg,
+	&audio_eq_pop_hw_dac_iir_cfg,
+	&audio_eq_pop_anc_hw_dac_iir_cfg,
+	&audio_eq_user_hw_dac_iir_cfg,
+	&audio_eq_user_anc_hw_dac_iir_cfg,
+	/* End Add by lewis */
 };
 
 //hardware dac iir eq

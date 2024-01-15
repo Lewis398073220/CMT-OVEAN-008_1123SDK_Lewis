@@ -26,6 +26,16 @@ extern "C" {
 #include "hal_iomux.h"
 #include "../../platform/hal/best1502x/hal_cmu_best1502x.h"
 #include "../../utils/hwtimer_list/hwtimer_list.h"
+#include "../../bthost/service/ble_app_new/inc/tota_ble_custom.h"
+#include "../../multimedia/inc/audio/process/filters/include/iir_process.h"
+#include "tgt_hardware.h"
+
+typedef struct {
+    float   gain0;
+    float   gain1;
+    int     num;
+    IIR_PARAM_T param[USER_EQ_BANDS];
+} USER_IIR_CFG_T;
 
 typedef struct {
 	uint8_t nvrecord_user_ver_H;
@@ -40,7 +50,10 @@ typedef struct {
 	uint8_t LR_balance_val;
 
 	char redefine_BT_name[30];
-	
+
+	TOTA_BLE_EQ_MAP eq_mode;
+	USER_IIR_CFG_T user_eq;
+		
 	uint8_t quick_conversation_mode;
 } app_user_custom_data_t;
 
@@ -143,6 +156,9 @@ uint8_t user_custom_get_LR_balance_value(void);
 void user_custom_set_LR_balance_value(uint8_t val, bool isSave);
 const char *user_custom_get_BT_name(void);
 void user_custom_set_BT_name(char* name, bool isSave);
+TOTA_BLE_EQ_MAP user_custom_get_EQ_mode(void);
+void user_custom_set_EQ_mode(TOTA_BLE_EQ_MAP mode, bool isSave);
+void user_custom_set_user_EQ(USER_IIR_CFG_T user_eq, bool isSave);
 void user_custom_nvrecord_rebuild_user_info(uint8_t *pUserInfo, bool isRebuildAll);
 void user_custom_nvrecord_user_info_get(void);
 

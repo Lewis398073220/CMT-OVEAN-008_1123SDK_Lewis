@@ -57,6 +57,7 @@
 #include "app_media_player.h"
 #include "hal_codec.h"
 #include "hal_pwm.h"
+#include "iir_process.h"
 
 #if defined(IBRT)
 #include "app_ibrt_internal.h"
@@ -88,6 +89,8 @@
 #endif
 
 /********************************************** User Info Start **********************************************/
+extern const IIR_CFG_T * const audio_eq_hw_dac_iir_cfg_list[];
+
 app_user_custom_data_t user_data;
 
 bool user_custom_is_touch_locked(void)
@@ -195,6 +198,79 @@ void user_custom_set_BT_name(char* name, bool isSave)
 	}
 }
 
+TOTA_BLE_EQ_MAP user_custom_get_EQ_mode(void)
+{
+	return user_data.eq_mode;
+}
+
+void user_custom_set_EQ_mode(TOTA_BLE_EQ_MAP mode, bool isSave)
+{
+	user_data.eq_mode = mode;
+
+	if(isSave)
+	{
+		struct nvrecord_user_t *nvrecord_user;
+
+		nv_record_user_info_get(&nvrecord_user);
+		nvrecord_user->eq_mode = mode;
+		nv_record_user_info_set(nvrecord_user);
+	}
+}
+
+void update_user_EQ(USER_IIR_CFG_T user_eq)
+{
+	IIR_CFG_T **audio_eq_list;
+	uint8_t i = 0;
+	
+	audio_eq_list = (IIR_CFG_T **)audio_eq_hw_dac_iir_cfg_list;
+	TRACE(0, "%s enter", __func__);
+	
+	TRACE(0, "update user EQ of ANC On");
+	audio_eq_list[USER_EQ_ANC_ON]->gain0 = user_eq.gain0;
+	audio_eq_list[USER_EQ_ANC_ON]->gain1 = user_eq.gain1;
+	//audio_eq_list[USER_EQ_ANC_ON]->num = user_eq.num;
+	memcpy(&(audio_eq_list[USER_EQ_ANC_ON]->param[0]), &(user_eq.param[0]), USER_EQ_BANDS);
+	TRACE(0, "gain0/gain1: %d/%d(/100)", (int32_t)(audio_eq_list[USER_EQ_ANC_ON]->gain0 * 100),
+		(int32_t)(audio_eq_list[USER_EQ_ANC_ON]->gain1 * 100));
+	TRACE(0, "num: %d", audio_eq_list[USER_EQ_ANC_ON]->num);
+	for(i = 0; i < audio_eq_list[USER_EQ_ANC_ON]->num; i++)
+	{
+		TRACE(0, "type: %d fc/gain/Q: %d/%d/%d(/100)", audio_eq_list[USER_EQ_ANC_ON]->param[i].type, (int32_t)(audio_eq_list[USER_EQ_ANC_ON]->param[i].fc * 100),
+			(int32_t)(audio_eq_list[USER_EQ_ANC_ON]->param[i].gain * 100), (int32_t)(audio_eq_list[USER_EQ_ANC_ON]->param[i].Q * 100));
+	}
+
+	TRACE(0, "update user EQ of ANC Off");
+	audio_eq_list[USER_EQ_ANC_OFF]->gain0 = user_eq.gain0;
+	audio_eq_list[USER_EQ_ANC_OFF]->gain1 = user_eq.gain1;
+	//audio_eq_list[USER_EQ_ANC_OFF]->num = user_eq.num;
+	memcpy(&(audio_eq_list[USER_EQ_ANC_OFF]->param[0]), &(user_eq.param[0]), USER_EQ_BANDS);
+	TRACE(0, "gain0/gain1: %d/%d(/100)", (int32_t)(audio_eq_list[USER_EQ_ANC_OFF]->gain0 * 100),
+		(int32_t)(audio_eq_list[USER_EQ_ANC_OFF]->gain1 * 100));
+	TRACE(0, "num: %d", audio_eq_list[USER_EQ_ANC_OFF]->num);
+	for(i = 0; i < audio_eq_list[USER_EQ_ANC_OFF]->num; i++)
+	{
+		TRACE(0, "type: %d fc/gain/Q: %d/%d/%d(/100)", audio_eq_list[USER_EQ_ANC_OFF]->param[i].type, (int32_t)(audio_eq_list[USER_EQ_ANC_OFF]->param[i].fc * 100),
+			(int32_t)(audio_eq_list[USER_EQ_ANC_OFF]->param[i].gain * 100), (int32_t)(audio_eq_list[USER_EQ_ANC_OFF]->param[i].Q * 100));
+	}
+	
+	TRACE(0, "%s exit", __func__);
+}
+
+void user_custom_set_user_EQ(USER_IIR_CFG_T user_eq, bool isSave)
+{
+	user_data.user_eq = user_eq;
+	update_user_EQ(user_data.user_eq);
+
+	if(isSave)
+	{
+		struct nvrecord_user_t *nvrecord_user;
+
+		nv_record_user_info_get(&nvrecord_user);
+		nvrecord_user->user_eq = user_eq;
+		nv_record_user_info_set(nvrecord_user);
+	}
+}
+
 void nvrecord_user_info_init_for_ota(struct nvrecord_user_t *pUserInfo)
 {
 	uint8_t saved_user_info_ver[13];
@@ -221,6 +297,27 @@ void nvrecord_user_info_init_for_ota(struct nvrecord_user_t *pUserInfo)
 	{
 		//default user BT name config
 		memset(pUserInfo->redefine_BT_name, 0, sizeof(pUserInfo->redefine_BT_name));
+
+		//default eq config
+		pUserInfo->eq_mode = BLE_EQ_MAP_STUDIO;
+		USER_IIR_CFG_T user_eq  = {
+		    .gain0 = 0,
+		    .gain1 = 0,
+		    .num = USER_EQ_BANDS,
+		    .param = {
+		        {IIR_TYPE_PEAK,       0,   30.0,   0.7},
+		        {IIR_TYPE_PEAK,       0,   64.0,   0.7},
+		        {IIR_TYPE_PEAK,       0,  125.0,   0.7},
+		        {IIR_TYPE_PEAK,       0,  250.0,   0.7},
+		        {IIR_TYPE_PEAK,       0,  500.0,   0.7},
+		        {IIR_TYPE_PEAK,       0, 1000.0,   0.7},
+		        {IIR_TYPE_PEAK,       0, 2000.0,   0.7},
+		        {IIR_TYPE_PEAK,       0, 4000.0,   0.7},
+		        {IIR_TYPE_PEAK,       0, 8000.0,   0.7},
+		        {IIR_TYPE_PEAK,       0,16000.0,   0.7},
+		    }
+		};
+		pUserInfo->user_eq = user_eq;
 	}
 	
 	//update user info's history
@@ -239,6 +336,7 @@ void user_custom_nvrecord_user_info_get(void)
 	struct nvrecord_user_t *nvrecord_user;
 	uint8_t saved_user_info_ver[13];
 	uint8_t local_user_info_ver[13];
+	uint8_t i = 0;
 		
 	nv_record_user_info_get(&nvrecord_user);
 	
@@ -270,6 +368,19 @@ void user_custom_nvrecord_user_info_get(void)
 	memset(user_data.redefine_BT_name, 0, sizeof(user_data.redefine_BT_name));
 	memcpy(user_data.redefine_BT_name, nvrecord_user->redefine_BT_name, strlen(nvrecord_user->redefine_BT_name));
 	TRACE(0, "*** [%s] user BT name: %s", __func__, user_data.redefine_BT_name);
+
+	user_data.eq_mode = nvrecord_user->eq_mode;
+	TRACE(0, "*** [%s] EQ mode: %d", __func__, user_data.eq_mode);
+
+	user_data.user_eq = nvrecord_user->user_eq;
+	TRACE(0, "*** [%s] gain0/gain1: %d/%d(/100)", __func__, (int32_t)(user_data.user_eq.gain0 * 100), (int32_t)(user_data.user_eq.gain1 * 100));
+	TRACE(0, "*** [%s] num: %d", __func__, user_data.user_eq.num);
+	for(i = 0; i < USER_EQ_BANDS; i++)
+	{
+		TRACE(0, "*** [%s] type: %d fc/gain/Q: %d/%d/%d(/100)", __func__, user_data.user_eq.param[i].type, (int32_t)(user_data.user_eq.param[i].fc * 100),
+			(int32_t)(user_data.user_eq.param[i].gain * 100), (int32_t)(user_data.user_eq.param[i].Q * 100));
+	}
+	update_user_EQ(user_data.user_eq);
 }
 
 void user_custom_nvrecord_rebuild_user_info(uint8_t *pUserInfo, bool isRebuildAll)
@@ -289,6 +400,27 @@ void user_custom_nvrecord_rebuild_user_info(uint8_t *pUserInfo, bool isRebuildAl
 	//default user BT name config
 	memset(user_info->redefine_BT_name, 0, sizeof(user_info->redefine_BT_name));
 
+	//default eq config
+	user_info->eq_mode = BLE_EQ_MAP_STUDIO;
+	USER_IIR_CFG_T user_eq  = {
+	    .gain0 = 0,
+	    .gain1 = 0,
+	    .num = USER_EQ_BANDS,
+	    .param = {
+	        {IIR_TYPE_PEAK,       0,   30.0,   0.7},
+	        {IIR_TYPE_PEAK,       0,   64.0,   0.7},
+	        {IIR_TYPE_PEAK,       0,  125.0,   0.7},
+	        {IIR_TYPE_PEAK,       0,  250.0,   0.7},
+	        {IIR_TYPE_PEAK,       0,  500.0,   0.7},
+	        {IIR_TYPE_PEAK,       0, 1000.0,   0.7},
+	        {IIR_TYPE_PEAK,       0, 2000.0,   0.7},
+	        {IIR_TYPE_PEAK,       0, 4000.0,   0.7},
+	        {IIR_TYPE_PEAK,       0, 8000.0,   0.7},
+	        {IIR_TYPE_PEAK,       0,16000.0,   0.7},
+	    }
+	};
+	user_info->user_eq = user_eq;
+	
 	//when BES chip is blank, nv_record_extension_init
 	if(isRebuildAll)
 	{
@@ -307,6 +439,9 @@ void user_custom_nvrecord_rebuild_user_info(uint8_t *pUserInfo, bool isRebuildAl
 		user_data.LR_balance_val = user_info->LR_balance_val;
 		memset(user_data.redefine_BT_name, 0, sizeof(user_data.redefine_BT_name));
 		memcpy(user_data.redefine_BT_name, user_info->redefine_BT_name, strlen(user_info->redefine_BT_name));
+		user_data.eq_mode = user_info->eq_mode;
+		user_data.user_eq = user_info->user_eq;
+		update_user_EQ(user_data.user_eq);
 	}
 }
 /********************************************** User Info End **********************************************/
@@ -800,7 +935,6 @@ uint8_t app_breath_led_init(void)
 
 	return 0;
 }
-
 #endif
 
 static int app_user_event_handle_process(APP_MESSAGE_BODY *msg_body)

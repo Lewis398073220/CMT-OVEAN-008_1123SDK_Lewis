@@ -59,6 +59,15 @@ typedef enum {
 	ANC_INVALID,
 } TOTA_BLE_ANC_MAP;
 
+typedef enum {
+	BLE_EQ_MAP_STUDIO = 0x00,
+	BLE_EQ_MAP_BASS = 0x01,
+	BLE_EQ_MAP_JAZZ = 0x02,
+	BLE_EQ_MAP_POP = 0x03,
+	BLE_EQ_MAP_USER = 0x10,
+	BLE_EQ_MAP_INVALID,
+} TOTA_BLE_EQ_MAP;
+	
 
 
 #define TOTA_BLE_CMT_COMMAND_NOTIFY                          0x20

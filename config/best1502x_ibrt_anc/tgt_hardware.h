@@ -40,8 +40,26 @@ extern "C" {
 #define REVISION_PCBA_L     0
 /***********************************************************************************/
 
+/* Add by lewis */
+//Synchronize with audio_eq_hw_dac_iir_cfg_list
+typedef enum {
+	STUDIO_EQ_ANC_OFF = 0x00,
+	STUDIO_EQ_ANC_ON,
+	BASS_EQ_ANC_OFF,
+	BASS_EQ_ANC_ON,
+	JAZZ_EQ_ANC_OFF,
+	JAZZ_EQ_ANC_ON,
+	POP_EQ_ANC_OFF,
+	POP_EQ_ANC_ON,
+	USER_EQ_ANC_OFF,
+	USER_EQ_ANC_ON,
+} APP_EQ_INDEX_T;
+
+#define USER_EQ_BANDS        10
+/* End Add by lewis */
+
 //config hwardware codec iir.
-#define EQ_HW_DAC_IIR_LIST_NUM              2
+#define EQ_HW_DAC_IIR_LIST_NUM             10 //Mofify by lewis from 2 to 8
 #define EQ_HW_ADC_IIR_LIST_NUM              1
 #define EQ_HW_IIR_LIST_NUM                  1
 #define EQ_SW_IIR_LIST_NUM                  1

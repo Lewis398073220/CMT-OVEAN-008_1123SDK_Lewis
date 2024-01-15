@@ -22,6 +22,11 @@
 #include "me_api.h"
 #include "bt_sys_config.h"
 #include "ble_device_info.h"
+/* Add by lewis */
+#include "tota_ble_custom.h"
+#include "../../multimedia/inc/audio/process/filters/include/iir_process.h"
+#include "../../apps/user/app_user.h"
+/* Add by lewis */
 
 // increase by 1 if the nvrecord's whole data structure is changed and the content needs to be rebuilt
 #define NV_EXTENSION_MAJOR_VERSION 17
@@ -266,6 +271,9 @@ struct nvrecord_user_t {
 	uint8_t LR_balance_val;
 
 	char redefine_BT_name[30];
+
+	TOTA_BLE_EQ_MAP eq_mode;
+	USER_IIR_CFG_T user_eq;
 };
 /* End Add by lewis */
 
