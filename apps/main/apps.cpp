@@ -622,7 +622,7 @@ void app_factory_reset(void)
     app_ibrt_if_event_entry(APP_UI_EV_CASE_OPEN);
 	app_ibrt_if_event_entry(APP_UI_EV_FREE_MAN_MODE);
 	
-    app_anc_switch(APP_ANC_MODE1);
+    app_reset_anc_switch();
 }
 #endif
 /* End Add by jay */

@@ -915,6 +915,13 @@ void app_pwron_anc_switch(void)
 	app_anc_switch(APP_ANC_MODE1);
 }
 
+void app_reset_anc_switch(void)
+{
+	TRACE(0, "%s", __func__);
+
+	app_anc_switch(APP_ANC_MODE1);
+}
+
 uint8_t app_ble_anc_switch(app_anc_mode_t mode, bool promt_on)
 {
 	if(mode < APP_ANC_MODE_OFF || mode >= APP_ANC_MODE_QTY)

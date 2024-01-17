@@ -270,6 +270,63 @@ void user_custom_set_user_EQ(USER_IIR_CFG_T user_eq, bool isSave)
 		nv_record_user_info_set(nvrecord_user);
 	}
 }
+void user_custom_restore_default_settings(bool promt_on)
+{
+	struct nvrecord_user_t *nvrecord_user;
+
+	nv_record_user_info_get(&nvrecord_user);
+	//default touch config
+	nvrecord_user->touch_lock = false;
+	
+	//default prompt volume config
+	nvrecord_user->prompt_vol_en = true;
+	nvrecord_user->prompt_vol_level = MEDIA_VOLUME_LEVEL_WARNINGTONE;
+
+	//default LR balance config
+	nvrecord_user->LR_balance_val = 50;
+	
+	//default user BT name config
+	memset(nvrecord_user->redefine_BT_name, 0, sizeof(nvrecord_user->redefine_BT_name));
+
+	//default eq config
+	nvrecord_user->eq_mode = BLE_EQ_MAP_STUDIO;
+	USER_IIR_CFG_T user_eq  = {
+	    .gain0 = 0,
+	    .gain1 = 0,
+	    .num = USER_EQ_BANDS,
+	    .param = {
+	        {IIR_TYPE_PEAK,       0,   32.0,   0.7},
+	        {IIR_TYPE_PEAK,       0,   64.0,   0.7},
+	        {IIR_TYPE_PEAK,       0,  125.0,   0.7},
+	        {IIR_TYPE_PEAK,       0,  250.0,   0.7},
+	        {IIR_TYPE_PEAK,       0,  500.0,   0.7},
+	        {IIR_TYPE_PEAK,       0, 1000.0,   0.7},
+	        {IIR_TYPE_PEAK,       0, 2000.0,   0.7},
+	        {IIR_TYPE_PEAK,       0, 4000.0,   0.7},
+	        {IIR_TYPE_PEAK,       0, 8000.0,   0.7},
+	        {IIR_TYPE_PEAK,       0,16000.0,   0.7},
+	    }
+	};
+	nvrecord_user->user_eq = user_eq;
+	nv_record_user_info_set(nvrecord_user);
+
+	//update local user infor
+	user_data.touch_lock = nvrecord_user->touch_lock;
+	user_data.prompt_vol_en = nvrecord_user->prompt_vol_en;
+	user_data.prompt_vol_level = nvrecord_user->prompt_vol_level;
+	user_data.LR_balance_val = nvrecord_user->LR_balance_val;
+	memset(user_data.redefine_BT_name, 0, sizeof(user_data.redefine_BT_name));
+	memcpy(user_data.redefine_BT_name, nvrecord_user->redefine_BT_name, strlen(nvrecord_user->redefine_BT_name));
+	user_data.eq_mode = nvrecord_user->eq_mode;
+	user_data.user_eq = nvrecord_user->user_eq;
+	update_user_EQ(user_data.user_eq);
+
+	//update function status via local user infor
+	app_reset_anc_switch();
+	app_ble_eq_set();
+	
+	if(promt_on) media_PlayAudio(AUD_ID_BT_FACTORY_RESET, 0);
+}
 
 void nvrecord_user_info_init_for_ota(struct nvrecord_user_t *pUserInfo)
 {
@@ -280,20 +337,9 @@ void nvrecord_user_info_init_for_ota(struct nvrecord_user_t *pUserInfo)
 	snprintf((char *)saved_user_info_ver, sizeof(saved_user_info_ver), "V%d.%d.%d",
 			pUserInfo->nvrecord_user_ver[2], pUserInfo->nvrecord_user_ver[1], pUserInfo->nvrecord_user_ver[0]);
 
-	//init user info according to version in flash 
-	if(strncmp((const char *)saved_user_info_ver, "V0.0.0", strlen("V0.0.0")) == 0)
-	{
-		//default touch config
-		pUserInfo->touch_lock = false;
-	
-		//default prompt volume config
-		pUserInfo->prompt_vol_en = true;
-		pUserInfo->prompt_vol_level = MEDIA_VOLUME_LEVEL_WARNINGTONE;
-
-		//default LR balance config
-		pUserInfo->LR_balance_val = 50;
-	}
-	else if(strncmp((const char *)saved_user_info_ver, "V0.0.1", strlen("V0.0.1")) == 0)
+	//init user info according to version in flash
+	//BT name and eq are added in V0.0.1, so just update them when saved user infor ver is V0.0.1
+	if(strncmp((const char *)saved_user_info_ver, "V0.0.1", strlen("V0.0.1")) == 0)
 	{
 		//default user BT name config
 		memset(pUserInfo->redefine_BT_name, 0, sizeof(pUserInfo->redefine_BT_name));
@@ -305,7 +351,44 @@ void nvrecord_user_info_init_for_ota(struct nvrecord_user_t *pUserInfo)
 		    .gain1 = 0,
 		    .num = USER_EQ_BANDS,
 		    .param = {
-		        {IIR_TYPE_PEAK,       0,   30.0,   0.7},
+		        {IIR_TYPE_PEAK,       0,   32.0,   0.7},
+		        {IIR_TYPE_PEAK,       0,   64.0,   0.7},
+		        {IIR_TYPE_PEAK,       0,  125.0,   0.7},
+		        {IIR_TYPE_PEAK,       0,  250.0,   0.7},
+		        {IIR_TYPE_PEAK,       0,  500.0,   0.7},
+		        {IIR_TYPE_PEAK,       0, 1000.0,   0.7},
+		        {IIR_TYPE_PEAK,       0, 2000.0,   0.7},
+		        {IIR_TYPE_PEAK,       0, 4000.0,   0.7},
+		        {IIR_TYPE_PEAK,       0, 8000.0,   0.7},
+		        {IIR_TYPE_PEAK,       0,16000.0,   0.7},
+		    }
+		};
+		pUserInfo->user_eq = user_eq;
+	}
+	//if saved user infor ver is V0.0.0 or other, should init all user infor
+	else
+	{
+		//default touch config
+		pUserInfo->touch_lock = false;
+	
+		//default prompt volume config
+		pUserInfo->prompt_vol_en = true;
+		pUserInfo->prompt_vol_level = MEDIA_VOLUME_LEVEL_WARNINGTONE;
+
+		//default LR balance config
+		pUserInfo->LR_balance_val = 50;
+
+		//default user BT name config
+		memset(pUserInfo->redefine_BT_name, 0, sizeof(pUserInfo->redefine_BT_name));
+
+		//default eq config
+		pUserInfo->eq_mode = BLE_EQ_MAP_STUDIO;
+		USER_IIR_CFG_T user_eq  = {
+		    .gain0 = 0,
+		    .gain1 = 0,
+		    .num = USER_EQ_BANDS,
+		    .param = {
+		        {IIR_TYPE_PEAK,       0,   32.0,   0.7},
 		        {IIR_TYPE_PEAK,       0,   64.0,   0.7},
 		        {IIR_TYPE_PEAK,       0,  125.0,   0.7},
 		        {IIR_TYPE_PEAK,       0,  250.0,   0.7},
@@ -407,7 +490,7 @@ void user_custom_nvrecord_rebuild_user_info(uint8_t *pUserInfo, bool isRebuildAl
 	    .gain1 = 0,
 	    .num = USER_EQ_BANDS,
 	    .param = {
-	        {IIR_TYPE_PEAK,       0,   30.0,   0.7},
+	        {IIR_TYPE_PEAK,       0,   32.0,   0.7},
 	        {IIR_TYPE_PEAK,       0,   64.0,   0.7},
 	        {IIR_TYPE_PEAK,       0,  125.0,   0.7},
 	        {IIR_TYPE_PEAK,       0,  250.0,   0.7},

@@ -41,7 +41,7 @@ GATT_DECL_128_LE_PRI_SERVICE(g_ble_datapath_service,
 GATT_DECL_128_LE_CHAR(g_ble_datapath_rx_character,
     datapath_rx_character_uuid_128_le,
     GATT_WR_REQ|GATT_WR_CMD,
-    ATT_WR_ENC);
+    ATT_SEC_NONE);
 
 GATT_DECL_CUDD_DESCRIPTOR(g_ble_datapath_rx_cudd,
     ATT_SEC_NONE);

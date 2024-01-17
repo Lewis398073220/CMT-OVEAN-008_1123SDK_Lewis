@@ -296,7 +296,7 @@ static void user_custom_tota_ble_command_set_handle(PACKET_STRUCTURE *ptrPacket)
 				    .gain1 = 0,
 				    .num = USER_EQ_BANDS,
 				    .param = {
-				        {IIR_TYPE_PEAK,       0,   30.0,   0.7},
+				        {IIR_TYPE_PEAK,       0,   32.0,   0.7},
 				        {IIR_TYPE_PEAK,       0,   64.0,   0.7},
 				        {IIR_TYPE_PEAK,       0,  125.0,   0.7},
 				        {IIR_TYPE_PEAK,       0,  250.0,   0.7},
@@ -357,6 +357,17 @@ static void user_custom_tota_ble_command_set_handle(PACKET_STRUCTURE *ptrPacket)
 				
 				user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_SET, ptrPacket->cmdID, rsp_status, NULL, 0);
 			}
+		break;
+
+		case TOTA_BLE_CMT_COMMAND_SET_DEFAULT_SETTING:
+			if(ptrPacket->payload[0] == 1) {
+				user_custom_restore_default_settings(false);
+				rsp_status = SUCCESS_STATUS;
+			} else{
+				rsp_status = PARAMETER_ERROR_STATUS;
+			}
+
+			user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_SET, ptrPacket->cmdID, rsp_status, NULL, 0);
 		break;
 		
 		default:
