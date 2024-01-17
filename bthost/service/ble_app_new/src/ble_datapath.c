@@ -30,18 +30,37 @@
 #define datapath_tx_character_uuid_128_le TW_BLE_DATAPATH_TX_CHAR_VAL_UUID
 #define datapath_rx_character_uuid_128_le TW_BLE_DATAPATH_RX_CHAR_VAL_UUID
 #else
+
+/* Modify by lewis */
+#ifdef CMT_008_BLE_ENABLE
+#define datapath_service_uuid_128_le         0x00, 0x00, 0x7C, 0x1E, 0x00, 0x65, 0x74, 0x61, 0x6D, 0x79, 0x72, 0x74, 0x6E, 0x75, 0x6F, 0x43
+#define datapath_rx_character_uuid_128_le    0x01, 0x00, 0x7C, 0x1E, 0x00, 0x65, 0x74, 0x61, 0x6D, 0x79, 0x72, 0x74, 0x6E, 0x75, 0x6F, 0x43
+#define datapath_tx_character_uuid_128_le    0x02, 0x00, 0x7C, 0x1E, 0x00, 0x65, 0x74, 0x61, 0x6D, 0x79, 0x72, 0x74, 0x6E, 0x75, 0x6F, 0x43
+#else
 #define datapath_service_uuid_128_le 0x12,0x34,0x56,0x78,0x90,0x00,0x00,0x80,0x00,0x10,0x00,0x00,0x00,0x01,0x00,0x01
 #define datapath_tx_character_uuid_128_le 0x12,0x34,0x56,0x78,0x91,0x00,0x00,0x80,0x00,0x10,0x00,0x00,0x00,0x02,0x00,0x02
 #define datapath_rx_character_uuid_128_le 0x12,0x34,0x56,0x78,0x92,0x00,0x00,0x80,0x00,0x10,0x00,0x00,0x00,0x03,0x00,0x03
+#endif
+/* End Modify by lewis */
+
 #endif
 
 GATT_DECL_128_LE_PRI_SERVICE(g_ble_datapath_service,
     datapath_service_uuid_128_le);
 
+/* Modify by lewis */
+#ifdef CMT_008_BLE_ENABLE
 GATT_DECL_128_LE_CHAR(g_ble_datapath_rx_character,
     datapath_rx_character_uuid_128_le,
     GATT_WR_REQ|GATT_WR_CMD,
     ATT_SEC_NONE);
+#else
+GATT_DECL_128_LE_CHAR(g_ble_datapath_rx_character,
+    datapath_rx_character_uuid_128_le,
+    GATT_WR_REQ|GATT_WR_CMD,
+    ATT_WR_ENC);
+#endif
+/* End Modify by lewis */
 
 GATT_DECL_CUDD_DESCRIPTOR(g_ble_datapath_rx_cudd,
     ATT_SEC_NONE);
@@ -248,6 +267,10 @@ static void app_datapath_server_tx_data_sent(uint8_t conidx, uint16_t connhdl)
     }
 }
 
+/* Modify by lewis */
+#ifdef CMT_008_BLE_ENABLE
+//do nothing
+#else
 static void app_datapath_server_rx_data_received(uint8_t conidx, uint16_t connhdl, const uint8_t *data, uint16_t len)
 {
     // loop back the received data
@@ -272,6 +295,8 @@ static void app_datapath_server_rx_data_received(uint8_t conidx, uint16_t connhd
         dp_event_callback(DP_DATA_RECEIVED, (ble_if_app_dp_param_u *)&data_msg);
     }
 }
+#endif
+/* End Modify by lewis */
 
 static int ble_datapath_server_callback(gatt_svc_t *svc, gatt_server_event_t event, gatt_server_callback_param_t param)
 {
@@ -284,8 +309,15 @@ static int ble_datapath_server_callback(gatt_svc_t *svc, gatt_server_event_t eve
             {
                 return false;
             }
+/* Modify by lewis */
+#ifdef CMT_008_BLE_ENABLE
+			user_custom_tota_ble_data_handle(p->value, p->value_len);
+#else
             app_datapath_server_rx_data_received(svc->con_idx, svc->connhdl, p->value, p->value_len);
-            return true;
+#endif
+/* End Modify by lewis */
+
+			return true;
         }
         case GATT_SERV_EVENT_DESC_WRITE:
         {

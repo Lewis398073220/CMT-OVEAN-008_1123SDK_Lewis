@@ -163,7 +163,7 @@ typedef enum {
 #define TOTA_BLE_CMT_COMMAND_NOTIFY_STANDBY_MODE_ACTIVELY            0x0026  /*Notify standby mode actively*/
 #define TOTA_BLE_CMT_COMMAND_NOTIFY_KEY_REDEFINITION                 0x0027  /*Notify keys redefinition*/
 
-void user_custom_tota_ble_data_handle(uint8_t* ptrData, uint32_t length);
+void user_custom_tota_ble_data_handle(const uint8_t* ptrData, uint32_t length);
 void battery_level_change_notify(uint8_t battery_level);
 void noise_cancelling_mode_change_notify(app_anc_mode_t mode);
 

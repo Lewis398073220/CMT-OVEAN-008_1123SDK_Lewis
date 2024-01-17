@@ -19,7 +19,7 @@
 #define TOTA_MAX_LEN (509)
 
 /* Modify by lewis */
-#ifdef CMT_008_BLE_ENABLE
+#if 0//def CMT_008_BLE_ENABLE
 #define tota_service_uuid_128_le         0x00, 0x00, 0x7C, 0x1E, 0x00, 0x65, 0x74, 0x61, 0x6D, 0x79, 0x72, 0x74, 0x6E, 0x75, 0x6F, 0x43
 #define tota_rx_character_uuid_128_le    0x01, 0x00, 0x7C, 0x1E, 0x00, 0x65, 0x74, 0x61, 0x6D, 0x79, 0x72, 0x74, 0x6E, 0x75, 0x6F, 0x43
 #define tota_tx_character_uuid_128_le    0x02, 0x00, 0x7C, 0x1E, 0x00, 0x65, 0x74, 0x61, 0x6D, 0x79, 0x72, 0x74, 0x6E, 0x75, 0x6F, 0x43
@@ -30,7 +30,7 @@
 /* End Modify by lewis */
 
 /* Modify by lewis */
-#ifdef CMT_008_BLE_ENABLE
+#if 0//def CMT_008_BLE_ENABLE
 
 GATT_DECL_128_LE_PRI_SERVICE(g_ble_tota_service,
     tota_service_uuid_128_le);
@@ -70,7 +70,7 @@ GATT_DECL_CCCD_DESCRIPTOR(g_ble_tota_desc_cccd,
 
 static const gatt_attribute_t g_ble_tota_attr_list[] = {
 /* Modify by lewis */
-#ifdef CMT_008_BLE_ENABLE
+#if 0//def CMT_008_BLE_ENABLE
 
 	/* Service */
     gatt_attribute(g_ble_tota_service),
@@ -99,7 +99,7 @@ static const gatt_attribute_t g_ble_tota_attr_list[] = {
 
 static app_tota_event_callback app_tota_event_cb = NULL;
 /* Add by lewis */
-#ifdef CMT_008_BLE_ENABLE
+#if 0//def CMT_008_BLE_ENABLE
 static const char custom_tx_desc[] = "Data Path TX Data";
 static const char custom_rx_desc[] = "Data Path RX Data";
 #endif
@@ -187,7 +187,7 @@ static int ble_tota_server_callback(gatt_svc_t *svc, gatt_server_event_t event, 
         }
 		
 /* Add by lewis */
-#ifdef CMT_008_BLE_ENABLE
+#if 0//def CMT_008_BLE_ENABLE
 		case GATT_SERV_EVENT_DESC_READ:
         {
             gatt_server_desc_read_t *p = param.desc_read;
@@ -238,7 +238,7 @@ bool app_tota_send_notification(uint8_t conidx, uint8_t* data, uint32_t len)
     bt_status_t status = BT_STS_SUCCESS;
 	
 /* Modify by lewis */
-#ifdef CMT_008_BLE_ENABLE
+#if 0//def CMT_008_BLE_ENABLE
 	status = gatts_send_notification(gap_conn_bf(conidx), g_ble_tota_tx_character, data, (uint16_t)len);
 #else
     status = gatts_send_notification(gap_conn_bf(conidx), g_ble_tota_character, data, (uint16_t)len);
@@ -253,7 +253,7 @@ bool app_tota_send_indication(uint8_t conidx, uint8_t* data, uint32_t len)
     bt_status_t status = BT_STS_SUCCESS;
 	
 /* Modify by lewis */
-#ifdef CMT_008_BLE_ENABLE
+#if 0//def CMT_008_BLE_ENABLE
 	status = gatts_send_indication(gap_conn_bf(conidx), g_ble_tota_tx_character, data, (uint16_t)len);
 #else
     status = gatts_send_indication(gap_conn_bf(conidx), g_ble_tota_character, data, (uint16_t)len);

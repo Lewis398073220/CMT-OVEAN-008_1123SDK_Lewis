@@ -55,6 +55,7 @@
 #include "app_tota_cmd_code.h"
 #include "app_tota.h"
 #include "app_user.h"
+#include "ble_datapath.h"
 
 #if defined(IBRT)
 #include "app_ibrt_internal.h"
@@ -108,7 +109,9 @@ bool user_custom_tota_ble_send_response(uint8_t cmdType, uint8_t cmdID, TOTA_BLE
 		if(ptrData) memcpy(&rsp_ptrData->payload[0], ptrData, ptrData_len);
 	}
 
-	return user_custom_app_tota_send_via_datapath((uint8_t *)rsp_ptrData, rsp_len);
+	//return user_custom_app_tota_send_via_datapath((uint8_t *)rsp_ptrData, rsp_len);
+	app_datapath_server_send_data_via_notification((uint8_t *)rsp_ptrData, rsp_len);
+	return true;
 }
 
 TOTA_BLE_ANC_MAP anc_map_get_via_anc_mode(app_anc_mode_t mode)
@@ -504,7 +507,7 @@ static void user_custom_tota_ble_command_get_handle(PACKET_STRUCTURE *ptrPacket)
 }
 
 // TODO: Jay
-void user_custom_tota_ble_data_handle(uint8_t* ptrData, uint32_t length)
+void user_custom_tota_ble_data_handle(const uint8_t* ptrData, uint32_t length)
 {
 	PACKET_STRUCTURE *ptrPacket = (PACKET_STRUCTURE *)ptrData;
 
