@@ -1159,14 +1159,14 @@ typedef uint16_t NTP_TEMPERATURE_C_T;
 /* Add by lewis */
 #ifdef CMT_008_NTC_DETECT
 #if 1
-/* ntc 10k, NTC_REF is 1.8v  */
-#define NTC_CHARGE_LOW_VOLTAGE           590     // 45C
-#define NTC_CHARGE_HIGH_VOLTAGE          1320    // 0C
-#define NTC_RECHARGE_LOW_VOLTAGE         530     // 43C
-#define NTC_RECHARGE_HIGH_VOLTAGE        1270    // 2C
+/* ntc 15.1k, NTC_REF is 1.7v  */
+#define NTC_CHARGE_LOW_VOLTAGE           415//590     //45C 31C
+#define NTC_CHARGE_HIGH_VOLTAGE          1101//1320    //0C -14C
+#define NTC_RECHARGE_LOW_VOLTAGE         448//530     //42C 35C
+#define NTC_RECHARGE_HIGH_VOLTAGE        1048//1270    //3C -10C
 
-#define NTC_DISCHARGE_LOW_VOLTAGE        400     // 55C
-#define NTC_DISCHARGE_HIGH_VOLTAGE       1587    // -15C
+#define NTC_DISCHARGE_LOW_VOLTAGE        281//400     //60C 46C
+#define NTC_DISCHARGE_HIGH_VOLTAGE       1402//1587    //-20C <-25C
 #else
 /* ntc 30k ok */
 #define CHARGE_HIGH_TEMPERATURE          225     // 45C
