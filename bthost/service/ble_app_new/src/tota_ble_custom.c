@@ -286,6 +286,7 @@ static void user_custom_tota_ble_command_set_handle(PACKET_STRUCTURE *ptrPacket)
 
 		case TOTA_BLE_CMT_COMMAND_SET_USER_DEFINED_EQ:
 			{
+				TOTA_BLE_EQ_MAP eq_name;
 				int32_t bands_num = 0;
 				float master_gain = 0.0f;
 				IIR_TYPE_T eq_type = IIR_TYPE_PEAK;
@@ -294,53 +295,42 @@ static void user_custom_tota_ble_command_set_handle(PACKET_STRUCTURE *ptrPacket)
 				float eq_Q = 0.0f;
 				uint8_t temp[2] = {0};
 				uint8_t i = 0, j = 0;
-				USER_IIR_CFG_T user_eq  = {
-				    .gain0 = 0,
-				    .gain1 = 0,
-				    .num = USER_EQ_BANDS,
-				    .param = {
-				        {IIR_TYPE_PEAK,       0,   32.0,   0.7},
-				        {IIR_TYPE_PEAK,       0,   64.0,   0.7},
-				        {IIR_TYPE_PEAK,       0,  125.0,   0.7},
-				        {IIR_TYPE_PEAK,       0,  250.0,   0.7},
-				        {IIR_TYPE_PEAK,       0,  500.0,   0.7},
-				        {IIR_TYPE_PEAK,       0, 1000.0,   0.7},
-				        {IIR_TYPE_PEAK,       0, 2000.0,   0.7},
-				        {IIR_TYPE_PEAK,       0, 4000.0,   0.7},
-				        {IIR_TYPE_PEAK,       0, 8000.0,   0.7},
-				        {IIR_TYPE_PEAK,       0,16000.0,   0.7},
-				    }
-				};
-
+				USER_IIR_CFG_T user_eq  = {0};
+				
+				//need to init user_eq via local user_data.user_eq, because the app can set some fc instead of all fc 
+				user_custom_get_user_EQ(&user_eq);
+				
 				rsp_status = SUCCESS_STATUS;
+
+				eq_name = ptrPacket->payload[0];
 				
-				bands_num = ptrPacket->payload[2];
+				bands_num = ptrPacket->payload[3];
 				
-				temp[0] = ptrPacket->payload[1];
-				temp[1] = ptrPacket->payload[0];
+				temp[0] = ptrPacket->payload[2];
+				temp[1] = ptrPacket->payload[1];
 				master_gain = *((int16_t *)temp) / 100.0f;
 				
 				user_eq.gain0 = user_eq.gain1 = master_gain;
 				//user_eq.num = bands_num; //don't need 
 				for(i = 0; i < bands_num; i++)
 				{
-					eq_type = ptrPacket->payload[3 + 7*i];
+					eq_type = ptrPacket->payload[4 + 7*i];
 					if((eq_type < IIR_TYPE_LOW_SHELF) || (eq_type > IIR_TYPE_HIGH_PASS))
 					{
 						rsp_status = PARAMETER_ERROR_STATUS;
 						break;
 					}
 					
-					temp[0] = ptrPacket->payload[5 + 7*i];
-					temp[1] = ptrPacket->payload[4 + 7*i];
+					temp[0] = ptrPacket->payload[6 + 7*i];
+					temp[1] = ptrPacket->payload[5 + 7*i];
 					eq_fc = *((int16_t *)temp);
 					
-					temp[0] = ptrPacket->payload[7 + 7*i];
-					temp[1] = ptrPacket->payload[6 + 7*i];
+					temp[0] = ptrPacket->payload[8 + 7*i];
+					temp[1] = ptrPacket->payload[7 + 7*i];
 					eq_gain = *((int16_t *)temp) / 100.0f;
 
-					temp[0] = ptrPacket->payload[9 + 7*i];
-					temp[1] = ptrPacket->payload[8 + 7*i];
+					temp[0] = ptrPacket->payload[10 + 7*i];
+					temp[1] = ptrPacket->payload[9 + 7*i];
 					eq_Q = *((int16_t *)temp) / 100.0f;
 
 					//Find the corresponding fc
@@ -348,6 +338,7 @@ static void user_custom_tota_ble_command_set_handle(PACKET_STRUCTURE *ptrPacket)
 					{
 						if(user_eq.param[j].fc == eq_fc)
 						{
+							TOTA_LOG_DBG(0, "set-->eq_fc:%d", (uint32_t)eq_fc);
 							user_eq.param[j].type = eq_type;
 							user_eq.param[j].gain = eq_gain;
 							user_eq.param[j].Q = eq_Q;
@@ -356,7 +347,20 @@ static void user_custom_tota_ble_command_set_handle(PACKET_STRUCTURE *ptrPacket)
 					}
 				}
 				
-				if(rsp_status == SUCCESS_STATUS) user_custom_set_user_EQ(user_eq, true);
+				if(rsp_status == SUCCESS_STATUS)
+				{
+					switch(eq_name)
+					{
+						case BLE_EQ_MAP_USER:
+							user_custom_set_user_EQ(user_eq, true);
+							app_ble_eq_set();
+						break;
+						
+						default:
+							TOTA_LOG_DBG(0, "!!!Invalid EQ name: %d", eq_name);
+						break;
+					}
+				}
 				
 				user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_SET, ptrPacket->cmdID, rsp_status, NULL, 0);
 			}
@@ -381,7 +385,7 @@ static void user_custom_tota_ble_command_set_handle(PACKET_STRUCTURE *ptrPacket)
 
 static void user_custom_tota_ble_command_get_handle(PACKET_STRUCTURE *ptrPacket)
 {
-	TOTA_BLE_STATUS_E rsp_status;
+	TOTA_BLE_STATUS_E rsp_status = NO_NEED_STATUS_RESP;
 
 	TOTA_LOG_DBG(0, "[%s] Get CMD:0x%X", __func__, ptrPacket->cmdID);
 	
@@ -476,6 +480,59 @@ static void user_custom_tota_ble_command_get_handle(PACKET_STRUCTURE *ptrPacket)
 			}
 		break;
 
+		case TOTA_BLE_CMT_COMMAND_GET_USER_DEFINED_EQ:
+			{
+				uint8_t temp[4 + USER_EQ_BANDS*7] = {0};
+				USER_IIR_CFG_T user_eq = {0};
+				int32_t bands_num = 0;
+				float master_gain = 0.0f;
+				IIR_TYPE_T eq_type = IIR_TYPE_PEAK;
+				float eq_gain = 0.0f;
+				float eq_fc = 0.0f;
+				float eq_Q = 0.0f;
+				uint8_t i = 0;
+				uint16_t big_endian_temp = 0;
+				uint8_t *big_endian = (uint8_t *)&big_endian_temp;
+				
+				user_custom_get_user_EQ(&user_eq);
+				bands_num = user_eq.num;
+				master_gain = user_eq.gain0;//same as user_eq.gain1
+
+				temp[0] = BLE_EQ_MAP_USER;
+				
+				big_endian_temp = (uint16_t)(master_gain * 100.0f);
+				temp[1] = big_endian[1];
+				temp[2] = big_endian[0];
+				
+				temp[3] = bands_num;
+
+				for(i = 0; i < bands_num; i++)
+				{
+					eq_type = user_eq.param[i].type;
+					temp[4 + 7*i] = eq_type;
+
+					eq_fc = user_eq.param[i].fc;
+					big_endian_temp = (uint16_t)eq_fc;
+					temp[5 + 7*i] = big_endian[1];
+					temp[6 + 7*i] = big_endian[0];
+
+					eq_gain = user_eq.param[i].gain;
+					big_endian_temp = (uint16_t)(eq_gain * 100.0f);
+					temp[7 + 7*i] = big_endian[1];
+					temp[8 + 7*i] = big_endian[0];
+
+					eq_Q = user_eq.param[i].Q;
+					big_endian_temp = (uint16_t)(eq_Q * 100.0f);
+					temp[9 + 7*i] = big_endian[1];
+					temp[10 + 7*i] = big_endian[0];
+				}
+				
+				rsp_status = NO_NEED_STATUS_RESP;
+				
+				user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_GET, ptrPacket->cmdID, rsp_status, temp, sizeof(temp));
+			}
+		break;
+		
 		case TOTA_BLE_CMT_COMMAND_GET_BATTERY_LEVEL:
             {
             	uint8_t percent = (app_battery_current_level()+1) * 10;
@@ -512,6 +569,7 @@ void user_custom_tota_ble_data_handle(const uint8_t* ptrData, uint32_t length)
 	PACKET_STRUCTURE *ptrPacket = (PACKET_STRUCTURE *)ptrData;
 
 	TOTA_LOG_DBG(2 ,"[%s] receive data length:%d", __func__, length);
+	TOTA_LOG_DUMP("[0x%x]",ptrData,length);
 
 	if(ptrPacket->bootCode != BOOTCODE)
 	{

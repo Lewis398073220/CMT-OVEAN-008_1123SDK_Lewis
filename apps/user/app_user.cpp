@@ -226,10 +226,13 @@ void update_user_EQ(USER_IIR_CFG_T user_eq)
 	TRACE(0, "%s enter", __func__);
 	
 	TRACE(0, "update user EQ of ANC On");
-	audio_eq_list[USER_EQ_ANC_ON]->gain0 = user_eq.gain0;
-	audio_eq_list[USER_EQ_ANC_ON]->gain1 = user_eq.gain1;
-	//audio_eq_list[USER_EQ_ANC_ON]->num = user_eq.num;
-	memcpy(&(audio_eq_list[USER_EQ_ANC_ON]->param[0]), &(user_eq.param[0]), USER_EQ_BANDS);
+	//audio_eq_list[USER_EQ_ANC_ON]->gain0 = user_eq.gain0;//don't need
+	//audio_eq_list[USER_EQ_ANC_ON]->gain1 = user_eq.gain1;//don't need
+	//audio_eq_list[USER_EQ_ANC_ON]->num = user_eq.num;//don't need
+	for(i = 0; i < user_eq.num; i++)
+	{
+		audio_eq_list[USER_EQ_ANC_ON]->param[i] = user_eq.param[i];
+	}
 	TRACE(0, "gain0/gain1: %d/%d(/100)", (int32_t)(audio_eq_list[USER_EQ_ANC_ON]->gain0 * 100),
 		(int32_t)(audio_eq_list[USER_EQ_ANC_ON]->gain1 * 100));
 	TRACE(0, "num: %d", audio_eq_list[USER_EQ_ANC_ON]->num);
@@ -240,10 +243,13 @@ void update_user_EQ(USER_IIR_CFG_T user_eq)
 	}
 
 	TRACE(0, "update user EQ of ANC Off");
-	audio_eq_list[USER_EQ_ANC_OFF]->gain0 = user_eq.gain0;
-	audio_eq_list[USER_EQ_ANC_OFF]->gain1 = user_eq.gain1;
-	//audio_eq_list[USER_EQ_ANC_OFF]->num = user_eq.num;
-	memcpy(&(audio_eq_list[USER_EQ_ANC_OFF]->param[0]), &(user_eq.param[0]), USER_EQ_BANDS);
+	//audio_eq_list[USER_EQ_ANC_OFF]->gain0 = user_eq.gain0;//don't need
+	//audio_eq_list[USER_EQ_ANC_OFF]->gain1 = user_eq.gain1;//don't need
+	//audio_eq_list[USER_EQ_ANC_OFF]->num = user_eq.num;//don't need
+	for(i = 0; i < user_eq.num; i++)
+	{
+		audio_eq_list[USER_EQ_ANC_OFF]->param[i] = user_eq.param[i];
+	}
 	TRACE(0, "gain0/gain1: %d/%d(/100)", (int32_t)(audio_eq_list[USER_EQ_ANC_OFF]->gain0 * 100),
 		(int32_t)(audio_eq_list[USER_EQ_ANC_OFF]->gain1 * 100));
 	TRACE(0, "num: %d", audio_eq_list[USER_EQ_ANC_OFF]->num);
@@ -254,6 +260,11 @@ void update_user_EQ(USER_IIR_CFG_T user_eq)
 	}
 	
 	TRACE(0, "%s exit", __func__);
+}
+
+void user_custom_get_user_EQ(USER_IIR_CFG_T *user_eq)
+{
+	*user_eq = user_data.user_eq;
 }
 
 void user_custom_set_user_EQ(USER_IIR_CFG_T user_eq, bool isSave)
@@ -270,6 +281,7 @@ void user_custom_set_user_EQ(USER_IIR_CFG_T user_eq, bool isSave)
 		nv_record_user_info_set(nvrecord_user);
 	}
 }
+
 void user_custom_restore_default_settings(bool promt_on)
 {
 	struct nvrecord_user_t *nvrecord_user;

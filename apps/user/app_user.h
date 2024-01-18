@@ -158,6 +158,7 @@ const char *user_custom_get_BT_name(void);
 void user_custom_set_BT_name(char* name, bool isSave);
 TOTA_BLE_EQ_MAP user_custom_get_EQ_mode(void);
 void user_custom_set_EQ_mode(TOTA_BLE_EQ_MAP mode, bool isSave);
+void user_custom_get_user_EQ(USER_IIR_CFG_T *user_eq);
 void user_custom_set_user_EQ(USER_IIR_CFG_T user_eq, bool isSave);
 void user_custom_restore_default_settings(bool promt_on);
 void user_custom_nvrecord_rebuild_user_info(uint8_t *pUserInfo, bool isRebuildAll);
