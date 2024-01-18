@@ -57,7 +57,7 @@ int32_t app_anc_enable_assist(bool en);
 bool app_anc_assist_is_enable(void);
 
 /* Add by lewis */
-void app_pwron_anc_switch(void);
+void app_pwron_anc_switch(uint32_t periodic_ms);
 void app_reset_anc_switch(void);
 uint8_t app_ble_anc_switch(app_anc_mode_t mode, bool promt_on);
 void app_switch_to_quick_conversation_mode(void);

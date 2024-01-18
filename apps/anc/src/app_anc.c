@@ -908,11 +908,48 @@ int32_t app_anc_loop_switch(void)
 }
 
 /* Add by lewis */
-void app_pwron_anc_switch(void)
+osTimerId anc_switch_sw_timer = NULL;
+static void anc_switch_swtimer_handler(void const *param);
+osTimerDef(ANC_SWITCH_TIMER, anc_switch_swtimer_handler);// define timers
+
+static void anc_switch_swtimer_handler(void const *param)
+{
+    TRACE(0, "%s", __func__);
+
+	app_anc_switch(APP_ANC_MODE1);
+	osTimerDelete(anc_switch_sw_timer);
+}
+
+void app_anc_switch_swtimer_start(uint32_t periodic_ms)
+{
+	TRACE(0,"%s",__func__);
+	
+	if(anc_switch_sw_timer == NULL)
+		anc_switch_sw_timer = osTimerCreate(osTimer(ANC_SWITCH_TIMER), osTimerOnce, NULL);
+
+	osTimerStop(anc_switch_sw_timer);
+	osTimerStart(anc_switch_sw_timer,periodic_ms);
+}
+
+void app_anc_switch_swtimer_stop(void)
+{
+	TRACE(0,"%s",__func__);
+
+	if(anc_switch_sw_timer == NULL)
+		return;
+	
+	osTimerStop(anc_switch_sw_timer);
+}
+
+void app_pwron_anc_switch(uint32_t periodic_ms)
 {
 	TRACE(0, "%s", __func__);
 
-	app_anc_switch(APP_ANC_MODE1);
+	if(periodic_ms == 0) {
+		app_anc_switch(APP_ANC_MODE1);
+	} else{
+		app_anc_switch_swtimer_start(periodic_ms);
+	}
 }
 
 void app_reset_anc_switch(void)

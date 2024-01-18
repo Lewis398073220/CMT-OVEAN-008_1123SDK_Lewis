@@ -20,7 +20,7 @@
 #include "anc_process.h"
 #include "app_anc_utils.h"
 
-#define ANC_FADE_MS         (10)
+#define ANC_FADE_MS         (200) //Modify by lewis from 10 to 200
 #define ANC_FADE_CNT        (512)
 
 static void anc_set_fade_gain(uint32_t types, float gain)

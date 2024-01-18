@@ -567,7 +567,7 @@ static void usb_check_swtimer_handler(void const *param)
 #ifdef CMT_008_CHARGE_CURRENT
 		charge_current_switch_to(CHARGING_SPEED_LOW);
 #endif
-		app_pwron_anc_switch();
+		app_pwron_anc_switch(0);
 	}
 
 	osTimerDelete(usb_check_sw_timer);

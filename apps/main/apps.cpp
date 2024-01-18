@@ -570,7 +570,6 @@ static void app_poweron_normal(APP_KEY_STATUS *status, void *param)
 #ifdef MEDIA_PLAYER_SUPPORT
     media_PlayAudio(AUD_ID_POWER_ON, 0);
 #endif
-	app_pwron_anc_switch();
 /* End add by lewis */
 
     signal_send_to_main_thread(0x2);
@@ -2510,7 +2509,6 @@ extern int rpc_service_setup(void);
 #ifdef MEDIA_PLAYER_SUPPORT
         media_PlayAudio(AUD_ID_POWER_ON, 0);
 #endif
-		if(!app_battery_is_charging()) app_pwron_anc_switch(); //Add by lewis
 
         app_bt_sleep_init();
 
@@ -2599,6 +2597,7 @@ extern int rpc_service_setup(void);
 		cst820_open_module();
 #endif
 		app_user_event_open_module();
+		if(!app_battery_is_charging()) app_pwron_anc_switch(1500);
 /* End Add by lewis */
     }
 #ifdef __ENGINEER_MODE_SUPPORT__
@@ -2820,6 +2819,7 @@ extern int rpc_service_setup(void);
 			cst820_open_module();
 #endif
 			app_user_event_open_module();
+			if(!app_battery_is_charging()) app_pwron_anc_switch(1500);
 /* End Add by lewis */
         }else{
             af_close();
