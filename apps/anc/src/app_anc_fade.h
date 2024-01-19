@@ -23,10 +23,21 @@
 extern "C" {
 #endif
 
+/* Add by lewis */
+#define ANC_FADE_MS         (200) //Modify by lewis from 10 to 200
+#define ANC_FADE_CNT        (512)
+/* End Add by lewis */
+
 int32_t app_anc_fade_init(void);
 int32_t app_anc_fade_deinit(void);
 int32_t app_anc_fadein(uint32_t types);
+/* Modify by lewis */
+#if 0
 int32_t app_anc_fadeout(uint32_t types);
+#else
+int32_t app_anc_fadeout(uint32_t types, uint32_t fade_ms);
+#endif
+/* End Modify by lewis */
 
 #ifdef __cplusplus
 }

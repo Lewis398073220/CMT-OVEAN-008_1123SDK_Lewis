@@ -731,7 +731,7 @@ static anc_status_t app_anc_switch_mode_impl(anc_status_t status, app_anc_mode_t
         } else if (mode == APP_ANC_MODE_OFF) {
             // Close ...
             if (status == ANC_STATUS_ON) {
-                app_anc_fadeout(app_anc_table_get_types(g_app_anc_mode));
+                app_anc_fadeout(app_anc_table_get_types(g_app_anc_mode), ANC_FADE_MS);//Modify by lewis
                 osDelay(ANC_SMOOTH_SWITCH_GAIN_MS);
                 app_anc_close_impl(g_app_anc_mode);
                 status = ANC_STATUS_OFF;
@@ -741,7 +741,7 @@ static anc_status_t app_anc_switch_mode_impl(anc_status_t status, app_anc_mode_t
         } else {
             // Switch ...
             if (status == ANC_STATUS_ON) {
-                app_anc_fadeout(app_anc_table_get_types(g_app_anc_mode));
+                app_anc_fadeout(app_anc_table_get_types(g_app_anc_mode), ANC_FADE_MS);//Modify by lewis
                 osDelay(ANC_SMOOTH_SWITCH_GAIN_MS);
                 app_anc_switch_coef(g_app_anc_mode, mode, false);
                 app_anc_fadein(app_anc_table_get_types(mode));
@@ -1111,7 +1111,7 @@ int32_t app_anc_deinit(void)
         g_anc_work_status = ANC_STATUS_OFF;
         app_anc_close_impl(g_app_anc_mode);
 #else
-		app_anc_fadeout(app_anc_table_get_types(g_app_anc_mode));
+		app_anc_fadeout(app_anc_table_get_types(g_app_anc_mode), 20);
         osDelay(ANC_SMOOTH_SWITCH_GAIN_MS);
         app_anc_close_impl(g_app_anc_mode);
         g_anc_work_status = ANC_STATUS_OFF;

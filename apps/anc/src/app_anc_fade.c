@@ -19,9 +19,14 @@
 #include "cmsis_os.h"
 #include "anc_process.h"
 #include "app_anc_utils.h"
+#include "app_anc_fade.h"//Add by lewis
 
+/* Modify by lewis */
+#if 0
 #define ANC_FADE_MS         (200) //Modify by lewis from 10 to 200
 #define ANC_FADE_CNT        (512)
+#endif
+/* End Modify by lewis */
 
 static void anc_set_fade_gain(uint32_t types, float gain)
 {
@@ -59,6 +64,8 @@ static void anc_fadein_impl(uint32_t types)
     TRACE(1, "[%s] OK", __func__);
 }
 
+/* Modify by lewis */
+#if 0
 static void anc_fadeout_impl(uint32_t types)
 {
     float gain = 1.0;
@@ -77,6 +84,27 @@ static void anc_fadeout_impl(uint32_t types)
 
     TRACE(1, "[%s] OK", __func__);
 }
+#else
+static void anc_fadeout_impl(uint32_t types, uint32_t fade_ms)
+{
+    float gain = 1.0;
+    float gain_step = 1.0 / ANC_FADE_CNT;
+    uint32_t delay_us = (fade_ms * 1000) / ANC_FADE_CNT;
+
+    TRACE(0, "[%s] types: 0x%x", __func__, types);
+
+    for (uint32_t cnt=0; cnt<ANC_FADE_CNT; cnt++) {
+        gain -= gain_step;
+        anc_set_fade_gain(types, gain);
+        hal_sys_timer_delay_us(delay_us);
+    }
+
+    anc_set_fade_gain(types, 0.0);
+
+    TRACE(1, "[%s] OK", __func__);
+}
+#endif
+/* End Modify by lewis */
 
 int32_t app_anc_fade_init(void)
 {
@@ -115,6 +143,8 @@ int32_t app_anc_fadein(uint32_t types)
     return 0;
 }
 
+/* Modify by lewis */
+#if 0
 int32_t app_anc_fadeout(uint32_t types)
 {
     TRACE(0, "[%s] types: 0x%0x, APP_ANC_FADE_OUT ...", __func__, types);
@@ -138,3 +168,29 @@ int32_t app_anc_fadeout(uint32_t types)
 
     return 0;
 }
+#else
+int32_t app_anc_fadeout(uint32_t types, uint32_t fade_ms)
+{
+    TRACE(0, "[%s] types: 0x%0x, APP_ANC_FADE_OUT ...", __func__, types);
+
+#if defined(PSAP_SW_APP)
+    if (types & PSAP_SW) {
+        extern void psap_sw_app_fadeout(uint32_t ms);
+        psap_sw_app_fadeout(100);
+        types &= ~PSAP_SW;
+    }
+#endif
+
+#if defined(PSAP_APP)
+    if (types & PSAP_FEEDFORWARD) {
+        app_anc_disable_gain(PSAP_FEEDFORWARD);
+        types &= ~PSAP_FEEDFORWARD;
+    }
+#endif
+
+    anc_fadeout_impl(types, fade_ms);
+
+    return 0;
+}
+#endif
+/* End Modify by lewis */
