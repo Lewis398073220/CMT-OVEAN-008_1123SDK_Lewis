@@ -992,6 +992,56 @@ uint8_t app_ble_anc_switch(app_anc_mode_t mode, bool promt_on)
 	return 0;
 }
 
+osTimerId qk_con_sw_timer = NULL;
+static void qk_con_swtimer_handler(void const *param);
+osTimerDef(QK_CON_TIMER, qk_con_swtimer_handler);// define timers
+#define QK_CON_SWTIMER_MS	(200)
+
+static void qk_con_swtimer_handler(void const *param)
+{
+    TRACE(0, "%s", __func__);
+
+	if(g_qk_con_on_flag == true)
+	{
+//suppress playback stream Gain here
+#if defined(RTOS) && defined(AF_STREAM_PLAYBACK_FADEINOUT)
+#if (defined(BT_USB_AUDIO_DUAL_MODE) || defined(BTUSB_AUDIO_MODE))
+		if(hal_usb_configured())
+			//need to check whether USB_AUD_STREAM_ID is equal to AUD_STREAM_ID_1
+			af_stream_playback_fade(AUD_STREAM_ID_1, FADE_OUT_THEN_FADE_IN, 0, app_is_quick_conversation_mode_on);
+		else
+#endif
+			af_stream_playback_fade(AUD_STREAM_ID_0, FADE_OUT_THEN_FADE_IN, 0, app_is_quick_conversation_mode_on);
+#endif
+
+		//TODO:Get params from quick_conversation_mode
+		app_anc_switch(APP_ANC_MODE3);
+	} else{
+		app_anc_switch(g_pre_anc_mode);
+	}
+}
+
+void app_qk_con_swtimer_start(void)
+{
+	TRACE(0,"%s",__func__);
+	
+	if(qk_con_sw_timer == NULL)
+		qk_con_sw_timer = osTimerCreate(osTimer(QK_CON_TIMER), osTimerOnce, NULL);
+
+	osTimerStop(qk_con_sw_timer);
+	osTimerStart(qk_con_sw_timer,QK_CON_SWTIMER_MS);
+}
+
+void app_qk_con_swtimer_stop(void)
+{
+	TRACE(0,"%s",__func__);
+
+	if(qk_con_sw_timer == NULL)
+		return;
+	
+	osTimerStop(qk_con_sw_timer);
+}
+
 void app_switch_to_quick_conversation_mode(void)
 {
 	if(g_qk_con_on_flag) return;
@@ -1000,27 +1050,15 @@ void app_switch_to_quick_conversation_mode(void)
 	g_qk_con_on_flag = true;
 	if(g_app_anc_mode != APP_ANC_MODE3) g_pre_anc_mode = g_app_anc_mode;
 
-	//suppress playback stream Gain here
-#if defined(RTOS) && defined(AF_STREAM_PLAYBACK_FADEINOUT)
-#if (defined(BT_USB_AUDIO_DUAL_MODE) || defined(BTUSB_AUDIO_MODE))
-	if(hal_usb_configured())
-		//need to check whether USB_AUD_STREAM_ID is equal to AUD_STREAM_ID_1
-		af_stream_playback_fade(AUD_STREAM_ID_1, FADE_OUT_THEN_FADE_IN, 0, app_is_quick_conversation_mode_on);
-	else
-#endif
-		af_stream_playback_fade(AUD_STREAM_ID_0, FADE_OUT_THEN_FADE_IN, 0, app_is_quick_conversation_mode_on);
-#endif
-
-	//TODO:Get params from quick_conversation_mode
-	app_anc_switch(APP_ANC_MODE3);
+	app_qk_con_swtimer_start();//for debounce handler of qk con mode
 }
 
 void app_exit_quick_conversation_mode(void)
 {
 	if(g_qk_con_on_flag == true)
 	{
-		app_anc_switch(g_pre_anc_mode);
 		g_qk_con_on_flag = false;
+		app_qk_con_swtimer_start();//for debounce handler of qk con mode
 	}
 }
 
