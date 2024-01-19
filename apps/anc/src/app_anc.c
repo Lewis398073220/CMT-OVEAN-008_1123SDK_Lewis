@@ -62,8 +62,8 @@
 
 // #define ANC_BLOCK_ANC_SYNC_SWITCH_CMD
 
-#define ANC_SMOOTH_SWITCH_GAIN_MS   (500)
-#define ANC_OPEN_DELAY_MS           (600)
+#define ANC_SMOOTH_SWITCH_GAIN_MS   (200) //Modify by lewis from 500 to 200
+#define ANC_OPEN_DELAY_MS           (300) //Modify by lewis from 600 to 200
 
 typedef struct {
     uint32_t id;
