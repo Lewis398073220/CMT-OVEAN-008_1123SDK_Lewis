@@ -491,7 +491,7 @@ static void user_custom_tota_ble_command_get_handle(PACKET_STRUCTURE *ptrPacket)
 				float eq_fc = 0.0f;
 				float eq_Q = 0.0f;
 				uint8_t i = 0;
-				uint16_t big_endian_temp = 0;
+				int16_t big_endian_temp = 0;
 				uint8_t *big_endian = (uint8_t *)&big_endian_temp;
 				
 				user_custom_get_user_EQ(&user_eq);
@@ -500,7 +500,7 @@ static void user_custom_tota_ble_command_get_handle(PACKET_STRUCTURE *ptrPacket)
 
 				temp[0] = BLE_EQ_MAP_USER;
 				
-				big_endian_temp = (uint16_t)(master_gain * 100.0f);
+				big_endian_temp = (int16_t)(master_gain * 100.0f);
 				temp[1] = big_endian[1];
 				temp[2] = big_endian[0];
 				
@@ -512,17 +512,17 @@ static void user_custom_tota_ble_command_get_handle(PACKET_STRUCTURE *ptrPacket)
 					temp[4 + 7*i] = eq_type;
 
 					eq_fc = user_eq.param[i].fc;
-					big_endian_temp = (uint16_t)eq_fc;
+					big_endian_temp = (int16_t)eq_fc;
 					temp[5 + 7*i] = big_endian[1];
 					temp[6 + 7*i] = big_endian[0];
 
 					eq_gain = user_eq.param[i].gain;
-					big_endian_temp = (uint16_t)(eq_gain * 100.0f);
+					big_endian_temp = (int16_t)(eq_gain * 100.0f);
 					temp[7 + 7*i] = big_endian[1];
 					temp[8 + 7*i] = big_endian[0];
 
 					eq_Q = user_eq.param[i].Q;
-					big_endian_temp = (uint16_t)(eq_Q * 100.0f);
+					big_endian_temp = (int16_t)(eq_Q * 100.0f);
 					temp[9 + 7*i] = big_endian[1];
 					temp[10 + 7*i] = big_endian[0];
 				}
