@@ -179,7 +179,7 @@ int app_status_indication_set(APP_STATUS_INDICATION_T status)
             break;
         case APP_STATUS_INDICATION_BOTHSCAN:
 #ifdef CMT_008_EN_LED_BREATH	
-			breath_cfg0.high_time = 500;
+			breath_cfg0.high_time = 1500;
 			breath_cfg0.low_time = 1500;
 			breath_cfg0.on_state_time = 500;
 			breath_cfg0.off_state_time = 500;
@@ -255,7 +255,7 @@ int app_status_indication_set(APP_STATUS_INDICATION_T status)
 			break;
         case APP_STATUS_INDICATION_CHARGING:
 #ifdef CMT_008_EN_LED_BREATH	
-			breath_cfg1.high_time = 500;
+			breath_cfg1.high_time = 1500;
 			breath_cfg1.low_time = 1500;
 			breath_cfg1.on_state_time = 500;
 			breath_cfg1.off_state_time = 500;
