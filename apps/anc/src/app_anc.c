@@ -1003,19 +1003,18 @@ static void qk_con_swtimer_handler(void const *param)
 
 	if(g_qk_con_on_flag == true)
 	{
-//suppress playback stream Gain here
+		//TODO:Get params from quick_conversation_mode
+		app_anc_switch(APP_ANC_MODE3);
+		//suppress playback stream Gain here
 #if defined(RTOS) && defined(AF_STREAM_PLAYBACK_FADEINOUT)
 #if (defined(BT_USB_AUDIO_DUAL_MODE) || defined(BTUSB_AUDIO_MODE))
 		if(hal_usb_configured())
 			//need to check whether USB_AUD_STREAM_ID is equal to AUD_STREAM_ID_1
-			af_stream_playback_fade(AUD_STREAM_ID_1, FADE_OUT_THEN_FADE_IN, 0, app_is_quick_conversation_mode_on);
+			CMT_af_stream_playback_fade(AUD_STREAM_ID_1, FADE_OUT_THEN_FADE_IN, 0, app_is_quick_conversation_mode_on);
 		else
 #endif
-			af_stream_playback_fade(AUD_STREAM_ID_0, FADE_OUT_THEN_FADE_IN, 0, app_is_quick_conversation_mode_on);
+			CMT_af_stream_playback_fade(AUD_STREAM_ID_0, FADE_OUT_THEN_FADE_IN, 0, app_is_quick_conversation_mode_on);
 #endif
-
-		//TODO:Get params from quick_conversation_mode
-		app_anc_switch(APP_ANC_MODE3);
 	} else{
 		app_anc_switch(g_pre_anc_mode);
 	}

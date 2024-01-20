@@ -19,6 +19,9 @@
 #include "plat_types.h"
 #include "stdbool.h"
 #include "hal_aud.h"
+#ifdef RTOS
+#include "cmsis_os.h" //Add by lewis
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -157,13 +160,20 @@ enum AF_I2S_SYNC_TYPE_T {
 
 /* Add by lewis. */
 #ifdef AF_STREAM_PLAYBACK_FADEINOUT
-#define A2DP_MIX_SUPPRESS_GAIN_DB      				 -20
-#define A2DP_MIX_STABLE_STREAM_SUPPRESS_GAIN_DB      -55
+#define A2DP_MIX_SUPPRESS_GAIN_DB      				 -25
+#define SCO_MIX_SUPPRESS_GAIN_DB      				 -20
+#define QK_CON_MODE_MIX_SUPPRESS_GAIN_DB             -99 //for quick conversation mode
 #ifdef AUDIO_LINEIN
 #define AUDIO_LINEIN_MIX_SUPPRESS_GAIN_DB      		 -25
 #endif
-#define FADE_OUT_MS_DEFAULT           				 200
-#define FADE_IN_MS_DEFAULT             				 800
+#if (defined(BT_USB_AUDIO_DUAL_MODE) || defined(BTUSB_AUDIO_MODE))
+#define USB_AUDIO_MIX_SUPPRESS_GAIN_DB      		 -25
+#endif
+#define FADE_OUT_MS_DEFAULT           				 500
+#define FADE_IN_MS_DEFAULT             				 1000
+
+#define FADE_OUT_SIGNAL_ID           17
+#define FADE_IN_SIGNAL_ID            16
 
 enum AF_STREAM_FADE_TYPE_T{
     FADE_IN = 1 << 0,
@@ -176,6 +186,8 @@ struct af_stream_fade_t{
 	bool start_on_process;
 	uint8_t stop_process_cnt;
 	enum AF_STREAM_FADE_TYPE_T fade_type;
+	osThreadId fadein_stop_request_tid;
+	osThreadId fadeout_stop_request_tid;
 	//fade in config
 	uint32_t need_fadein_samples;
 	uint32_t need_fadein_samples_processed;
@@ -241,7 +253,9 @@ uint32_t af_stream_playback_fadeout(enum AUD_STREAM_ID_T id, uint32_t ms);
 
 /* Add by lewis. */
 #ifdef AF_STREAM_PLAYBACK_FADEINOUT
-uint32_t af_stream_playback_fade(enum AUD_STREAM_ID_T id, enum AF_STREAM_FADE_TYPE_T fade_type, uint32_t ms, bool (*to_continue_stable_callback) (void));//add by lewis
+bool CMT_af_stream_is_fade_on_process(void);
+void CMT_af_stream_wait_fadein_finish(void);
+uint32_t CMT_af_stream_playback_fade(enum AUD_STREAM_ID_T id, enum AF_STREAM_FADE_TYPE_T fade_type, uint32_t ms, bool (*to_continue_stable_callback) (void));//add by lewis
 #endif
 /* Add by lewis end. */
 

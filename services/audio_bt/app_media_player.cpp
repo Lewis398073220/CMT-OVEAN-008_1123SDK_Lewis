@@ -209,6 +209,11 @@ typedef struct {
 static list_t *app_prompt_list;
 static bool app_prompt_is_on_going = false;
 static bool app_prompt_wait_forware_play = false;
+/* Add by lewis. */
+#if defined(RTOS) && defined(AF_STREAM_PLAYBACK_FADEINOUT)
+static bool app_prompt_is_on_playing = false;
+#endif
+/* End Add by lewis. */
 
 static list_node_t *app_prompt_list_begin(const list_t *list);
 static APP_PROMPT_PLAY_REQ_T *app_prompt_list_node(const list_node_t *node);
@@ -532,6 +537,23 @@ int media_audio_init(void)
 
     return 0;
 }
+
+/* Add by lewis. */
+#if defined(RTOS) && defined(AF_STREAM_PLAYBACK_FADEINOUT)
+bool app_is_prompt_on_playing(void)
+{
+	return app_prompt_is_on_playing;
+}
+
+void app_update_prompt_play_status(bool isPlaying)
+{
+	TRACE(0, "[%s] isPlaying = %d", __func__, isPlaying);
+
+	app_prompt_is_on_playing = isPlaying;
+}
+#endif
+/* End Add by lewis. */
+
 static int decode_sbc_frame(unsigned char *pcm_buffer, unsigned int pcm_len)
 {
     uint8_t underflow = 0;
@@ -2707,6 +2729,7 @@ int app_play_audio_onoff(bool onoff, APP_AUDIO_STATUS* status)
         {
 /* Add by lewis. */
 #if defined(RTOS) && defined(AF_STREAM_PLAYBACK_FADEINOUT)
+#if 0 //V1 handle
 			uint32_t ms = 0;
 			enum AF_RESULT_T ret;
 			
@@ -2716,11 +2739,24 @@ int app_play_audio_onoff(bool onoff, APP_AUDIO_STATUS* status)
 #if (defined(BT_USB_AUDIO_DUAL_MODE) || defined(BTUSB_AUDIO_MODE))
 				if(hal_usb_configured())
 					//need to check whether USB_AUD_STREAM_ID is equal to AUD_STREAM_ID_1
-					af_stream_playback_fade(AUD_STREAM_ID_1, FADE_OUT_THEN_FADE_IN, ms, NULL);
+					CMT_af_stream_playback_fade(AUD_STREAM_ID_1, FADE_OUT_THEN_FADE_IN, ms, NULL);
 				else
 #endif
-					af_stream_playback_fade(AUD_STREAM_ID_0, FADE_OUT_THEN_FADE_IN, ms, NULL);
+					CMT_af_stream_playback_fade(AUD_STREAM_ID_0, FADE_OUT_THEN_FADE_IN, ms, NULL);
 			}
+#else //V2 handle
+			app_update_prompt_play_status(true);
+			if(!app_is_quick_conversation_mode_on())
+			{
+#if (defined(BT_USB_AUDIO_DUAL_MODE) || defined(BTUSB_AUDIO_MODE))
+				if(hal_usb_configured())
+					//need to check whether USB_AUD_STREAM_ID is equal to AUD_STREAM_ID_1
+					CMT_af_stream_playback_fade(AUD_STREAM_ID_1, FADE_OUT_THEN_FADE_IN, 0, app_is_prompt_on_playing);
+				else
+#endif
+					CMT_af_stream_playback_fade(AUD_STREAM_ID_0, FADE_OUT_THEN_FADE_IN, 0, app_is_prompt_on_playing);
+			}
+#endif
 #endif
 /* Add by lewis end. */
 
@@ -2740,6 +2776,16 @@ int app_play_audio_onoff(bool onoff, APP_AUDIO_STATUS* status)
 #if defined(AUDIO_OUTPUT_SW_GAIN) && defined(MEDIA_PLAYER_USE_CODEC2)
         af_codec_dac1_set_algo_gain(1.0);
 #endif
+
+/* Add by lewis. */
+#if defined(RTOS) && defined(AF_STREAM_PLAYBACK_FADEINOUT)
+		app_update_prompt_play_status(false); //trigger fade in process
+		if(CMT_af_stream_is_fade_on_process())
+		{
+			CMT_af_stream_wait_fadein_finish(); //can't be called in app_play_sbc_more_data, otherwise will cause crash
+		}
+#endif
+/* End Add by lewis. */
 
 #if !(defined(__AUDIO_RESAMPLE__) && defined(SW_PLAYBACK_RESAMPLE))
         AF_CODEC_TUNE(AUD_STREAM_PLAYBACK, 0);

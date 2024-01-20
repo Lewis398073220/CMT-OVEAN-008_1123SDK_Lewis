@@ -22,6 +22,9 @@
 #include <math.h>
 #include "../../services/audio_bt/app_bt_stream.h"
 #include "app_user.h"
+#if (defined(BT_USB_AUDIO_DUAL_MODE) || defined(BTUSB_AUDIO_MODE))
+#include "hal_usb.h"
+#endif
 /* End add by lewis */
 
 #ifdef AF_DEVICE_INT_CODEC
@@ -374,8 +377,9 @@ static osThreadId fade_thread_id;
 static struct af_stream_fade_t af_stream_fade ={
 	.start_on_process = false,
 	.stop_process_cnt = 0,
-	.need_fadeout_samples = 0,
-	.need_fadeout_samples_processed = 0,
+	.fadein_stop_request_tid = NULL,
+	.fadeout_stop_request_tid = NULL,
+	.is_need_continue_stable = NULL,
 };
 #endif
 /* Add by lewis end. */
@@ -498,7 +502,7 @@ void convert_right_2_left_justified_mode(uint8_t *buf,
 }
 
 #if defined(RTOS) && defined(AF_STREAM_PLAYBACK_FADEINOUT)
-int af_stream_fadein_start(uint32_t fadein_sample)
+int CMT_af_stream_fadein_start(uint32_t fadein_sample)
 {
     TRACE(2,"%s, fadein sample: %d", __func__, fadein_sample);
     af_lock_thread();
@@ -515,7 +519,7 @@ int af_stream_fadein_start(uint32_t fadein_sample)
     return 0;
 }
 
-int af_stream_fadeout1_start(uint32_t fadeout_sample)
+int CMT_af_stream_fadeout_start(uint32_t fadeout_sample)
 {
     TRACE(2,"%s, fadeout sample: %d", __func__, fadeout_sample);
     af_lock_thread();
@@ -536,10 +540,11 @@ int af_stream_fadeout1_start(uint32_t fadeout_sample)
  * to_continue_stable_callback: It is usually used for suppress playback stream Gain when
  * on Quick Conversation Mode
  */
-int af_stream_fadeout_then_fadein_start(uint32_t fadeout_sample, 
-													uint32_t stable_sample, 
-													uint32_t fadein_sample,
-													bool (*to_continue_stable_callback) (void))
+ extern uint8_t is_a2dp_mode(void);
+int CMT_af_stream_fadeout_then_fadein_start(uint32_t fadeout_sample, 
+													       uint32_t stable_sample, 
+													       uint32_t fadein_sample,
+													       bool (*to_continue_stable_callback) (void))
 {
 	TRACE(2,"%s, fadeout/stable/fadein samples: %d/%d/%d", __func__, fadeout_sample, 
 		stable_sample, fadein_sample);
@@ -551,11 +556,27 @@ int af_stream_fadeout_then_fadein_start(uint32_t fadeout_sample,
 
 	af_stream_fade.need_stable_samples = stable_sample;
 	af_stream_fade.need_stable_samples_processed = stable_sample;
-	if(to_continue_stable_callback != NULL) {
-		af_stream_fade.stable_weight = powf(10.f, (A2DP_MIX_STABLE_STREAM_SUPPRESS_GAIN_DB) / 20.f);
-	} else{
-		//TODO: add SCO_MIX_SUPPRESS_GAIN_DB here
-		af_stream_fade.stable_weight = powf(10.f, (A2DP_MIX_SUPPRESS_GAIN_DB) / 20.f);
+	if((to_continue_stable_callback != NULL) && (to_continue_stable_callback == app_is_quick_conversation_mode_on))
+	{
+		af_stream_fade.stable_weight = powf(10.f, (QK_CON_MODE_MIX_SUPPRESS_GAIN_DB) / 20.f);
+	}
+	else
+	{
+#if (defined(BT_USB_AUDIO_DUAL_MODE) || defined(BTUSB_AUDIO_MODE))
+		if(hal_usb_configured()) {
+			af_stream_fade.stable_weight = powf(10.f, (USB_AUDIO_MIX_SUPPRESS_GAIN_DB) / 20.f);
+		} else
+#endif
+#ifdef AUDIO_LINEIN
+		if(app_is_3_5jack_inplug()) {
+			af_stream_fade.stable_weight = powf(10.f, (AUDIO_LINEIN_MIX_SUPPRESS_GAIN_DB) / 20.f);
+		} else
+#endif
+		if(is_a2dp_mode()) {
+			af_stream_fade.stable_weight = powf(10.f, (A2DP_MIX_SUPPRESS_GAIN_DB) / 20.f);
+		} else{
+			af_stream_fade.stable_weight = powf(10.f, (SCO_MIX_SUPPRESS_GAIN_DB) / 20.f);
+		}
 	}
 	af_stream_fade.is_need_continue_stable = to_continue_stable_callback;
 	
@@ -569,14 +590,14 @@ int af_stream_fadeout_then_fadein_start(uint32_t fadeout_sample,
 	af_stream_fade.fadein_step = (1.0f - af_stream_fade.stable_weight) / (fadein_sample - 1);
 	af_stream_fade.fadein_weight = af_stream_fade.stable_weight;
 	
-	af_stream_fade.start_on_process = true;
+	//af_stream_fade.start_on_process = true;
 	
     af_unlock_thread();
 	
     return 0;
 }
 
-int af_stream_fade_stop(void)
+int CMT_af_stream_fade_stop(void)
 {
     TRACE(2,"%s, stop_process_cnt: %d", __func__, af_stream_fade.stop_process_cnt);
     af_lock_thread();
@@ -586,7 +607,12 @@ int af_stream_fade_stop(void)
     return 0;
 }
 
-uint32_t af_stream_fadein_data_fill(uint8_t *buf,
+bool CMT_af_stream_is_fade_on_process(void)
+{
+	return af_stream_fade.start_on_process;
+}
+
+uint32_t CMT_af_stream_fadein_data_fill(uint8_t *buf,
                                                 enum AUD_CHANNEL_NUM_T num,
                                                 enum AUD_BITS_T bits,
                                                 uint32_t samples_to_fill_len)
@@ -681,7 +707,7 @@ uint32_t af_stream_fadein_data_fill(uint8_t *buf,
 }
 
 
-uint32_t af_stream_fadeout_data_fill(uint8_t *buf,
+uint32_t CMT_af_stream_fadeout_data_fill(uint8_t *buf,
                                           enum AUD_CHANNEL_NUM_T num,
                                           enum AUD_BITS_T bits,
                                           uint32_t samples_to_fill_len)
@@ -775,7 +801,7 @@ uint32_t af_stream_fadeout_data_fill(uint8_t *buf,
 	return end;
 }
 
-uint32_t af_stream_stable_data_fill(uint8_t *buf,
+uint32_t CMT_af_stream_stable_data_fill(uint8_t *buf,
                                               enum AUD_CHANNEL_NUM_T num,
                                               enum AUD_BITS_T bits,
                                               uint32_t samples_to_fill_len)
@@ -861,7 +887,7 @@ uint32_t af_stream_stable_data_fill(uint8_t *buf,
 	return end;
 }
 
-uint32_t af_stream_fadeout_then_fadein_data_fill(uint8_t *buf,
+uint32_t CMT_af_stream_fadeout_then_fadein_data_fill(uint8_t *buf,
                                                                 enum AUD_CHANNEL_NUM_T num,
                                                                 enum AUD_BITS_T bits,
                                                                 uint32_t samples_to_fill_len)
@@ -870,21 +896,60 @@ uint32_t af_stream_fadeout_then_fadein_data_fill(uint8_t *buf,
 
 	//don't change process order here: fadeout->>stable->>fadein
 	if(af_stream_fade.need_fadeout_samples_processed != 0){
-		end = af_stream_fadeout_data_fill(buf, num, bits, samples_to_fill_len);
+		end = CMT_af_stream_fadeout_data_fill(buf, num, bits, samples_to_fill_len);
 	} else if(af_stream_fade.need_stable_samples_processed != 0){
-		end = af_stream_stable_data_fill(buf, num, bits, samples_to_fill_len);
+		end = CMT_af_stream_stable_data_fill(buf, num, bits, samples_to_fill_len);
 	} else if((af_stream_fade.is_need_continue_stable != NULL) 
 			   && (af_stream_fade.is_need_continue_stable())){
 		//wait for stable stream's end
-		end = af_stream_stable_data_fill(buf, num, bits, samples_to_fill_len);
+		end = CMT_af_stream_stable_data_fill(buf, num, bits, samples_to_fill_len);
 	} else if(af_stream_fade.need_fadein_samples_processed != 0){
-		end = af_stream_fadein_data_fill(buf, num, bits, samples_to_fill_len);
+		end = CMT_af_stream_fadein_data_fill(buf, num, bits, samples_to_fill_len);
 	}
 
 	return end;
 }
 
-static uint32_t af_stream_fade_processing(uint8_t *buf, uint32_t len, enum AUD_CHANNEL_NUM_T num, enum AUD_BITS_T bits)
+void CMT_af_stream_wait_fadeout_finish(void)
+{
+	TRACE(0, "[%s]", __func__);
+
+    af_stream_fade.fadeout_stop_request_tid = osThreadGetId();
+    osSignalClear(af_stream_fade.fadeout_stop_request_tid, (1 << FADE_OUT_SIGNAL_ID));
+	af_stream_fade.start_on_process = true;
+	osSignalWait((1 << FADE_OUT_SIGNAL_ID), FADE_OUT_MS_DEFAULT);
+}
+
+void CMT_af_stream_send_fadeout_signal(void)
+{
+	TRACE(0, "[%s]", __func__);
+
+	if(af_stream_fade.fadeout_stop_request_tid != NULL)
+	{
+		osSignalSet(af_stream_fade.fadeout_stop_request_tid, (1 << FADE_OUT_SIGNAL_ID));
+	}
+}
+
+void CMT_af_stream_wait_fadein_finish(void)
+{
+	TRACE(0, "[%s]", __func__);
+
+    af_stream_fade.fadein_stop_request_tid = osThreadGetId();
+    osSignalClear(af_stream_fade.fadein_stop_request_tid, (1 << FADE_IN_SIGNAL_ID));
+    osSignalWait((1 << FADE_IN_SIGNAL_ID), FADE_IN_MS_DEFAULT + 500); //the purpose of "+500" is handle fade process completely 
+}
+
+void CMT_af_stream_send_fadein_signal(void)
+{
+	TRACE(0, "[%s]", __func__);
+
+	if(af_stream_fade.fadein_stop_request_tid != NULL)
+	{
+		osSignalSet(af_stream_fade.fadein_stop_request_tid, (1 << FADE_IN_SIGNAL_ID));
+	}
+}
+
+static uint32_t CMT_af_stream_fade_processing(uint8_t *buf, uint32_t len, enum AUD_CHANNEL_NUM_T num, enum AUD_BITS_T bits)
 {
     uint32_t sample_len = 0;
     uint32_t end = 0;
@@ -944,15 +1009,15 @@ static uint32_t af_stream_fade_processing(uint8_t *buf, uint32_t len, enum AUD_C
 	switch(af_stream_fade.fade_type)
 	{
 		case FADE_IN:
-			end = af_stream_fadein_data_fill(buf, num, bits, sample_len);
+			end = CMT_af_stream_fadein_data_fill(buf, num, bits, sample_len);
 		break;
 
 		case FADE_OUT:
- 			end = af_stream_fadeout_data_fill(buf, num, bits, sample_len);
+ 			end = CMT_af_stream_fadeout_data_fill(buf, num, bits, sample_len);
 		break;
 
 		case FADE_OUT_THEN_FADE_IN:
- 			end = af_stream_fadeout_then_fadein_data_fill(buf, num, bits, sample_len);
+ 			end = CMT_af_stream_fadeout_then_fadein_data_fill(buf, num, bits, sample_len);
 		break;
 		
 		default:
@@ -975,6 +1040,10 @@ static uint32_t af_stream_fade_processing(uint8_t *buf, uint32_t len, enum AUD_C
 			//don't change process order here: fadeout->>stable->>fadein
 			if(af_stream_fade.need_fadeout_samples_processed != 0){
 				af_stream_fade.need_fadeout_samples_processed -= end;
+				if(af_stream_fade.need_fadeout_samples_processed == 0) 
+				{
+					CMT_af_stream_send_fadeout_signal();
+				}
 			} else if(af_stream_fade.need_stable_samples_processed != 0){
 				af_stream_fade.need_stable_samples_processed -= end;
 			} else if((af_stream_fade.is_need_continue_stable != NULL) 
@@ -982,6 +1051,10 @@ static uint32_t af_stream_fade_processing(uint8_t *buf, uint32_t len, enum AUD_C
 				//do nothing, wait for stable stream's end
 			} else if(af_stream_fade.need_fadein_samples_processed != 0){
 				af_stream_fade.need_fadein_samples_processed -= end;
+				//if(af_stream_fade.need_fadein_samples_processed == 0)
+				//{
+					//CMT_af_stream_send_fadein_signal(); //don't be called here
+				//}
 			}
 		break;
 		
@@ -993,7 +1066,7 @@ static uint32_t af_stream_fade_processing(uint8_t *buf, uint32_t len, enum AUD_C
     return len;
 }
 
-void af_stream_fade_process(struct af_stream_cfg_t *af_cfg, uint8_t *buf, uint32_t len)
+void CMT_af_stream_fade_process(struct af_stream_cfg_t *af_cfg, uint8_t *buf, uint32_t len)
 {
     if (af_stream_fade.start_on_process){
         TRACE(5,"[%s] fade ch:%d size:%d len:%d cnt:%d", __func__,
@@ -1006,7 +1079,7 @@ void af_stream_fade_process(struct af_stream_cfg_t *af_cfg, uint8_t *buf, uint32
 		convert_left_2_right_justified_mode(buf, af_cfg->cfg.bits, len);
 #endif
 
-		uint32_t ret = af_stream_fade_processing(buf, len, af_cfg->cfg.channel_num, af_cfg->cfg.bits);
+		uint32_t ret = CMT_af_stream_fade_processing(buf, len, af_cfg->cfg.channel_num, af_cfg->cfg.bits);
 	
 #ifdef AUDIO_LINEIN
 	//after process stream data, we need to convert it back to left justified mode
@@ -1021,11 +1094,21 @@ void af_stream_fade_process(struct af_stream_cfg_t *af_cfg, uint8_t *buf, uint32
         if (ret == 0 && af_stream_fade.stop_process_cnt == 2) {
             TRACE(0,"fade process end!!!");
 			af_stream_fade.start_on_process = false;
+			switch(af_stream_fade.fade_type)
+			{
+				case FADE_IN:
+				case FADE_OUT_THEN_FADE_IN:
+					CMT_af_stream_send_fadein_signal();
+				break;
+				
+				default:
+				break;
+			}
         }
     }
 }
 
-uint32_t af_stream_playback_fade(enum AUD_STREAM_ID_T id, 
+uint32_t CMT_af_stream_playback_fade(enum AUD_STREAM_ID_T id, 
 										 enum AF_STREAM_FADE_TYPE_T fade_type, 
 										 uint32_t ms,
 										 bool (*to_continue_stable_callback) (void))
@@ -1048,14 +1131,14 @@ uint32_t af_stream_playback_fade(enum AUD_STREAM_ID_T id,
 			fadein_samples = (uint32_t)(ms * stream_cfg->sample_rate / 1000.0);
 			TRACE(3,"[%s] ms:%d fadein samples:%d bit:%d ch:%d", __func__, ms, (uint32_t)fadein_samples,
 					stream_cfg->bits, stream_cfg->channel_num);
-			af_stream_fadein_start(fadein_samples);
+			CMT_af_stream_fadein_start(fadein_samples);
 		break;
 
 		case FADE_OUT:
 			fadeout_samples = (uint32_t)(ms * stream_cfg->sample_rate / 1000.0);
 			TRACE(3,"[%s] ms:%d fadeout samples:%d bit:%d ch:%d", __func__, ms, (uint32_t)fadeout_samples,
             		stream_cfg->bits, stream_cfg->channel_num);
-			af_stream_fadeout1_start(fadeout_samples);
+			CMT_af_stream_fadeout_start(fadeout_samples);
 		break;
 
 		//usually used for fade processing of prompt when music/SCO playback
@@ -1065,7 +1148,8 @@ uint32_t af_stream_playback_fade(enum AUD_STREAM_ID_T id,
 			stable_samples = (uint32_t)(ms * stream_cfg->sample_rate / 1000.0);
 			TRACE(5,"[%s] ms:%d samples:%d/%d/%d bit:%d ch:%d", __func__, ms, (uint32_t)fadeout_samples,
 					(uint32_t)stable_samples, (uint32_t)fadein_samples, stream_cfg->bits, stream_cfg->channel_num);
-			af_stream_fadeout_then_fadein_start(fadeout_samples, stable_samples, fadein_samples, to_continue_stable_callback);
+			CMT_af_stream_fadeout_then_fadein_start(fadeout_samples, stable_samples, fadein_samples, to_continue_stable_callback);
+			CMT_af_stream_wait_fadeout_finish();
 		break;
 		
 		default:
@@ -2345,7 +2429,7 @@ static inline void af_thread_stream_handler(enum AUD_STREAM_ID_T id, enum AUD_ST
 		//TRACE(0, "***%d	%d	 %d", id,role->ctl.use_device,stream);
 		if (((id == AUD_STREAM_ID_0) || (id == AUD_STREAM_ID_1)) && (stream == AUD_STREAM_PLAYBACK)
 			&& (role->ctl.use_device == AUD_STREAM_USE_INT_CODEC)) {
-			af_stream_fade_process(role, buf, len);
+			CMT_af_stream_fade_process(role, buf, len);
 		}
 #endif
 /* Add by lewis end. */

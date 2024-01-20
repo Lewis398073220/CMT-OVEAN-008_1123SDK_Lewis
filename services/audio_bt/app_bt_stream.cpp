@@ -7330,7 +7330,7 @@ static int bt_sco_player(bool on, enum APP_SYSFREQ_FREQ_T freq)
 #define LINEIN_PLAYER_BUFFER_SIZE (1024*LINEIN_PLAYER_CHANNEL)
 #define LINEIN_CAPTURE_BUFFER_SIZE (LINEIN_PLAYER_BUFFER_SIZE/2)
 #elif (LINEIN_CAPTURE_CHANNEL == 2)
-#define LINEIN_PLAYER_BUFFER_SIZE (4096*LINEIN_PLAYER_CHANNEL) //Modify by lewis from 1024 to 4096 for avoiding pop noise when play prompt 
+#define LINEIN_PLAYER_BUFFER_SIZE (6144*LINEIN_PLAYER_CHANNEL) //Modify by lewis from 1024 to 6144 for avoiding pop noise when play prompt 
 #define LINEIN_CAPTURE_BUFFER_SIZE (LINEIN_PLAYER_BUFFER_SIZE)
 #endif
 
