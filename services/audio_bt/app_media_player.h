@@ -296,6 +296,12 @@ int app_prompt_start_callback(int aud_id);
 
 int app_prompt_finish_callback(int aud_id);
 
+/* Add by lewis. */
+#if defined(RTOS) && defined(AF_STREAM_PLAYBACK_FADEINOUT)
+extern bool app_is_prompt_on_playing(void);
+#endif
+/* End Add by lewis. */
+
 #ifdef __cplusplus
 }
 #endif

@@ -552,6 +552,7 @@ int CMT_af_stream_fadeout_then_fadein_start(uint32_t fadeout_sample,
     af_lock_thread();
 	
 	af_stream_fade.stop_process_cnt = 0;
+	af_stream_fade.start_on_process = false;
 	af_stream_fade.fade_type = FADE_OUT_THEN_FADE_IN;
 
 	af_stream_fade.need_stable_samples = stable_sample;
@@ -589,8 +590,64 @@ int CMT_af_stream_fadeout_then_fadein_start(uint32_t fadeout_sample,
 	af_stream_fade.need_fadein_samples_processed = fadein_sample;
 	af_stream_fade.fadein_step = (1.0f - af_stream_fade.stable_weight) / (fadein_sample - 1);
 	af_stream_fade.fadein_weight = af_stream_fade.stable_weight;
+
+	af_stream_fade.fadeout_stop_request_tid = NULL;
+	af_stream_fade.fadein_stop_request_tid = NULL;
 	
-	//af_stream_fade.start_on_process = true;
+	af_stream_fade.start_on_process = true;
+	
+    af_unlock_thread();
+	
+    return 0;
+}
+
+int CMT_af_stream_stable_then_fadein_start(uint32_t stable_sample, 
+													      uint32_t fadein_sample,
+													      bool (*to_continue_stable_callback) (void))
+{
+	TRACE(2,"%s, stable/fadein samples: %d/%d", __func__, stable_sample, fadein_sample);
+	
+    af_lock_thread();
+	
+	af_stream_fade.stop_process_cnt = 0;
+	af_stream_fade.start_on_process = false;
+	af_stream_fade.fade_type = STABLE_THEN_FADE_IN;
+
+	af_stream_fade.need_stable_samples = stable_sample;
+	af_stream_fade.need_stable_samples_processed = stable_sample;
+	if((to_continue_stable_callback != NULL) && (to_continue_stable_callback == app_is_quick_conversation_mode_on))
+	{
+		af_stream_fade.stable_weight = powf(10.f, (QK_CON_MODE_MIX_SUPPRESS_GAIN_DB) / 20.f);
+	}
+	else
+	{
+#if (defined(BT_USB_AUDIO_DUAL_MODE) || defined(BTUSB_AUDIO_MODE))
+		if(hal_usb_configured()) {
+			af_stream_fade.stable_weight = powf(10.f, (USB_AUDIO_MIX_SUPPRESS_GAIN_DB) / 20.f);
+		} else
+#endif
+#ifdef AUDIO_LINEIN
+		if(app_is_3_5jack_inplug()) {
+			af_stream_fade.stable_weight = powf(10.f, (AUDIO_LINEIN_MIX_SUPPRESS_GAIN_DB) / 20.f);
+		} else
+#endif
+		if(is_a2dp_mode()) {
+			af_stream_fade.stable_weight = powf(10.f, (A2DP_MIX_SUPPRESS_GAIN_DB) / 20.f);
+		} else{
+			af_stream_fade.stable_weight = powf(10.f, (SCO_MIX_SUPPRESS_GAIN_DB) / 20.f);
+		}
+	}
+	af_stream_fade.is_need_continue_stable = to_continue_stable_callback;
+	
+	af_stream_fade.need_fadein_samples = fadein_sample;
+	af_stream_fade.need_fadein_samples_processed = fadein_sample;
+	af_stream_fade.fadein_step = (1.0f - af_stream_fade.stable_weight) / (fadein_sample - 1);
+	af_stream_fade.fadein_weight = af_stream_fade.stable_weight;
+
+	af_stream_fade.fadeout_stop_request_tid = NULL;
+	af_stream_fade.fadein_stop_request_tid = NULL;
+	
+	af_stream_fade.start_on_process = true;
 	
     af_unlock_thread();
 	
@@ -910,22 +967,42 @@ uint32_t CMT_af_stream_fadeout_then_fadein_data_fill(uint8_t *buf,
 	return end;
 }
 
+uint32_t CMT_af_stream_stable_then_fadein_data_fill(uint8_t *buf,
+                                                                enum AUD_CHANNEL_NUM_T num,
+                                                                enum AUD_BITS_T bits,
+                                                                uint32_t samples_to_fill_len)
+{
+	uint32_t end = 0;
+
+	//don't change process order here: stable->>fadein
+	if(af_stream_fade.need_stable_samples_processed != 0){
+		end = CMT_af_stream_stable_data_fill(buf, num, bits, samples_to_fill_len);
+	} else if((af_stream_fade.is_need_continue_stable != NULL) 
+			   && (af_stream_fade.is_need_continue_stable())){
+		//wait for stable stream's end
+		end = CMT_af_stream_stable_data_fill(buf, num, bits, samples_to_fill_len);
+	} else if(af_stream_fade.need_fadein_samples_processed != 0){
+		end = CMT_af_stream_fadein_data_fill(buf, num, bits, samples_to_fill_len);
+	}
+
+	return end;
+}
+
 void CMT_af_stream_wait_fadeout_finish(void)
 {
 	TRACE(0, "[%s]", __func__);
 
     af_stream_fade.fadeout_stop_request_tid = osThreadGetId();
     osSignalClear(af_stream_fade.fadeout_stop_request_tid, (1 << FADE_OUT_SIGNAL_ID));
-	af_stream_fade.start_on_process = true;
+	//af_stream_fade.start_on_process = true;
 	osSignalWait((1 << FADE_OUT_SIGNAL_ID), FADE_OUT_MS_DEFAULT);
 }
 
 void CMT_af_stream_send_fadeout_signal(void)
 {
-	TRACE(0, "[%s]", __func__);
-
 	if(af_stream_fade.fadeout_stop_request_tid != NULL)
 	{
+		TRACE(0, "[%s]", __func__);
 		osSignalSet(af_stream_fade.fadeout_stop_request_tid, (1 << FADE_OUT_SIGNAL_ID));
 	}
 }
@@ -941,10 +1018,9 @@ void CMT_af_stream_wait_fadein_finish(void)
 
 void CMT_af_stream_send_fadein_signal(void)
 {
-	TRACE(0, "[%s]", __func__);
-
 	if(af_stream_fade.fadein_stop_request_tid != NULL)
 	{
+		TRACE(0, "[%s]", __func__);
 		osSignalSet(af_stream_fade.fadein_stop_request_tid, (1 << FADE_IN_SIGNAL_ID));
 	}
 }
@@ -993,7 +1069,24 @@ static uint32_t CMT_af_stream_fade_processing(uint8_t *buf, uint32_t len, enum A
 				return 0;
 			}
 		break;
-			
+
+		case STABLE_THEN_FADE_IN:
+			//don't change process order here: stable->>fadein			
+			if((af_stream_fade.need_stable_samples_processed == 0)
+				&& (af_stream_fade.need_fadein_samples_processed == 0)) 
+			{
+				if(af_stream_fade.is_need_continue_stable != NULL)
+				{	
+					if(af_stream_fade.is_need_continue_stable())
+						break;
+				}
+				TRACE(3 ,"[Stable Then Fade In End], fade ch:%d bit:%d weight:%d/%d(/10000)",
+           			 num, bits, (int32_t)(af_stream_fade.stable_weight * 10000), (int32_t)(af_stream_fade.fadein_weight * 10000));
+				af_stream_fade.stop_process_cnt += 1;
+				return 0;
+			}
+		break;
+				
 		default:
 			TRACE(0, "[Invalid Fade Type]!!!");
 		break;
@@ -1018,6 +1111,10 @@ static uint32_t CMT_af_stream_fade_processing(uint8_t *buf, uint32_t len, enum A
 
 		case FADE_OUT_THEN_FADE_IN:
  			end = CMT_af_stream_fadeout_then_fadein_data_fill(buf, num, bits, sample_len);
+		break;
+
+		case STABLE_THEN_FADE_IN:
+			end = CMT_af_stream_stable_then_fadein_data_fill(buf, num, bits, sample_len);
 		break;
 		
 		default:
@@ -1055,6 +1152,18 @@ static uint32_t CMT_af_stream_fade_processing(uint8_t *buf, uint32_t len, enum A
 				//{
 					//CMT_af_stream_send_fadein_signal(); //don't be called here
 				//}
+			}
+		break;
+
+		case STABLE_THEN_FADE_IN:
+			//don't change process order here: stable->>fadein
+			if(af_stream_fade.need_stable_samples_processed != 0){
+				af_stream_fade.need_stable_samples_processed -= end;
+			} else if((af_stream_fade.is_need_continue_stable != NULL) 
+					   && (af_stream_fade.is_need_continue_stable())){
+				//do nothing, wait for stable stream's end
+			} else if(af_stream_fade.need_fadein_samples_processed != 0){
+				af_stream_fade.need_fadein_samples_processed -= end;
 			}
 		break;
 		
@@ -1098,6 +1207,7 @@ void CMT_af_stream_fade_process(struct af_stream_cfg_t *af_cfg, uint8_t *buf, ui
 			{
 				case FADE_IN:
 				case FADE_OUT_THEN_FADE_IN:
+				case STABLE_THEN_FADE_IN:
 					CMT_af_stream_send_fadein_signal();
 				break;
 				
@@ -1149,7 +1259,18 @@ uint32_t CMT_af_stream_playback_fade(enum AUD_STREAM_ID_T id,
 			TRACE(5,"[%s] ms:%d samples:%d/%d/%d bit:%d ch:%d", __func__, ms, (uint32_t)fadeout_samples,
 					(uint32_t)stable_samples, (uint32_t)fadein_samples, stream_cfg->bits, stream_cfg->channel_num);
 			CMT_af_stream_fadeout_then_fadein_start(fadeout_samples, stable_samples, fadein_samples, to_continue_stable_callback);
-			CMT_af_stream_wait_fadeout_finish();
+			if(to_continue_stable_callback != app_is_quick_conversation_mode_on)
+			{
+				CMT_af_stream_wait_fadeout_finish(); //don't need wait fadeout finish when enter quick conversation mode
+			}	
+		break;
+
+		case STABLE_THEN_FADE_IN:
+			fadein_samples = (uint32_t)(FADE_IN_MS_DEFAULT * stream_cfg->sample_rate / 1000.0);
+			stable_samples = (uint32_t)(ms * stream_cfg->sample_rate / 1000.0);
+			TRACE(0,"[%s] ms:%d samples:%d/%d bit:%d ch:%d", __func__, ms, (uint32_t)stable_samples, 
+					(uint32_t)fadein_samples, stream_cfg->bits, stream_cfg->channel_num);
+			CMT_af_stream_stable_then_fadein_start(stable_samples, fadein_samples, to_continue_stable_callback);
 		break;
 		
 		default:
@@ -3878,6 +3999,11 @@ static void af_codec_stream_post_stop(enum AUD_STREAM_T stream)
 }
 #endif
 
+/* Add by lewis. */
+#if defined(RTOS) && defined(AF_STREAM_PLAYBACK_FADEINOUT)
+extern bool app_is_prompt_on_playing(void);
+#endif
+/* End Add by lewis. */
 uint32_t af_stream_start(enum AUD_STREAM_ID_T id, enum AUD_STREAM_T stream)
 {
     struct af_stream_cfg_t *role;
@@ -3896,6 +4022,35 @@ uint32_t af_stream_start(enum AUD_STREAM_ID_T id, enum AUD_STREAM_T stream)
         ret = AF_RES_FAILD;
         goto _exit;
     }
+
+/* Add by lewis */
+#if defined(RTOS) && defined(AF_STREAM_PLAYBACK_FADEINOUT)
+	if (((id == AUD_STREAM_ID_0) || (id == AUD_STREAM_ID_1)) && (stream == AUD_STREAM_PLAYBACK)
+		&& (role->ctl.use_device == AUD_STREAM_USE_INT_CODEC))
+	{
+		if(app_is_quick_conversation_mode_on())
+		{
+#if (defined(BT_USB_AUDIO_DUAL_MODE) || defined(BTUSB_AUDIO_MODE))
+			if(hal_usb_configured())
+				//need to check whether USB_AUD_STREAM_ID is equal to AUD_STREAM_ID_1
+				CMT_af_stream_playback_fade(AUD_STREAM_ID_1, STABLE_THEN_FADE_IN, 0, app_is_quick_conversation_mode_on);
+			else
+#endif
+				CMT_af_stream_playback_fade(AUD_STREAM_ID_0, STABLE_THEN_FADE_IN, 0, app_is_quick_conversation_mode_on);
+		}
+		else if(app_is_prompt_on_playing())
+		{
+#if (defined(BT_USB_AUDIO_DUAL_MODE) || defined(BTUSB_AUDIO_MODE))
+			if(hal_usb_configured())
+				//need to check whether USB_AUD_STREAM_ID is equal to AUD_STREAM_ID_1
+				CMT_af_stream_playback_fade(AUD_STREAM_ID_1, STABLE_THEN_FADE_IN, 0, app_is_prompt_on_playing);
+			else
+#endif
+				CMT_af_stream_playback_fade(AUD_STREAM_ID_0, STABLE_THEN_FADE_IN, 0, app_is_prompt_on_playing);
+		}
+	}
+#endif
+/* End Add by lewis */
 
     device = role->ctl.use_device;
 
@@ -4145,6 +4300,15 @@ uint32_t af_stream_stop(enum AUD_STREAM_ID_T id, enum AUD_STREAM_T stream)
         af_stream_fadeout_stop();
     }
 #endif
+
+/* Add by lewis */
+#if defined(RTOS) && defined(AF_STREAM_PLAYBACK_FADEINOUT)
+	if (((id == AUD_STREAM_ID_0) || (id == AUD_STREAM_ID_1)) && (stream == AUD_STREAM_PLAYBACK)
+		&& (role->ctl.use_device == AUD_STREAM_USE_INT_CODEC)) {
+		CMT_af_stream_fade_stop();
+	}
+#endif
+/* Add by lewis end. */
 
     if (device == AUD_STREAM_USE_INT_CODEC && stream == AUD_STREAM_PLAYBACK) {
 #ifdef AUDIO_OUTPUT_PA_OFF_FADE_OUT
