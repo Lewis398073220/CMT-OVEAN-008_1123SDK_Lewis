@@ -625,7 +625,7 @@ static void jack_detn_handler(void const *param)
 			if(user_module_data.jack_pluginout_debounce_cnt == JACK_PLUGINOUT_DEBOUNCE_CNT)
 			{
 #ifdef CMT_008_CST820_TOUCH
-				hal_set_cst820_rst_low(); //TODO: when new PCBA done, delete it
+				//hal_set_cst820_rst_low(); //TODO: when new PCBA done, delete it
 #endif
 #if defined(BT_USB_AUDIO_DUAL_MODE) || defined(BTUSB_AUDIO_MODE)
 				if(app_battery_is_charging()) {
@@ -660,7 +660,7 @@ static void jack_detn_handler(void const *param)
 			if(user_module_data.jack_pluginout_debounce_cnt >= JACK_PLUGINOUT_DEBOUNCE_CNT + 2)
 			{
 #ifdef AUDIO_LINEIN
-				if(!bt_media_is_media_active_by_type(BT_STREAM_MUSIC | BT_STREAM_MEDIA | BT_STREAM_VOICE))
+				if(!bt_media_is_media_active_by_type(BT_STREAM_MUSIC | BT_STREAM_MEDIA | BT_STREAM_VOICE) && !app_is_prompt_on_playing())
 				{
 					//app_audio_manager_sendrequest(APP_BT_STREAM_MANAGER_START, BT_STREAM_LINEIN, BT_DEVICE_ID_1, 0); //lewis: use this will cause some pop noise, I don't know why
 					hal_codec_dac_mute(1);
@@ -683,7 +683,7 @@ static void jack_detn_handler(void const *param)
 		{
 			user_module_data.is3_5JackInplug = false;
 #ifdef CMT_008_CST820_TOUCH
-			hal_set_cst820_rst_high(); //TODO: when new PCBA done, delete it
+			//hal_set_cst820_rst_high(); //TODO: when new PCBA done, delete it
 #endif
 			app_key_init();
 			

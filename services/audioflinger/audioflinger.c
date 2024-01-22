@@ -4000,9 +4000,7 @@ static void af_codec_stream_post_stop(enum AUD_STREAM_T stream)
 #endif
 
 /* Add by lewis. */
-#if defined(RTOS) && defined(AF_STREAM_PLAYBACK_FADEINOUT)
 extern bool app_is_prompt_on_playing(void);
-#endif
 /* End Add by lewis. */
 uint32_t af_stream_start(enum AUD_STREAM_ID_T id, enum AUD_STREAM_T stream)
 {

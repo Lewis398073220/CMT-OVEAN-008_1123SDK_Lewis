@@ -539,7 +539,6 @@ int media_audio_init(void)
 }
 
 /* Add by lewis. */
-#if defined(RTOS) && defined(AF_STREAM_PLAYBACK_FADEINOUT)
 bool app_is_prompt_on_playing(void)
 {
 	return app_prompt_is_on_playing;
@@ -551,7 +550,6 @@ void app_update_prompt_play_status(bool isPlaying)
 
 	app_prompt_is_on_playing = isPlaying;
 }
-#endif
 /* End Add by lewis. */
 
 static int decode_sbc_frame(unsigned char *pcm_buffer, unsigned int pcm_len)
@@ -2468,6 +2466,10 @@ int app_play_audio_onoff(bool onoff, APP_AUDIO_STATUS* status)
         return 0;
     }
 
+/* Add by lewis. */
+	app_update_prompt_play_status(onoff); //should be called before app_audio_mempool_get_buff
+/* End Add by lewis. */
+
     app_sysfreq_req(APP_SYSFREQ_USER_APP_0, APP_SYSFREQ_104M);
 
     if (onoff) {
@@ -2745,7 +2747,6 @@ int app_play_audio_onoff(bool onoff, APP_AUDIO_STATUS* status)
 					CMT_af_stream_playback_fade(AUD_STREAM_ID_0, FADE_OUT_THEN_FADE_IN, ms, NULL);
 			}
 #else //V2 handle
-			app_update_prompt_play_status(true);
 			if(!app_is_quick_conversation_mode_on())
 			{
 #if (defined(BT_USB_AUDIO_DUAL_MODE) || defined(BTUSB_AUDIO_MODE))
@@ -2779,7 +2780,6 @@ int app_play_audio_onoff(bool onoff, APP_AUDIO_STATUS* status)
 
 /* Add by lewis. */
 #if defined(RTOS) && defined(AF_STREAM_PLAYBACK_FADEINOUT)
-		app_update_prompt_play_status(false); //trigger fade in process
 		if(CMT_af_stream_is_fade_on_process())
 		{
 			CMT_af_stream_wait_fadein_finish(); //can't be called in app_play_sbc_more_data, otherwise will cause crash

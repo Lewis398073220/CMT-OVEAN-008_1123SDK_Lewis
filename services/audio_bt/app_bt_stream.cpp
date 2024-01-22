@@ -7403,7 +7403,7 @@ int app_play_linein_onoff(bool onoff)
         app_audio_mempool_init();
 /* Add by lewis, otherwise, crash will happen if you insert and remove 3.5jack some times without prompt playing */
 #if defined(AUDIO_PROMPT_USE_DAC2_ENABLED)
-		if(!bt_media_is_media_active_by_type(BT_STREAM_MEDIA))
+		if(!bt_media_is_media_active_by_type(BT_STREAM_MEDIA) && !app_is_prompt_on_playing())
 			app_media_mempool_init();
 #endif
 /* End Add by lewis */
