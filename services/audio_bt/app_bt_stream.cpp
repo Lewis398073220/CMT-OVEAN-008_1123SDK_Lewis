@@ -2433,6 +2433,75 @@ extern "C" uint32_t bt_audio_set_dac_eq(uint32_t index)
 
     return 0;
 }
+
+/** Add by Jay for low latency gaming mode, copy pang. **/
+uint16_t SET_A2DP_PLAYER_PLAYBACK_DELAY_SBC_MTU = A2DP_PLAYER_PLAYBACK_DELAY_SBC_MTU; //50  50=168.7ms
+uint16_t SET_A2DP_PLAYER_PLAYBACK_DELAY_AAC_MTU = A2DP_PLAYER_PLAYBACK_DELAY_AAC_MTU; //6   138ms
+
+#define A2DP_PLAYER_PLAYBACK_DELAY_SBC_MTU_LOW_LATENCY 20 //layhou:20=140MS   tianwu:20=85.83ms
+#define A2DP_PLAYER_PLAYBACK_DELAY_AAC_MTU_LOW_LATENCY 4  //layhou:3=240
+
+uint32_t A2DP_PLAYER_PLAYBACK_DELAY_SBC_US = (A2DP_PLAYER_PLAYBACK_DELAY_SBC_BASE*SET_A2DP_PLAYER_PLAYBACK_DELAY_SBC_MTU);
+uint32_t A2DP_PLAYER_PLAYBACK_DELAY_AAC_US = (A2DP_PLAYER_PLAYBACK_DELAY_AAC_BASE*SET_A2DP_PLAYER_PLAYBACK_DELAY_AAC_MTU);
+
+static bool g_low_latency_mode_on_flag = false;
+
+bool is_low_latency_mode_on(void)
+{
+	return g_low_latency_mode_on_flag;
+}
+
+static void app_force_audio_retrigger(void)
+{
+    a2dp_audio_detect_next_packet_callback_register(NULL);
+    a2dp_audio_detect_store_packet_callback_register(NULL);
+    trigger_media_play((AUD_ID_ENUM)AUDIO_ID_BT_MUTE, 0, false);
+}
+
+void enter_exit_low_latency_mode(bool isEn, bool promt_on)
+{
+	TRACE(2,"Low latency mode state %s, to %s it",
+			g_low_latency_mode_on_flag?"On":"Off", isEn?"enter":"exit");
+
+	if(g_low_latency_mode_on_flag == isEn)
+	{
+		return;
+	}
+
+    if(isEn)
+    {
+        SET_A2DP_PLAYER_PLAYBACK_DELAY_SBC_MTU = A2DP_PLAYER_PLAYBACK_DELAY_SBC_MTU_LOW_LATENCY;
+        SET_A2DP_PLAYER_PLAYBACK_DELAY_AAC_MTU = A2DP_PLAYER_PLAYBACK_DELAY_AAC_MTU_LOW_LATENCY;
+    }
+	else
+    {
+        SET_A2DP_PLAYER_PLAYBACK_DELAY_SBC_MTU = A2DP_PLAYER_PLAYBACK_DELAY_SBC_MTU;
+        SET_A2DP_PLAYER_PLAYBACK_DELAY_AAC_MTU = A2DP_PLAYER_PLAYBACK_DELAY_AAC_MTU;
+    }
+
+	g_low_latency_mode_on_flag = isEn;
+	
+	if (btapp_hfp_is_sco_active() || btapp_hfp_get_call_active())
+    {
+		TRACE(0, "now is call active, just save low latency mode paramters and status but not take effect");
+		return;
+	}
+	
+    app_force_audio_retrigger();
+	
+	if(promt_on)
+	{
+		if(isEn) media_PlayAudio(AUD_ID_BT_LOW_LATENCY_MODE_ON, 0);
+		else media_PlayAudio(AUD_ID_BT_LOW_LATENCY_MODE_OFF, 0);
+	}
+}
+
+void ble_low_latency_mode_switch(bool isEn, bool promt_on)
+{
+	enter_exit_low_latency_mode(isEn, promt_on);
+}
+/** Add by Jay, end. **/
+
 void app_bt_stream_playback_irq_notification(enum AUD_STREAM_ID_T id, enum AUD_STREAM_T stream);
 
 uint32_t app_bt_stream_get_dma_buffer_delay_us(void)
@@ -3788,7 +3857,7 @@ static int bt_sbc_player(enum PLAYER_OPER_T on, enum APP_SYSFREQ_FREQ_T freq)
                 case BTIF_AVDTP_CODEC_TYPE_SBC:
                     output_config.mtu_per_frame = A2DP_PLAYER_PLAYBACK_DELAY_SBC_FRAME_MTU;
                     a2dp_audio_codec_type = A2DP_AUDIO_CODEC_TYPE_SBC;
-                    dest_packet_mut = A2DP_PLAYER_PLAYBACK_DELAY_SBC_MTU;
+                    dest_packet_mut = SET_A2DP_PLAYER_PLAYBACK_DELAY_SBC_MTU; //A2DP_PLAYER_PLAYBACK_DELAY_SBC_MTU; // Modifed by Jay
             #ifdef A2DP_PLAYER_PLAYBACK_WATER_LINE
                     if(a2dp_player_playback_waterline_is_enalbe() == false){
                         offset_mut = 0;
@@ -3802,7 +3871,7 @@ static int bt_sbc_player(enum PLAYER_OPER_T on, enum APP_SYSFREQ_FREQ_T freq)
                     break;
                 case BTIF_AVDTP_CODEC_TYPE_MPEG2_4_AAC:
                     a2dp_audio_codec_type = A2DP_AUDIO_CODEC_TYPE_MPEG2_4_AAC;
-                    dest_packet_mut = A2DP_PLAYER_PLAYBACK_DELAY_AAC_MTU;
+                    dest_packet_mut = SET_A2DP_PLAYER_PLAYBACK_DELAY_AAC_MTU; //A2DP_PLAYER_PLAYBACK_DELAY_AAC_MTU; //Modify by lewis
             #ifdef A2DP_PLAYER_PLAYBACK_WATER_LINE
                     if(a2dp_player_playback_waterline_is_enalbe() == false){
                         offset_mut = 0;
@@ -3989,11 +4058,11 @@ static int bt_sbc_player(enum PLAYER_OPER_T on, enum APP_SYSFREQ_FREQ_T freq)
             {
                 case BTIF_AVDTP_CODEC_TYPE_SBC:
                     a2dp_audio_codec_type = A2DP_AUDIO_CODEC_TYPE_SBC;
-                    dest_packet_mut = A2DP_PLAYER_PLAYBACK_DELAY_SBC_MTU;
+                    dest_packet_mut = SET_A2DP_PLAYER_PLAYBACK_DELAY_SBC_MTU; //A2DP_PLAYER_PLAYBACK_DELAY_SBC_MTU; //Modify by lewis
                     break;
                 case BTIF_AVDTP_CODEC_TYPE_MPEG2_4_AAC:
                     a2dp_audio_codec_type = A2DP_AUDIO_CODEC_TYPE_MPEG2_4_AAC;
-                    dest_packet_mut = A2DP_PLAYER_PLAYBACK_DELAY_AAC_MTU;
+                    dest_packet_mut = SET_A2DP_PLAYER_PLAYBACK_DELAY_AAC_MTU; //A2DP_PLAYER_PLAYBACK_DELAY_AAC_MTU; //Modify by lewis
                     break;
                 case BTIF_AVDTP_CODEC_TYPE_NON_A2DP:
 #if defined(A2DP_LHDC_ON)||defined(A2DP_SCALABLE_ON)

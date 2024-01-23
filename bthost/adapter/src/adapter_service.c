@@ -1427,6 +1427,8 @@ static const char * const aud_id_str[] =
 	"[MIC_UNMUTE]",
 	"[FACTORY_RESET]",
 	"[BATTERY_LOW_POWER_OFF]",
+	"[LOW_LATENCY_MODE_ON]",
+	"[LOW_LATENCY_MODE_OFF]",
 	/* End Add by lewis */
 };
 

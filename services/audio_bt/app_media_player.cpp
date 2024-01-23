@@ -329,6 +329,8 @@ enum sound_id {
 	BT_MIC_UNMUTE_16000,
 	BT_FACTORY_RESET_16000,
 	BT_BATTERY_LOW_POWER_OFF_16000,
+	BT_LOW_LATENCY_MODE_ON_16000,
+	BT_LOW_LATENCY_MODE_OFF_16000,
 #endif
 /* Add by lewis */
 
@@ -465,6 +467,8 @@ static const media_sound_map_t media_sound_map_en[] =
     SOUND_ITEM_DEF(EN_, BT_MIC_UNMUTE_16000),
     SOUND_ITEM_DEF(EN_, BT_FACTORY_RESET_16000),
     SOUND_ITEM_DEF(EN_, BT_BATTERY_LOW_POWER_OFF_16000),
+    SOUND_ITEM_DEF(EN_, BT_LOW_LATENCY_MODE_ON_16000),
+    SOUND_ITEM_DEF(EN_, BT_LOW_LATENCY_MODE_OFF_16000),
 #endif
 /* End Add by lewis */
 };
@@ -1589,6 +1593,14 @@ void media_runtime_audio_prompt_update(uint16_t id, uint8_t** ptr, uint32_t* len
 
 	case AUD_ID_BT_BATTERY_LOW_POWER_OFF:
         get_sound_id_info(BT_BATTERY_LOW_POWER_OFF_16000, &sound_data, &length);
+    	break;
+
+	case AUD_ID_BT_LOW_LATENCY_MODE_ON:
+        get_sound_id_info(BT_LOW_LATENCY_MODE_ON_16000, &sound_data, &length);
+    	break;
+
+	case AUD_ID_BT_LOW_LATENCY_MODE_OFF:
+        get_sound_id_info(BT_LOW_LATENCY_MODE_OFF_16000, &sound_data, &length);
     	break;
 #endif
 /* End Add by lewis */

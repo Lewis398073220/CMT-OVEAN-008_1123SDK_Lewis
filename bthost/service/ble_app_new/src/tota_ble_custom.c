@@ -192,6 +192,20 @@ static void user_custom_tota_ble_command_set_handle(PACKET_STRUCTURE *ptrPacket)
 			user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_SET, ptrPacket->cmdID, rsp_status, NULL, 0);
         break;
 
+		case TOTA_BLE_CMT_COMMAND_SET_LOW_LATENCY_MODE:
+			if(ptrPacket->payload[0] == 0x00) {
+				ble_low_latency_mode_switch(false, true);
+				rsp_status = SUCCESS_STATUS;
+			} else if(ptrPacket->payload[0] == 0x01) {
+				ble_low_latency_mode_switch(true, true);
+				rsp_status = SUCCESS_STATUS;
+			} else{
+				rsp_status = PARAMETER_ERROR_STATUS;
+			}
+			
+			user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_SET, ptrPacket->cmdID, rsp_status, NULL, 0);
+		break;
+
 		case TOTA_BLE_CMT_COMMAND_SET_L_R_CHANNEL_BALANCE:
 			{
 				uint8_t val = ptrPacket->payload[0];
@@ -403,6 +417,17 @@ static void user_custom_tota_ble_command_get_handle(PACKET_STRUCTURE *ptrPacket)
 			}
 		break;
 
+		case TOTA_BLE_CMT_COMMAND_GET_LOW_LATENCY_MODE:
+			{
+	            uint8_t temp[1] = {0};
+				
+	            temp[0] = is_low_latency_mode_on();
+	            rsp_status = NO_NEED_STATUS_RESP;
+
+				user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_GET, ptrPacket->cmdID, rsp_status, temp, sizeof(temp));
+	        }
+		break;
+		
 		case TOTA_BLE_CMT_COMMAND_GET_TOUCH_FUNC_ON_OFF:
 	        {
 	            uint8_t temp[1] = {0};

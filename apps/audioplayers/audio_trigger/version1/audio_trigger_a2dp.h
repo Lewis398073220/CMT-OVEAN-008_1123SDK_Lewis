@@ -57,7 +57,13 @@
 #endif
 #endif
 #define A2DP_PLAYER_PLAYBACK_DELAY_AAC_BASE (23000)
+/* Modify by lewis */
+#if 0
 #define A2DP_PLAYER_PLAYBACK_DELAY_AAC_US (A2DP_PLAYER_PLAYBACK_DELAY_AAC_BASE*A2DP_PLAYER_PLAYBACK_DELAY_AAC_MTU)
+#else
+extern uint32_t A2DP_PLAYER_PLAYBACK_DELAY_AAC_US;
+#endif
+/* End Modify by lewis */
 
 /********************************
     AUD_BITS_16
@@ -81,7 +87,13 @@
 #endif
 #endif
 #define A2DP_PLAYER_PLAYBACK_DELAY_SBC_BASE (2800)
+/* Modify by lewis */
+#if 0
 #define A2DP_PLAYER_PLAYBACK_DELAY_SBC_US (A2DP_PLAYER_PLAYBACK_DELAY_SBC_BASE*A2DP_PLAYER_PLAYBACK_DELAY_SBC_MTU)
+#else
+extern uint32_t A2DP_PLAYER_PLAYBACK_DELAY_SBC_US;
+#endif
+/* End Modify by lewis */
 
 #if defined(A2DP_LHDC_ON) || defined(A2DP_LHDCV5_ON)
 /********************************

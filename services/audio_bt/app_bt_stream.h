@@ -347,6 +347,9 @@ void app_a2dp_pcm_data_send_to_thirdparty_algo_thread(uint8_t* pcm_in, uint16_t 
 uint32_t app_linein_need_pcm_data(uint8_t* pcm_buf, uint32_t len);
 #endif
 void app_ble_eq_set(void);
+bool is_low_latency_mode_on(void);
+void enter_exit_low_latency_mode(bool isEn, bool promt_on);
+void ble_low_latency_mode_switch(bool isEn, bool promt_on);
 /* End Add by lewis */
 
 #ifdef __cplusplus

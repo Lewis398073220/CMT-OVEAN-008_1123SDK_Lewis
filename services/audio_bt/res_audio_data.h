@@ -249,6 +249,14 @@ const uint8_t EN_BT_FACTORY_RESET_16000[] = {
 const uint8_t EN_BT_BATTERY_LOW_POWER_OFF_16000[] = {
 #include "res/en/SOUND_BATTERY_LOW_POWER_OFF_16000.txt"
 };
+
+const uint8_t EN_BT_LOW_LATENCY_MODE_ON_16000[] = {
+#include "res/en/SOUND_LOW_LATENCY_MODE_ON_16000.txt"
+};
+
+const uint8_t EN_BT_LOW_LATENCY_MODE_OFF_16000[] = {
+#include "res/en/SOUND_LOW_LATENCY_MODE_OFF_16000.txt"
+};
 #endif
 /* End Add by lewis */
 
