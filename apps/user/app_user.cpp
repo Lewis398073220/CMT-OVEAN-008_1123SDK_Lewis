@@ -336,6 +336,7 @@ void user_custom_restore_default_settings(bool promt_on)
 	//update function status via local user infor
 	app_reset_anc_switch();
 	app_ble_eq_set();
+	enter_exit_low_latency_mode(false, true);
 	
 	if(promt_on) media_PlayAudio(AUD_ID_BT_FACTORY_RESET, 0);
 }

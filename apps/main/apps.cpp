@@ -622,6 +622,8 @@ void app_factory_reset(void)
 	app_ibrt_if_event_entry(APP_UI_EV_FREE_MAN_MODE);
 	
     app_reset_anc_switch();
+	app_ble_eq_set();
+	enter_exit_low_latency_mode(false, true);
 }
 #endif
 /* End Add by jay */
