@@ -667,9 +667,12 @@ void app_ibrt_ui_handle_VA_key(bt_bdaddr_t *remote, APP_KEY_STATUS *status, void
 	TRACE(0, "%s key event: %d", __func__, status->event);
 
 	//CALL_STATE_E call_state = app_bt_get_call_state();
+	btif_hf_call_setup_t is_call_setup = btapp_hfp_get_call_setup();
+	btif_hf_call_active_t is_call_active = btapp_hfp_is_call_active();
 	
 	//if(call_state == CALL_STATE_IDLE) {
-	if(btapp_hfp_is_sco_active() || btapp_hfp_get_call_active()) {
+	TRACE(0, "is call active: %d, is call setup: %d", is_call_active, is_call_setup);
+	if(is_call_setup || is_call_active) {
 		TRACE(0, "now is calling, process MIC MUTE/CLEAR MUTE");
 		if(app_bt_manager.hf_tx_mute_flag == 0)
         {
