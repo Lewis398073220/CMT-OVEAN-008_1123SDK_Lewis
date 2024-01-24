@@ -32,8 +32,8 @@ extern "C" {
  */
 
 #define REVISION_FW_H       0
-#define REVISION_FW_M       2
-#define REVISION_FW_L       9
+#define REVISION_FW_M       3
+#define REVISION_FW_L       0
 
 #define REVISION_PCBA_H     0
 #define REVISION_PCBA_M     2
