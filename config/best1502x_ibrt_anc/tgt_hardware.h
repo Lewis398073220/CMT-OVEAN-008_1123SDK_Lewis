@@ -249,7 +249,11 @@ extern const struct AUD_IO_PATH_CFG_T cfg_audio_input_path_cfg[CFG_HW_AUD_INPUT_
 #endif
 #endif
 
+#ifdef CMT_008_MIC_CONFIG
+#define CFG_HW_AUD_SIDETONE_MIC_DEV         (AUD_CHANNEL_MAP_CH3)
+#else
 #define CFG_HW_AUD_SIDETONE_MIC_DEV         (AUD_CHANNEL_MAP_CH0)
+#endif
 #define CFG_HW_AUD_SIDETONE_GAIN_DBVAL      (-20)
 
 //bt config

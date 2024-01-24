@@ -34,6 +34,8 @@ export I2S_MCLK_PIN ?= 1
 export I2S_MCLK_FROM_SPDIF ?= 1
 endif
 
+export SPEECH_SIDETONE ?= 1
+
 export CMT_008_UI ?= 1
 ifeq ($(CMT_008_UI),1)
 KBUILD_CPPFLAGS += -DCMT_008_UI
