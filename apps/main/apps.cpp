@@ -624,6 +624,7 @@ void app_factory_reset(void)
     app_reset_anc_switch();
 	app_ble_eq_set();
 	enter_exit_low_latency_mode(false, true);
+	ble_sidetone_switch(user_custom_is_sidetone_on());
 }
 #endif
 /* End Add by jay */

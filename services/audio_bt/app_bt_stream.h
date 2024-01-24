@@ -350,6 +350,8 @@ void app_ble_eq_set(void);
 bool is_low_latency_mode_on(void);
 void enter_exit_low_latency_mode(bool isEn, bool promt_on);
 void ble_low_latency_mode_switch(bool isEn, bool promt_on);
+void update_sidetone_on_status(bool isOn);
+void ble_sidetone_switch(bool isOn);
 /* End Add by lewis */
 
 #ifdef __cplusplus

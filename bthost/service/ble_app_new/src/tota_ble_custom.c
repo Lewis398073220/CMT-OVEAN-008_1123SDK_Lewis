@@ -380,6 +380,22 @@ static void user_custom_tota_ble_command_set_handle(PACKET_STRUCTURE *ptrPacket)
 			}
 		break;
 
+		case TOTA_BLE_CMT_COMMAND_SET_SIDETONE_CONTROL_STATUS:
+			if(ptrPacket->payload[0] == 0x00) {
+				user_custom_on_off_sidetone(false, true);
+				ble_sidetone_switch(false);
+				rsp_status = SUCCESS_STATUS;
+			} else if(ptrPacket->payload[0] == 0x01) {
+				user_custom_on_off_sidetone(true, true);
+				ble_sidetone_switch(true);
+				rsp_status = SUCCESS_STATUS;
+			} else{
+				rsp_status = PARAMETER_ERROR_STATUS;
+			}
+			
+			user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_SET, ptrPacket->cmdID, rsp_status, NULL, 0);
+		break;
+
 		case TOTA_BLE_CMT_COMMAND_SET_DEFAULT_SETTING:
 			if(ptrPacket->payload[0] == 1) {
 				user_custom_restore_default_settings(false);
@@ -568,6 +584,17 @@ static void user_custom_tota_ble_command_get_handle(PACKET_STRUCTURE *ptrPacket)
 				user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_GET, ptrPacket->cmdID, rsp_status, temp, sizeof(temp));
             }
         break;
+
+		case TOTA_BLE_CMT_COMMAND_GET_SIDETONE_CONTROL_STATUS:
+			{
+        		uint8_t temp[1] = {0};
+				
+        		temp[0] = user_custom_is_sidetone_on();
+				rsp_status = NO_NEED_STATUS_RESP;
+
+				user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_GET, ptrPacket->cmdID, rsp_status, temp, sizeof(temp));
+			}
+		break;
 
 		case TOTA_BLE_CMT_COMMAND_GET_FIRMWARE_VERSION:
 			{

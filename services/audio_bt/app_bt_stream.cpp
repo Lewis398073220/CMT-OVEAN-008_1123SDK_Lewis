@@ -6504,6 +6504,51 @@ static enum APP_SYSFREQ_FREQ_T sco_player_reselect_freq(enum APP_SYSFREQ_FREQ_T 
     return freq;
 }
 
+/* Add by lewis */
+static bool g_sidetone_on_flag = false;
+
+bool is_sidetone_on(void)
+{
+	return g_sidetone_on_flag;
+}
+
+void update_sidetone_on_status(bool isOn)
+{
+	TRACE(0, "[%s] isOn = %d", __func__, isOn);
+
+	g_sidetone_on_flag = isOn;
+}
+
+void ble_sidetone_switch(bool isOn)
+{
+	TRACE(2,"sidetone state %s, to %s it",
+		g_sidetone_on_flag?"On":"Off", isOn?"enter":"exit");
+	
+	if(g_sidetone_on_flag == isOn)
+	{
+		return;
+	}
+
+	//update sidetone status
+	g_sidetone_on_flag = isOn;
+	
+	if (!(btapp_hfp_is_call_active() || btapp_hfp_get_call_setup()))
+    {
+		TRACE(0, "now is call idle, just save sidetone status");
+		return;
+	}
+
+	if(isOn)
+	{
+		hal_codec_sidetone_enable();		
+	}
+	else
+	{
+		hal_codec_sidetone_disable();
+	}
+}
+/* End Add by lewis */
+
 static int bt_sco_player(bool on, enum APP_SYSFREQ_FREQ_T freq)
 {
     struct AF_STREAM_CONFIG_T stream_cfg;
@@ -7054,7 +7099,20 @@ static int bt_sco_player(bool on, enum APP_SYSFREQ_FREQ_T freq)
             sidetone_set_cfg(hw_iir_cfg_dac);
         }
 #else
+/* Modify by lewis */
+#ifdef CMT_008_BLE_ENABLE
+		if(is_sidetone_on() && (btapp_hfp_is_call_active() || btapp_hfp_get_call_setup()))
+		{
+			hal_codec_dac_mute(true);
+			osDelay(100);
+			hal_codec_sidetone_enable();
+			osDelay(100);
+			hal_codec_dac_mute(false);
+		}
+#else
         hal_codec_sidetone_enable();
+#endif
+/* End Modify by lewis */
 #endif
 #endif
 

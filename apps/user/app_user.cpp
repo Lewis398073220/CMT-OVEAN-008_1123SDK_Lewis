@@ -282,6 +282,25 @@ void user_custom_set_user_EQ(USER_IIR_CFG_T user_eq, bool isSave)
 	}
 }
 
+bool user_custom_is_sidetone_on(void)
+{
+	return user_data.sidetone_on;
+}
+
+void user_custom_on_off_sidetone(bool isOn, bool isSave)
+{
+	user_data.sidetone_on = isOn;
+
+	if(isSave)
+	{
+		struct nvrecord_user_t *nvrecord_user;
+
+		nv_record_user_info_get(&nvrecord_user);
+		nvrecord_user->sidetone_on = isOn;
+		nv_record_user_info_set(nvrecord_user);
+	}
+}
+
 void user_custom_restore_default_settings(bool promt_on)
 {
 	struct nvrecord_user_t *nvrecord_user;
@@ -322,6 +341,9 @@ void user_custom_restore_default_settings(bool promt_on)
 	nvrecord_user->user_eq = user_eq;
 	nv_record_user_info_set(nvrecord_user);
 
+	//default sidetone config
+	nvrecord_user->sidetone_on = false;
+	
 	//update local user infor
 	user_data.touch_lock = nvrecord_user->touch_lock;
 	user_data.prompt_vol_en = nvrecord_user->prompt_vol_en;
@@ -332,11 +354,13 @@ void user_custom_restore_default_settings(bool promt_on)
 	user_data.eq_mode = nvrecord_user->eq_mode;
 	user_data.user_eq = nvrecord_user->user_eq;
 	update_user_EQ(user_data.user_eq);
+	user_data.sidetone_on = nvrecord_user->sidetone_on;
 
 	//update function status via local user infor
 	app_reset_anc_switch();
 	app_ble_eq_set();
 	enter_exit_low_latency_mode(false, true);
+	ble_sidetone_switch(user_data.sidetone_on);
 	
 	if(promt_on) media_PlayAudio(AUD_ID_BT_FACTORY_RESET, 0);
 }
@@ -377,6 +401,14 @@ void nvrecord_user_info_init_for_ota(struct nvrecord_user_t *pUserInfo)
 		    }
 		};
 		pUserInfo->user_eq = user_eq;
+
+		//default sidetone config
+		pUserInfo->sidetone_on = false;
+	}
+	else if(strncmp((const char *)saved_user_info_ver, "V0.0.2", strlen("V0.0.2")) == 0)
+	{
+		//default sidetone config
+		pUserInfo->sidetone_on = false;
 	}
 	//if saved user infor ver is V0.0.0 or other, should init all user infor
 	else
@@ -414,6 +446,9 @@ void nvrecord_user_info_init_for_ota(struct nvrecord_user_t *pUserInfo)
 		    }
 		};
 		pUserInfo->user_eq = user_eq;
+
+		//default sidetone config
+		pUserInfo->sidetone_on = false;
 	}
 	
 	//update user info's history
@@ -477,6 +512,10 @@ void user_custom_nvrecord_user_info_get(void)
 			(int32_t)(user_data.user_eq.param[i].gain * 100), (int32_t)(user_data.user_eq.param[i].Q * 100));
 	}
 	update_user_EQ(user_data.user_eq);
+
+	user_data.sidetone_on = nvrecord_user->sidetone_on;
+	TRACE(0, "*** [%s] sidetone on: %d", __func__, user_data.sidetone_on);
+	update_sidetone_on_status(user_data.sidetone_on);
 }
 
 void user_custom_nvrecord_rebuild_user_info(uint8_t *pUserInfo, bool isRebuildAll)
@@ -516,6 +555,8 @@ void user_custom_nvrecord_rebuild_user_info(uint8_t *pUserInfo, bool isRebuildAl
 	    }
 	};
 	user_info->user_eq = user_eq;
+
+	user_info->sidetone_on = false;
 	
 	//when BES chip is blank, nv_record_extension_init
 	if(isRebuildAll)
@@ -538,6 +579,7 @@ void user_custom_nvrecord_rebuild_user_info(uint8_t *pUserInfo, bool isRebuildAl
 		user_data.eq_mode = user_info->eq_mode;
 		user_data.user_eq = user_info->user_eq;
 		update_user_EQ(user_data.user_eq);
+		user_data.sidetone_on = user_info->sidetone_on;
 	}
 }
 /********************************************** User Info End **********************************************/

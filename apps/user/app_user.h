@@ -53,14 +53,16 @@ typedef struct {
 
 	TOTA_BLE_EQ_MAP eq_mode;
 	USER_IIR_CFG_T user_eq;
-		
+
+	bool sidetone_on;
+	
 	uint8_t quick_conversation_mode;
 } app_user_custom_data_t;
 
 //Record user info's history
 #define NV_USER_VERSION_H       0
 #define NV_USER_VERSION_M       0
-#define NV_USER_VERSION_L       2
+#define NV_USER_VERSION_L       3
 
 #define BT_NAME_LEN             27 //27 = CLASSIC_BTNAME_LEN
 
@@ -160,6 +162,8 @@ TOTA_BLE_EQ_MAP user_custom_get_EQ_mode(void);
 void user_custom_set_EQ_mode(TOTA_BLE_EQ_MAP mode, bool isSave);
 void user_custom_get_user_EQ(USER_IIR_CFG_T *user_eq);
 void user_custom_set_user_EQ(USER_IIR_CFG_T user_eq, bool isSave);
+bool user_custom_is_sidetone_on(void);
+void user_custom_on_off_sidetone(bool isOn, bool isSave);
 void user_custom_restore_default_settings(bool promt_on);
 void user_custom_nvrecord_rebuild_user_info(uint8_t *pUserInfo, bool isRebuildAll);
 void user_custom_nvrecord_user_info_get(void);

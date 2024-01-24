@@ -274,6 +274,8 @@ struct nvrecord_user_t {
 
 	TOTA_BLE_EQ_MAP eq_mode;
 	USER_IIR_CFG_T user_eq;
+
+	bool sidetone_on;
 };
 /* End Add by lewis */
 
