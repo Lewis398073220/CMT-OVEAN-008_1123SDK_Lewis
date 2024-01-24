@@ -134,7 +134,7 @@ extern "C" {
 #define CHAN_NUM_CAPTURE                (SPEECH_CODEC_CAPTURE_CHANNEL_NUM)
 #endif
 #else
-#define CHAN_NUM_CAPTURE                CHAN_NUM_SEND
+#define CHAN_NUM_CAPTURE                1//CHAN_NUM_SEND //Modify by lewis for crash when do mic record, advised from bes Mr. Chen
 #endif
 
 #define BYTE_TO_SAMP_PLAYBACK(n)        ((n) / SAMPLE_SIZE_PLAYBACK / CHAN_NUM_PLAYBACK)

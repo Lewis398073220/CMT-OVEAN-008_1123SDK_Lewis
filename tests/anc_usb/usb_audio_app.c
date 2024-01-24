@@ -3312,6 +3312,7 @@ static int usb_audio_open_codec_stream(enum AUD_STREAM_T stream, enum AUDIO_STRE
 #if !defined(USB_AUDIO_SPEECH) && defined(BTUSB_AUDIO_MODE)
             stream_cfg.io_path = AUD_INPUT_PATH_USBAUDIO;
 #else
+			stream_cfg.channel_map = AUD_CHANNEL_MAP_CH3;  //Add by lewis for crash when do mic record, advised from bes Mr. Chen
             stream_cfg.io_path = AUD_INPUT_PATH_MAINMIC;
 #endif
             stream_cfg.data_ptr = capture_buf;
