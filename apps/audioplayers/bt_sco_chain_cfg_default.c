@@ -1022,8 +1022,8 @@ const SpeechConfig WEAK speech_cfg_default = {
 ****************************************************************************************************/
     .tx_agc = {
         .bypass             = 0,
-        .target_level       = 3,
-        .compression_gain   = 6,
+        .target_level       = 0,//3, //Modify by lewis
+        .compression_gain   = 12,//6, //Modify by lewis
         .limiter_enable     = 1,
     },
 #endif
@@ -1072,7 +1072,7 @@ const SpeechConfig WEAK speech_cfg_default = {
 ****************************************************************************************************/
     .tx_post_gain = {
         .bypass     = 0,
-        .gain_dB    = 6.0f,
+        .gain_dB    = 12.0f//6.0f, //Modify by lewis
     },
 #endif
 
@@ -1230,7 +1230,7 @@ const SpeechConfig WEAK speech_cfg_default = {
 ****************************************************************************************************/
     .rx_agc = {
         .bypass             = 0,
-        .target_level       = 3,
+        .target_level       = 6,//3, //Modify by lewis
         .compression_gain   = 6,
         .limiter_enable     = 1,
     },
@@ -1249,9 +1249,11 @@ const SpeechConfig WEAK speech_cfg_default = {
 	.rx_eq = {
         .bypass = 0,
         .gain   = 0.f,
-        .num    = 1,
+        .num    = 3,
         .params = {
-            {IIR_BIQUARD_PEAKINGEQ, {{5600, -4, 2.0}}},
+            {IIR_BIQUARD_PEAKINGEQ, {{1000,-7, 1.3}}},
+            {IIR_BIQUARD_PEAKINGEQ, {{2000,3, 1.0}}},
+            {IIR_BIQUARD_PEAKINGEQ, {{5000,-3, 1.0}}},
         },
     },
 #endif

@@ -220,7 +220,10 @@ SPEECH_TX_DC_FILTER ?= 1
 SPEECH_TX_AEC2FLOAT ?= 1
 
 #Enable by lewis
-SPEECH_TX_NS3 ?= 1
+SPEECH_TX_NS3 ?= 0
+
+#Enable by lewis
+SPEECH_TX_NS2FLOAT ?= 1
 
 SPEECH_TX_2MIC_NS2 ?= 0
 
@@ -239,14 +242,17 @@ SPEECH_TX_AGC ?= 1
 #Enable by lewis
 SPEECH_TX_EQ ?= 1
 
-SPEECH_TX_POST_GAIN ?= 0
+SPEECH_TX_POST_GAIN ?= 1
 
-SPEECH_RX_NS2FLOAT ?= 0
+SPEECH_RX_NS2FLOAT ?= 1
 
 SPEECH_RX_COMPEXP ?= 0
 
-#Enable by lewis=
+#Enable by lewis
 SPEECH_RX_EQ ?= 1
+
+#Enable by lewis
+SPEECH_RX_AGC ?= 1
 
 SPEECH_RX_POST_GAIN ?= 0
 
