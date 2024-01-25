@@ -226,7 +226,9 @@ extern const struct HAL_KEY_GPIOKEY_CFG_T cfg_hw_gpio_key_cfg[CFG_HW_GPIOKEY_NUM
 #define ANC_REF_MIC_CH_R                    0  
 
 #ifdef CMT_008_MIC_CONFIG
-#define ANC_VMIC_CFG                        (AUD_VMIC_MAP_VMIC1 | AUD_VMIC_MAP_VMIC2) //Lewis: If not add AUD_VMIC_MAP_VMIC2, will cause pop noise when making a call. I don't know why.
+//Lewis: If not add AUD_VMIC_MAP_VMIC2, will cause pop noise when making a call. But, if add AUD_VMIC_MAP_VMIC2, will cause ANC background noise
+#define ANC_VMIC_CFG                        (AUD_VMIC_MAP_VMIC1)
+//#define ANC_VMIC_CFG                        (AUD_VMIC_MAP_VMIC1 | AUD_VMIC_MAP_VMIC2)
 #else
 #define ANC_VMIC_CFG                        (AUD_VMIC_MAP_VMIC2)
 #endif
