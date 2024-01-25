@@ -9374,7 +9374,7 @@ int app_bt_stream_init(void)
     default_stream_volume.hfp_vol = hal_codec_get_default_dac_volume_index();
     stream_local_volume = hal_codec_get_default_dac_volume_index();
 #ifdef AUDIO_LINEIN
-    stream_linein_volume = hal_codec_get_default_dac_volume_index();
+    stream_linein_volume = TGT_VOLUME_LEVEL_MAX;//hal_codec_get_default_dac_volume_index(); //Modify by lewis
 #endif
 
     app_bt_stream_trigger_checker_init();
