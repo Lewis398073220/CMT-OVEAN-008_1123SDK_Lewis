@@ -863,13 +863,14 @@ void app_test_pwm_set(uint8_t level)
      struct HAL_PWM_CFG_T cfg;
 
      // make sure breath led run normal, which add power
+     //!!!very important, can't use APP_SYSFREQ_USER_APP_12 here, otherwise will cause af_thread warning when set APP_SYSFREQ_USER_APP_12 to 32K during a call 
      if(level == 0 || level == 100)
      {
-        app_sysfreq_req(APP_SYSFREQ_USER_APP_12, APP_SYSFREQ_32K);
+        app_sysfreq_req(APP_SYSFREQ_USER_APP_INIT, APP_SYSFREQ_32K);
      }
      else if(level >= 1)
      {
-        app_sysfreq_req(APP_SYSFREQ_USER_APP_12, APP_SYSFREQ_26M);
+        app_sysfreq_req(APP_SYSFREQ_USER_APP_INIT, APP_SYSFREQ_26M);
      }
 
      if(level == 0 || level == 100)
@@ -901,13 +902,14 @@ void app_pwm_set(APP_BREATH_ID_T id, uint8_t ratio)
 	 if(ratio > 100) ratio = 100;
 	 
      //make sure breath led run normal, which add power
+     //!!!very important, can't use APP_SYSFREQ_USER_APP_12 here, otherwise will cause af_thread warning when set APP_SYSFREQ_USER_APP_12 to 32K during a call 
      if(ratio == 0 || ratio == 100)
      {
-        app_sysfreq_req(APP_SYSFREQ_USER_APP_12, APP_SYSFREQ_32K);
+        app_sysfreq_req(APP_SYSFREQ_USER_APP_INIT, APP_SYSFREQ_32K);
      }
      else if(ratio >= 1)
      {
-        app_sysfreq_req(APP_SYSFREQ_USER_APP_12, APP_SYSFREQ_26M);
+        app_sysfreq_req(APP_SYSFREQ_USER_APP_INIT, APP_SYSFREQ_26M);
      }
 
      if(ratio == 0 || ratio == 100)
