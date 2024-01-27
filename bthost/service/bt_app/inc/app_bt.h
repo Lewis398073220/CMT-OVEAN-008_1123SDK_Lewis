@@ -382,6 +382,10 @@ void app_bt_resume_music_player(uint8_t deviceId);
 
 bool app_bt_is_device_profile_connected(uint8_t deviceId);
 
+/* Add by lewis */
+uint8_t app_bt_get_connected_device_num(void);
+/* End Add by lewis */
+
 bool app_bt_is_acl_connected(uint8_t device_id);
 
 bool app_bt_is_sco_connected(uint8_t device_id);

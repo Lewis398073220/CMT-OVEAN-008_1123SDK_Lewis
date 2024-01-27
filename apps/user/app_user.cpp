@@ -468,7 +468,9 @@ void user_custom_nvrecord_user_info_get(void)
 	uint8_t saved_user_info_ver[13];
 	uint8_t local_user_info_ver[13];
 	uint8_t i = 0;
-		
+
+	TRACE(0, "*** [%s] total/used bytes: %d/%d", __func__, NV_SDK_RESERVED_LEN, sizeof(NV_SDK_INFO_T));
+
 	nv_record_user_info_get(&nvrecord_user);
 	
 	snprintf((char *)saved_user_info_ver, sizeof(saved_user_info_ver), "V%d.%d.%d",
@@ -689,6 +691,7 @@ static void jack_detn_handler(void const *param)
 				ac107_hw_open();
 				ac107_i2c_init();
 #endif				
+				app_stop_10_second_timer(APP_POWEROFF_TIMER_ID);
 			}
 
 			//delay some time to init ac107
@@ -744,6 +747,8 @@ static void jack_detn_handler(void const *param)
 			app_bt_profile_connect_manager_opening_reconnect();
 
 			jack_irq_update();
+
+			app_start_10_second_timer(APP_POWEROFF_TIMER_ID);
 		}
 	} else{
 		app_3_5jack_swtimer_start(JACK_QUICK_SWTIMER_MS);

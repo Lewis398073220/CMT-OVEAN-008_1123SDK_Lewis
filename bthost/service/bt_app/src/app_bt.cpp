@@ -1059,6 +1059,26 @@ bool app_bt_is_device_profile_connected(uint8_t device_id)
     }
 }
 
+/* Add by lewis */
+uint8_t app_bt_get_connected_device_num(void)
+{
+    uint8_t i = 0;
+	uint8_t connceted_device_num = 0; 
+		
+    for(i = 0; i < BT_DEVICE_NUM; i++)
+    {
+        if(app_bt_is_device_profile_connected(i))
+        {
+            connceted_device_num++;
+        }
+    }
+
+    TRACE(1,"connected device num is %d", connceted_device_num);
+	
+    return connceted_device_num;
+}
+/* End Add by lewis */
+
 bool app_bt_is_acl_connected(uint8_t device_id)
 {
     struct BT_DEVICE_T *curr_device = app_bt_get_device(device_id);
@@ -4062,7 +4082,8 @@ void app_bt_profile_connect_manager_hf(int id, btif_hf_channel_t* Chan, struct h
 /* Add by lewis */
 #ifdef CMT_008_UI_LED_INDICATION
 		app_status_indication_set(APP_STATUS_INDICATION_CONNECTED);
-#endif
+#endif		
+		app_stop_10_second_timer(APP_POWEROFF_TIMER_ID);
 /* End add by lewis */
 #ifdef GFPS_ENABLED
         app_gfps_read_rpa_when_bt_connect(&curr_device->remote);
@@ -4088,11 +4109,22 @@ void app_bt_profile_connect_manager_hf(int id, btif_hf_channel_t* Chan, struct h
 #if defined(MEDIA_PLAYER_SUPPORT)//defined(MEDIA_PLAYER_SUPPORT)&& !defined(IBRT) //Modify by lewis
         audio_player_play_prompt(AUD_ID_BT_DIS_CONNECT, id);
 #endif
-/* Add by lewis */
+		/* Add by lewis */
+		if(!app_bt_get_connected_device_num()) 
+		{
 #ifdef CMT_008_UI_LED_INDICATION
-		app_status_indication_set(APP_STATUS_INDICATION_DISCONNECTED);
+			app_status_indication_set(APP_STATUS_INDICATION_DISCONNECTED);
 #endif
-/* End add by lewis */
+
+#ifdef CMT_008_3_5JACK_CTR
+			if(!app_is_3_5jack_inplug())
+#endif
+
+			{
+				app_start_10_second_timer(APP_POWEROFF_TIMER_ID);
+			}
+		}
+		/* End add by lewis */
 #ifdef __INTERCONNECTION__
         app_interconnection_disconnected_callback();
 #endif
@@ -4354,6 +4386,7 @@ void app_bt_profile_connect_manager_a2dp(int id, a2dp_stream_t *Stream, const   
 #ifdef CMT_008_UI_LED_INDICATION
 		app_status_indication_set(APP_STATUS_INDICATION_CONNECTED);
 #endif
+		app_stop_10_second_timer(APP_POWEROFF_TIMER_ID);
 /* End add by lewis */
 #ifdef GFPS_ENABLED
         app_gfps_read_rpa_when_bt_connect(&curr_device->remote);
@@ -4378,11 +4411,22 @@ void app_bt_profile_connect_manager_a2dp(int id, a2dp_stream_t *Stream, const   
 #if defined(MEDIA_PLAYER_SUPPORT)//defined(MEDIA_PLAYER_SUPPORT)&& !defined(IBRT) //Modify by lewis
         audio_player_play_prompt(AUD_ID_BT_DIS_CONNECT, id);
 #endif
-/* Add by lewis */
+		/* Add by lewis */
+		if(!app_bt_get_connected_device_num()) 
+		{
 #ifdef CMT_008_UI_LED_INDICATION
-		app_status_indication_set(APP_STATUS_INDICATION_DISCONNECTED);
+			app_status_indication_set(APP_STATUS_INDICATION_DISCONNECTED);
 #endif
-/* End add by lewis */
+
+#ifdef CMT_008_3_5JACK_CTR
+			if(!app_is_3_5jack_inplug())
+#endif
+
+			{
+				app_start_10_second_timer(APP_POWEROFF_TIMER_ID);
+			}
+		}
+		/* End add by lewis */
 #ifdef __INTERCONNECTION__
         app_interconnection_disconnected_callback();
 #endif
