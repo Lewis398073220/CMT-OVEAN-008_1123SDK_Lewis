@@ -353,13 +353,21 @@ typedef void (*APP_10_SECOND_TIMER_CB_T)(void);
 void app_pair_timerout(void);
 void app_poweroff_timerout(void);
 void CloseEarphone(void);
+void shutdown_for_power_savingmode(void); //Add by lewis
 
 typedef struct
 {
     uint8_t timer_id;
     uint8_t timer_en;
+/* Modify by lewis */
+#if 0
     uint8_t timer_count;
     uint8_t timer_period;
+#else
+	uint32_t timer_count;
+	uint32_t timer_period;
+#endif
+/* End Modify by lewis */	
     APP_10_SECOND_TIMER_CB_T cb;
 }APP_10_SECOND_TIMER_STRUCT;
 
@@ -401,6 +409,7 @@ APP_10_SECOND_TIMER_STRUCT app_10_second_array[] =
 {
     INIT_APP_TIMER(APP_PAIR_TIMER_ID, 0, 0, 6, bes_bt_me_transfer_pairing_to_connectable),
     INIT_APP_TIMER(APP_POWEROFF_TIMER_ID, 0, 0, 90, CloseEarphone),
+    INIT_APP_TIMER(APP_POWER_SAVINGMODE_SHUTDOWN_TIMER_ID, 0, 0, 90, shutdown_for_power_savingmode), //Add by lewis
 #ifdef GFPS_ENABLED
     INIT_APP_TIMER(APP_FASTPAIR_LASTING_TIMER_ID, 0, 0, APP_FAST_PAIRING_TIMEOUT_IN_SECOND/10,
         app_fast_pairing_timeout_timehandler),
@@ -427,6 +436,8 @@ void app_start_10_second_timer(uint8_t timer_id)
     timer->timer_count = 0;
 }
 
+/* Modify by lewis */
+#if 0
 void app_set_10_second_timer(uint8_t timer_id, uint8_t enable, uint8_t period)
 {
 	TRACE(1,"%s timer:%d en:%d period:%d", __func__, timer_id, enable, period); //Add by lewis
@@ -436,6 +447,40 @@ void app_set_10_second_timer(uint8_t timer_id, uint8_t enable, uint8_t period)
     timer->timer_en = enable;
     timer->timer_count = period;
 }
+#else
+void app_set_10_second_timer(uint8_t timer_id, uint8_t enable, uint32_t period)
+{
+	TRACE(1,"%s timer:%d en:%d period:%d", __func__, timer_id, enable, period);
+
+    APP_10_SECOND_TIMER_STRUCT *timer = &app_10_second_array[timer_id];
+
+    timer->timer_en = 0;
+	timer->timer_count = 0;
+	timer->timer_period = period;
+	timer->timer_en = enable;
+}
+#endif
+/* End Modify by lewis */
+
+/* Add by lewis */
+uint32_t app_get_count_of_10_second_timer(uint8_t timer_id)
+{
+	TRACE(1,"%s %d", __func__, timer_id);
+
+    APP_10_SECOND_TIMER_STRUCT *timer = &app_10_second_array[timer_id];
+
+	return timer->timer_count;
+}
+
+uint32_t app_get_period_of_10_second_timer(uint8_t timer_id)
+{
+	TRACE(1,"%s %d", __func__, timer_id);
+
+    APP_10_SECOND_TIMER_STRUCT *timer = &app_10_second_array[timer_id];
+
+	return timer->timer_period;
+}
+/* End Add by lewis */
 
 void app_10_second_timer_check(void)
 {
@@ -454,6 +499,16 @@ void app_10_second_timer_check(void)
         timer++;
     }
 }
+
+/* Add by lewis */
+void shutdown_for_power_savingmode(void)
+{
+	if(app_bt_get_connected_device_num()) {
+        TRACE(0,"!!!power savingmode shutdown\n");
+        app_shutdown();
+    }
+}
+/* End Add by lewis */
 
 void CloseEarphone(void)
 {
@@ -625,6 +680,7 @@ void app_factory_reset(void)
 	app_ble_eq_set();
 	enter_exit_low_latency_mode(false, true);
 	ble_sidetone_switch(user_custom_is_sidetone_on());
+	update_power_savingmode_shutdown_timer(user_custom_get_shutdown_time(), false);
 }
 #endif
 /* End Add by jay */

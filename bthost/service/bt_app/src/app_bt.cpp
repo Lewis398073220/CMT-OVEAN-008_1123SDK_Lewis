@@ -4084,6 +4084,7 @@ void app_bt_profile_connect_manager_hf(int id, btif_hf_channel_t* Chan, struct h
 		app_status_indication_set(APP_STATUS_INDICATION_CONNECTED);
 #endif		
 		app_stop_10_second_timer(APP_POWEROFF_TIMER_ID);
+		update_power_savingmode_shutdown_timer(user_custom_get_shutdown_time(), true);
 /* End add by lewis */
 #ifdef GFPS_ENABLED
         app_gfps_read_rpa_when_bt_connect(&curr_device->remote);
@@ -4119,9 +4120,19 @@ void app_bt_profile_connect_manager_hf(int id, btif_hf_channel_t* Chan, struct h
 #ifdef CMT_008_3_5JACK_CTR
 			if(!app_is_3_5jack_inplug())
 #endif
-
 			{
 				app_start_10_second_timer(APP_POWEROFF_TIMER_ID);
+				update_power_savingmode_shutdown_timer(user_custom_get_shutdown_time(), false);
+			}
+		}
+		else
+		{
+#ifdef CMT_008_3_5JACK_CTR
+			if(!app_is_3_5jack_inplug())
+#endif
+			{
+				//restart timer
+				update_power_savingmode_shutdown_timer(user_custom_get_shutdown_time(), true);
 			}
 		}
 		/* End add by lewis */
@@ -4387,6 +4398,7 @@ void app_bt_profile_connect_manager_a2dp(int id, a2dp_stream_t *Stream, const   
 		app_status_indication_set(APP_STATUS_INDICATION_CONNECTED);
 #endif
 		app_stop_10_second_timer(APP_POWEROFF_TIMER_ID);
+		update_power_savingmode_shutdown_timer(user_custom_get_shutdown_time(), true);
 /* End add by lewis */
 #ifdef GFPS_ENABLED
         app_gfps_read_rpa_when_bt_connect(&curr_device->remote);
@@ -4421,9 +4433,19 @@ void app_bt_profile_connect_manager_a2dp(int id, a2dp_stream_t *Stream, const   
 #ifdef CMT_008_3_5JACK_CTR
 			if(!app_is_3_5jack_inplug())
 #endif
-
 			{
 				app_start_10_second_timer(APP_POWEROFF_TIMER_ID);
+				update_power_savingmode_shutdown_timer(user_custom_get_shutdown_time(), false);
+			}
+		}
+		else
+		{
+#ifdef CMT_008_3_5JACK_CTR
+			if(!app_is_3_5jack_inplug())
+#endif
+			{
+				//restart timer
+				update_power_savingmode_shutdown_timer(user_custom_get_shutdown_time(), true);
 			}
 		}
 		/* End add by lewis */

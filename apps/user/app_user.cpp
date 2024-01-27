@@ -90,6 +90,9 @@
 
 /********************************************** User Info Start **********************************************/
 extern const IIR_CFG_T * const audio_eq_hw_dac_iir_cfg_list[];
+extern void app_set_10_second_timer(uint8_t timer_id, uint8_t enable, uint32_t period);
+extern uint32_t app_get_count_of_10_second_timer(uint8_t timer_id);
+extern uint32_t app_get_period_of_10_second_timer(uint8_t timer_id);
 
 app_user_custom_data_t user_data;
 
@@ -301,10 +304,73 @@ void user_custom_on_off_sidetone(bool isOn, bool isSave)
 	}
 }
 
+uint16_t user_custom_get_shutdown_time(void)
+{
+	TRACE(0, "%s min: %d", __func__, user_data.shutdown_time);
+
+	return user_data.shutdown_time;
+}
+
+void user_custom_set_shutdown_time(uint16_t minute, bool isSave)
+{
+	user_data.shutdown_time = minute;
+
+	if(isSave)
+	{
+		struct nvrecord_user_t *nvrecord_user;
+
+		nv_record_user_info_get(&nvrecord_user);
+		nvrecord_user->shutdown_time = minute;
+		nv_record_user_info_set(nvrecord_user);
+	}
+}
+
+void update_power_savingmode_shutdown_timer(uint16_t minute, bool isEn)
+{
+	uint32_t second = 0;
+
+	TRACE(0, "%s min: %d, isEn: %d", __func__, minute, isEn);
+
+	if((minute > BLE_SHUTDOWN_TIME_MAP_SHUTDOWN_NOW) && (minute <= BLE_SHUTDOWN_TIME_MAP_NEVER_SHUTDOWN))
+	{
+		second = minute * 60 / 10;
+	
+		switch(minute)
+		{
+			case BLE_SHUTDOWN_TIME_MAP_NEVER_SHUTDOWN:
+				app_set_10_second_timer(APP_POWER_SAVINGMODE_SHUTDOWN_TIMER_ID, 
+					false, second);
+			break;
+
+			default:
+				app_set_10_second_timer(APP_POWER_SAVINGMODE_SHUTDOWN_TIMER_ID, 
+					isEn, second);
+			break;
+		}
+	}
+}
+
+uint16_t user_custom_get_remaining_time(void)
+{
+	uint32_t timer_count = 0;
+	uint32_t timer_period = 0;
+	uint16_t remaining_time = 0;
+	
+	timer_count = app_get_count_of_10_second_timer(APP_POWER_SAVINGMODE_SHUTDOWN_TIMER_ID);
+	timer_period = app_get_period_of_10_second_timer(APP_POWER_SAVINGMODE_SHUTDOWN_TIMER_ID);
+
+	remaining_time = (timer_period - timer_count) * 10 / 60;
+	
+	TRACE(0, "%s remaining min: %d", __func__, remaining_time);
+
+	return remaining_time;
+}
+
 void user_custom_restore_default_settings(bool promt_on)
 {
 	struct nvrecord_user_t *nvrecord_user;
-
+	bool is_BT_connected = false;
+	
 	nv_record_user_info_get(&nvrecord_user);
 	//default touch config
 	nvrecord_user->touch_lock = false;
@@ -343,6 +409,9 @@ void user_custom_restore_default_settings(bool promt_on)
 
 	//default sidetone config
 	nvrecord_user->sidetone_on = false;
+
+	//default shutdown time config
+	nvrecord_user->shutdown_time = BLE_SHUTDOWN_TIME_MAP_NEVER_SHUTDOWN;
 	
 	//update local user infor
 	user_data.touch_lock = nvrecord_user->touch_lock;
@@ -355,12 +424,15 @@ void user_custom_restore_default_settings(bool promt_on)
 	user_data.user_eq = nvrecord_user->user_eq;
 	update_user_EQ(user_data.user_eq);
 	user_data.sidetone_on = nvrecord_user->sidetone_on;
-
+	user_data.shutdown_time = nvrecord_user->shutdown_time;
+	
 	//update function status via local user infor
 	app_reset_anc_switch();
 	app_ble_eq_set();
 	enter_exit_low_latency_mode(false, true);
 	ble_sidetone_switch(user_data.sidetone_on);
+	is_BT_connected = app_bt_get_connected_device_num()? true : false;
+	update_power_savingmode_shutdown_timer(user_data.shutdown_time, is_BT_connected);
 	
 	if(promt_on) media_PlayAudio(AUD_ID_BT_FACTORY_RESET, 0);
 }
@@ -404,11 +476,17 @@ void nvrecord_user_info_init_for_ota(struct nvrecord_user_t *pUserInfo)
 
 		//default sidetone config
 		pUserInfo->sidetone_on = false;
+
+		//default shutdown time config
+		pUserInfo->shutdown_time = BLE_SHUTDOWN_TIME_MAP_NEVER_SHUTDOWN;
 	}
 	else if(strncmp((const char *)saved_user_info_ver, "V0.0.2", strlen("V0.0.2")) == 0)
 	{
 		//default sidetone config
 		pUserInfo->sidetone_on = false;
+
+		//default shutdown time config
+		pUserInfo->shutdown_time = BLE_SHUTDOWN_TIME_MAP_NEVER_SHUTDOWN;
 	}
 	//if saved user infor ver is V0.0.0 or other, should init all user infor
 	else
@@ -449,6 +527,9 @@ void nvrecord_user_info_init_for_ota(struct nvrecord_user_t *pUserInfo)
 
 		//default sidetone config
 		pUserInfo->sidetone_on = false;
+
+		//default shutdown time config
+		pUserInfo->shutdown_time = BLE_SHUTDOWN_TIME_MAP_NEVER_SHUTDOWN;
 	}
 	
 	//update user info's history
@@ -518,6 +599,10 @@ void user_custom_nvrecord_user_info_get(void)
 	user_data.sidetone_on = nvrecord_user->sidetone_on;
 	TRACE(0, "*** [%s] sidetone on: %d", __func__, user_data.sidetone_on);
 	update_sidetone_on_status(user_data.sidetone_on);
+
+	user_data.shutdown_time = nvrecord_user->shutdown_time;
+	TRACE(0, "*** [%s] shutdown time: 0x%X", __func__, user_data.shutdown_time);
+	update_power_savingmode_shutdown_timer(user_data.shutdown_time, false); //don't start shutdown timer when system is in init status
 }
 
 void user_custom_nvrecord_rebuild_user_info(uint8_t *pUserInfo, bool isRebuildAll)
@@ -558,7 +643,11 @@ void user_custom_nvrecord_rebuild_user_info(uint8_t *pUserInfo, bool isRebuildAl
 	};
 	user_info->user_eq = user_eq;
 
+	//default sidetone config
 	user_info->sidetone_on = false;
+
+	//default shutdown time config
+	user_info->shutdown_time = BLE_SHUTDOWN_TIME_MAP_NEVER_SHUTDOWN;
 	
 	//when BES chip is blank, nv_record_extension_init
 	if(isRebuildAll)
@@ -582,6 +671,7 @@ void user_custom_nvrecord_rebuild_user_info(uint8_t *pUserInfo, bool isRebuildAl
 		user_data.user_eq = user_info->user_eq;
 		update_user_EQ(user_data.user_eq);
 		user_data.sidetone_on = user_info->sidetone_on;
+		user_data.shutdown_time = user_info->shutdown_time;
 	}
 }
 /********************************************** User Info End **********************************************/
@@ -692,6 +782,7 @@ static void jack_detn_handler(void const *param)
 				ac107_i2c_init();
 #endif				
 				app_stop_10_second_timer(APP_POWEROFF_TIMER_ID);
+				app_stop_10_second_timer(APP_POWER_SAVINGMODE_SHUTDOWN_TIMER_ID);
 			}
 
 			//delay some time to init ac107
@@ -749,6 +840,7 @@ static void jack_detn_handler(void const *param)
 			jack_irq_update();
 
 			app_start_10_second_timer(APP_POWEROFF_TIMER_ID);
+			app_stop_10_second_timer(APP_POWER_SAVINGMODE_SHUTDOWN_TIMER_ID);
 		}
 	} else{
 		app_3_5jack_swtimer_start(JACK_QUICK_SWTIMER_MS);

@@ -257,6 +257,39 @@ static void user_custom_tota_ble_command_set_handle(PACKET_STRUCTURE *ptrPacket)
 			
 			user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_SET, ptrPacket->cmdID, rsp_status, NULL, 0);
         break;
+
+		case TOTA_BLE_CMT_COMMAND_SET_SHUTDOWN_TIME:
+			{
+				uint8_t temp[2] = {0};
+				uint16_t min = 0;
+				bool is_BT_connected = false;
+
+				temp[0] = ptrPacket->payload[1];
+				temp[1] = ptrPacket->payload[0];
+				min = *((uint16_t *)temp);
+				TOTA_LOG_DBG(0, "shutdown time: %dmins", min);
+				
+				switch(min)
+				{
+					case BLE_SHUTDOWN_TIME_MAP_SHUTDOWN_NOW:
+						app_shutdown();
+					break;
+
+					case BLE_SHUTDOWN_TIME_MAP_NEVER_SHUTDOWN:
+						user_custom_set_shutdown_time(min, true);
+						update_power_savingmode_shutdown_timer(min, false);
+					break;
+					
+					default:
+						user_custom_set_shutdown_time(min, true);
+						is_BT_connected = app_bt_get_connected_device_num()? true : false;
+						update_power_savingmode_shutdown_timer(min, is_BT_connected);
+					break;
+				}
+				
+            	user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_SET, ptrPacket->cmdID, rsp_status, NULL, 0);
+			}
+		break;
 		
 		case TOTA_BLE_CMT_COMMAND_SET_TOUCH_FUNC_ON_OFF:
 			if(ptrPacket->payload[0] == 0x00) {
@@ -510,6 +543,30 @@ static void user_custom_tota_ble_command_get_handle(PACKET_STRUCTURE *ptrPacket)
 			}
         break;
 
+		case TOTA_BLE_CMT_COMMAND_GET_SHUTDOWN_TIME:
+			{
+				uint8_t temp[4] = {0};
+        		uint16_t shutdown_time = 0;
+				uint16_t remaining_time = 0;
+				uint16_t big_endian_temp = 0;
+				uint8_t *big_endian = (uint8_t *)&big_endian_temp;
+				
+				shutdown_time = user_custom_get_shutdown_time();
+				big_endian_temp = shutdown_time;
+				temp[0] = big_endian[1];
+				temp[1] = big_endian[0];
+
+				remaining_time = user_custom_get_remaining_time();
+				big_endian_temp = remaining_time;
+				temp[2] = big_endian[1];
+				temp[3] = big_endian[0];
+				
+				rsp_status = NO_NEED_STATUS_RESP;
+
+				user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_GET, ptrPacket->cmdID, rsp_status, temp, sizeof(temp));
+			}
+		break;
+		
 		case TOTA_BLE_CMT_COMMAND_GET_EQ_MODE:
 			{
         		uint8_t temp[1] = {0};

@@ -53,7 +53,10 @@ void app_status_set_num(const char* p);
 
 #define APP_PAIR_TIMER_ID       0
 #define APP_POWEROFF_TIMER_ID   1
-#define APP_FASTPAIR_LASTING_TIMER_ID   2
+/* Add by lewis */
+#define APP_POWER_SAVINGMODE_SHUTDOWN_TIMER_ID   2
+/* End Add by lewis */
+#define APP_FASTPAIR_LASTING_TIMER_ID   3 //Modify by lewis from 2 to 3
 
 void app_stop_10_second_timer(uint8_t timer_id);
 void app_start_10_second_timer(uint8_t timer_id);

@@ -276,6 +276,8 @@ struct nvrecord_user_t {
 	USER_IIR_CFG_T user_eq;
 
 	bool sidetone_on;
+
+	uint16_t shutdown_time;//Minutes
 };
 /* End Add by lewis */
 

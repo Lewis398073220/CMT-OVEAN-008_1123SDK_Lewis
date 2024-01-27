@@ -55,6 +55,8 @@ typedef struct {
 	USER_IIR_CFG_T user_eq;
 
 	bool sidetone_on;
+
+	uint16_t shutdown_time;//Minutes
 	
 	uint8_t quick_conversation_mode;
 } app_user_custom_data_t;
@@ -164,6 +166,10 @@ void user_custom_get_user_EQ(USER_IIR_CFG_T *user_eq);
 void user_custom_set_user_EQ(USER_IIR_CFG_T user_eq, bool isSave);
 bool user_custom_is_sidetone_on(void);
 void user_custom_on_off_sidetone(bool isOn, bool isSave);
+uint16_t user_custom_get_shutdown_time(void);
+void user_custom_set_shutdown_time(uint16_t minute, bool isSave);
+void update_power_savingmode_shutdown_timer(uint16_t minute, bool isEn);
+uint16_t user_custom_get_remaining_time(void);
 void user_custom_restore_default_settings(bool promt_on);
 void user_custom_nvrecord_rebuild_user_info(uint8_t *pUserInfo, bool isRebuildAll);
 void user_custom_nvrecord_user_info_get(void);
