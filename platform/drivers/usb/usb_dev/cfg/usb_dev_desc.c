@@ -373,9 +373,9 @@ const uint8_t *uaud_string_desc(uint8_t index)
         USB_AUDIO_STR_DESC_PRODUCT;
 #else
     {
-        0x1C,                                                       //bLength //Modify by lewis
+        0x14,                                                       //bLength //Modify by lewis
         STRING_DESCRIPTOR,                                          //bDescriptorType 0x03
-        'C',0,'M',0,'T',0,'-',0,'O',0,'V',0,'E',0,'A',0,'N',0,'-',0,'0',0,'0',0,'8',0 //bString iProduct - Best Audio //Modify by lewis
+        'H',0,'y',0,'p',0,'e',0,'r',0,' ',0,'P',0,'r',0,'o',0, //bString iProduct - Best Audio //Modify by lewis
     };
 #endif
 
