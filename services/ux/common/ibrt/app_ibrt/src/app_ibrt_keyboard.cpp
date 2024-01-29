@@ -690,6 +690,13 @@ void app_ibrt_ui_handle_VA_key(bt_bdaddr_t *remote, APP_KEY_STATUS *status, void
         }
 	} else{
 		TRACE(0, "now call is idle, process VA");
+		
+		if(!user_custom_is_VA_control_on())
+		{
+			TRACE(0,"VA control is off, ignore");
+			return;
+		}
+		
 #ifdef SUPPORT_SIRI
 		if(open_siri_flag == 1){
 			TRACE(0,"close siri");

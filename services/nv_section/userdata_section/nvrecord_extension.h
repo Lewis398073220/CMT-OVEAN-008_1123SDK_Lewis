@@ -281,6 +281,8 @@ struct nvrecord_user_t {
 
 	uint8_t nr_mode_level;//noise reduction mode
 	uint8_t awareness_mode_level;//awareness mode
+
+	bool VA_control_on;
 };
 /* End Add by lewis */
 

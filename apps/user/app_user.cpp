@@ -508,12 +508,32 @@ void app_audsec_update_nr_mode_anc_level(void *anc_list)
 	panc_list[APP_ANC_MODE5 - 1]->anc_cfg_ff_r.total_gain = 0;
 }
 
+bool user_custom_is_VA_control_on(void)
+{
+	return user_data.VA_control_on;
+}
+
+void user_custom_on_off_VA_control(bool isOn, bool isSave)
+{
+	user_data.VA_control_on = isOn;
+
+	if(isSave)
+	{
+		struct nvrecord_user_t *nvrecord_user;
+
+		nv_record_user_info_get(&nvrecord_user);
+		nvrecord_user->VA_control_on = isOn;
+		nv_record_user_info_set(nvrecord_user);
+	}
+}
+
 void user_custom_restore_default_settings(bool promt_on)
 {
 	struct nvrecord_user_t *nvrecord_user;
 	bool is_BT_connected = false;
 	
 	nv_record_user_info_get(&nvrecord_user);
+	
 	//default touch config
 	nvrecord_user->touch_lock = false;
 	
@@ -547,8 +567,7 @@ void user_custom_restore_default_settings(bool promt_on)
 	    }
 	};
 	nvrecord_user->user_eq = user_eq;
-	nv_record_user_info_set(nvrecord_user);
-
+	
 	//default sidetone config
 	nvrecord_user->sidetone_on = false;
 
@@ -558,6 +577,11 @@ void user_custom_restore_default_settings(bool promt_on)
 	//default ANC level config
 	nvrecord_user->nr_mode_level = BLE_ANC_LEVEL_MAP_HIGH;
 	nvrecord_user->awareness_mode_level = BLE_ANC_LEVEL_MAP_HIGH;
+
+	//default VA control config
+	nvrecord_user->VA_control_on = true;
+
+	nv_record_user_info_set(nvrecord_user);
 	
 	//update local user infor
 	user_data.touch_lock = nvrecord_user->touch_lock;
@@ -573,6 +597,7 @@ void user_custom_restore_default_settings(bool promt_on)
 	user_data.shutdown_time = nvrecord_user->shutdown_time;
 	user_data.nr_mode_level = nvrecord_user->nr_mode_level;
 	user_data.awareness_mode_level = nvrecord_user->awareness_mode_level;
+	user_data.VA_control_on = nvrecord_user->VA_control_on;
 	
 	//update function status via local user infor
 	app_reset_anc_switch();
@@ -631,6 +656,9 @@ void nvrecord_user_info_init_for_ota(struct nvrecord_user_t *pUserInfo)
 		//default ANC level config
 		pUserInfo->nr_mode_level = BLE_ANC_LEVEL_MAP_HIGH;
 		pUserInfo->awareness_mode_level = BLE_ANC_LEVEL_MAP_HIGH;
+
+		//default VA control config
+		pUserInfo->VA_control_on = true;
 	}
 	else if(strncmp((const char *)saved_user_info_ver, "V0.0.2", strlen("V0.0.2")) == 0)
 	{
@@ -643,6 +671,9 @@ void nvrecord_user_info_init_for_ota(struct nvrecord_user_t *pUserInfo)
 		//default ANC level config
 		pUserInfo->nr_mode_level = BLE_ANC_LEVEL_MAP_HIGH;
 		pUserInfo->awareness_mode_level = BLE_ANC_LEVEL_MAP_HIGH;
+
+		//default VA control config
+		pUserInfo->VA_control_on = true;
 	}
 	//if saved user infor ver is V0.0.0 or other, should init all user infor
 	else
@@ -690,6 +721,9 @@ void nvrecord_user_info_init_for_ota(struct nvrecord_user_t *pUserInfo)
 		//default ANC level config
 		pUserInfo->nr_mode_level = BLE_ANC_LEVEL_MAP_HIGH;
 		pUserInfo->awareness_mode_level = BLE_ANC_LEVEL_MAP_HIGH;
+
+		//default VA control config
+		pUserInfo->VA_control_on = true;
 	}
 	
 	//update user info's history
@@ -768,6 +802,9 @@ void user_custom_nvrecord_user_info_get(void)
 	TRACE(0, "*** [%s] nr mode level: 0x%X", __func__, user_data.nr_mode_level);
 	user_data.awareness_mode_level = nvrecord_user->awareness_mode_level;
 	TRACE(0, "*** [%s] awareness mode level: 0x%X", __func__, user_data.awareness_mode_level);
+
+	user_data.VA_control_on = nvrecord_user->VA_control_on;
+	TRACE(0, "*** [%s] VA control on: %d", __func__, user_data.VA_control_on);
 }
 
 void user_custom_nvrecord_rebuild_user_info(uint8_t *pUserInfo, bool isRebuildAll)
@@ -817,7 +854,10 @@ void user_custom_nvrecord_rebuild_user_info(uint8_t *pUserInfo, bool isRebuildAl
 	//default ANC level config
 	user_info->nr_mode_level = BLE_ANC_LEVEL_MAP_HIGH;
 	user_info->awareness_mode_level = BLE_ANC_LEVEL_MAP_HIGH;
-		
+
+	//default VA control config
+	user_info->VA_control_on = true;
+	
 	//when BES chip is blank, nv_record_extension_init
 	if(isRebuildAll)
 	{
@@ -843,6 +883,7 @@ void user_custom_nvrecord_rebuild_user_info(uint8_t *pUserInfo, bool isRebuildAl
 		user_data.shutdown_time = user_info->shutdown_time;
 		user_data.nr_mode_level = user_info->nr_mode_level;
 		user_data.awareness_mode_level = user_info->awareness_mode_level;
+		user_data.VA_control_on = user_info->VA_control_on;
 	}
 }
 /********************************************** User Info End **********************************************/

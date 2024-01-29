@@ -60,6 +60,8 @@ typedef struct {
 
 	uint8_t nr_mode_level;//noise reduction mode
 	uint8_t awareness_mode_level;//awareness mode
+
+	bool VA_control_on;
 	
 	uint8_t quick_conversation_mode;
 } app_user_custom_data_t;
@@ -180,6 +182,8 @@ void user_custom_set_awareness_mode_level(uint8_t anc_level, bool isSave);
 uint8_t app_anc_thread_get_anc_level(app_anc_mode_t mode);
 void app_anc_thread_update_awareness_mode_anc_level(app_anc_mode_t anc_mode, uint8_t anc_level);
 void app_audsec_update_nr_mode_anc_level(void *anc_list);
+bool user_custom_is_VA_control_on(void);
+void user_custom_on_off_VA_control(bool isOn, bool isSave);
 void user_custom_restore_default_settings(bool promt_on);
 void user_custom_nvrecord_rebuild_user_info(uint8_t *pUserInfo, bool isRebuildAll);
 void user_custom_nvrecord_user_info_get(void);
