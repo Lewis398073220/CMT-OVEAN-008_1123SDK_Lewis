@@ -43,6 +43,7 @@
 #ifdef CMT_008_BLE_ENABLE
 #include "tota_ble_custom.h"
 #endif
+#include "../../apps/user/app_user.h"
 /* End Add by jay */
 #ifdef VOICE_DETECTOR_EN
 #include "app_voice_detector.h"
@@ -80,6 +81,7 @@ typedef enum {
 typedef enum {
     ANC_EVENT_SWITCH_MODE = 0,
     ANC_EVENT_SYNC_SWITCH_MODE,
+    ANC_EVENT_BLE_SYNC_SWITCH_MODE, //Add by lewis
     ANC_EVENT_SET_GAIN,
     ANC_EVENT_QTY
 } anc_event_t;
@@ -448,6 +450,16 @@ static void app_anc_switch_coef(app_anc_mode_t mode_old, app_anc_mode_t mode_new
             app_anc_select_coef(ANC_FEEDFORWARD, index_cfg_new.ff);
         }
     }
+	/* Add by lewis for ble's anc switch */
+	else {
+		if((index_cfg_new.ff != ANC_INVALID_COEF_INDEX) &&
+			(index_cfg_old.ff != ANC_INVALID_COEF_INDEX))
+		{
+			// switch
+            app_anc_select_coef(ANC_FEEDFORWARD, index_cfg_new.ff);
+		}
+	}
+	/* End Add by lewis */
 #endif
 
 #if defined(AUDIO_ANC_TT_HW)
@@ -471,6 +483,16 @@ static void app_anc_switch_coef(app_anc_mode_t mode_old, app_anc_mode_t mode_new
             app_anc_select_coef(ANC_TALKTHRU, index_cfg_new.tt);
         }
     }
+	/* Add by lewis for ble's anc switch */
+	else {
+		if((index_cfg_new.tt != ANC_INVALID_COEF_INDEX) &&
+			(index_cfg_old.tt != ANC_INVALID_COEF_INDEX))
+		{
+			// switch
+            app_anc_select_coef(ANC_TALKTHRU, index_cfg_new.tt);
+		}
+	}
+	/* End Add by lewis */
 #endif
 
 #if defined(ANC_FB_ENABLED)
@@ -494,6 +516,16 @@ static void app_anc_switch_coef(app_anc_mode_t mode_old, app_anc_mode_t mode_new
             app_anc_select_coef(ANC_FEEDBACK, index_cfg_new.fb);
         }
     }
+	/* Add by lewis for ble's anc switch */
+	else {
+		if((index_cfg_new.fb != ANC_INVALID_COEF_INDEX) &&
+			(index_cfg_old.fb != ANC_INVALID_COEF_INDEX))
+		{
+			// switch
+            app_anc_select_coef(ANC_FEEDBACK, index_cfg_new.fb);
+		}
+	}
+	/* End Add by lewis */
 #endif
 
 #if defined(PSAP_APP)
@@ -517,6 +549,16 @@ static void app_anc_switch_coef(app_anc_mode_t mode_old, app_anc_mode_t mode_new
             app_anc_select_coef(PSAP_FEEDFORWARD, index_cfg_new.psap);
         }
     }
+	/* Add by lewis for ble's anc switch */
+	else {
+		if((index_cfg_new.psap != ANC_INVALID_COEF_INDEX) &&
+			(index_cfg_old.psap != ANC_INVALID_COEF_INDEX))
+		{
+			// switch
+            app_anc_select_coef(PSAP_FEEDFORWARD, index_cfg_new.psap);
+		}
+	}
+	/* End Add by lewis */
 #endif
 
 #if defined(PSAP_SW_APP)
@@ -555,6 +597,16 @@ static void app_anc_switch_coef(app_anc_mode_t mode_old, app_anc_mode_t mode_new
             app_anc_select_coef(ANC_SPKCALIB, index_cfg_new.spk_calib);
         }
     }
+	/* Add by lewis for ble's anc switch */
+	else {
+		if((index_cfg_new.spk_calib != ANC_INVALID_COEF_INDEX) &&
+			(index_cfg_old.spk_calib != ANC_INVALID_COEF_INDEX))
+		{
+			// switch
+            app_anc_select_coef(ANC_SPKCALIB, index_cfg_new.spk_calib);
+		}
+	}
+	/* End Add by lewis */
 #endif
 }
 
@@ -571,6 +623,23 @@ static void app_anc_post_msg(anc_event_t event, uint8_t param)
     msg.param0 = param;
     anc_mailbox_put(&msg);
 }
+
+/* Add by lewis */
+static void app_ble_anc_post_msg(anc_event_t event, app_anc_mode_t mode, uint32_t anc_level)
+{
+    TRACE(0, "[%s] event: %d, mode: %d, anc level: %d", __func__, event, mode, anc_level);
+
+    if (g_anc_init_flag == false) {
+        return;
+    }
+
+    ANC_MESSAGE_T msg;
+    msg.id = event;
+    msg.param0 = mode;
+	msg.param1 = anc_level;
+    anc_mailbox_put(&msg);
+}
+/* End Add by lewis */
 
 int32_t app_anc_thread_set_gain(enum ANC_TYPE_T type, float gain_l, float gain_r)
 {
@@ -758,10 +827,64 @@ static anc_status_t app_anc_switch_mode_impl(anc_status_t status, app_anc_mode_t
     return status;
 }
 
+/* Add by lewis */
+static anc_status_t app_ble_anc_switch_mode_impl(anc_status_t status, app_anc_mode_t mode, uint32_t anc_level)
+{
+    TRACE(0, "[%s] status: %d, old/new mode: %d/%d, level: 0x%X", __func__, status, g_app_anc_mode, mode, anc_level);
+
+    if ((g_app_anc_mode != mode) || 
+		((g_app_anc_mode == mode) && (anc_level != app_anc_thread_get_anc_level(mode)))) 
+	{
+        if (g_app_anc_mode == APP_ANC_MODE_OFF) {
+            if (status == ANC_STATUS_OFF) {
+				//update awareness mode level here
+				app_anc_thread_update_awareness_mode_anc_level(mode, anc_level);
+                app_anc_switch_coef(g_app_anc_mode, mode, false);   // Just open anc and set coef. gain is zero
+                app_anc_open_impl(mode);
+                osDelay(ANC_OPEN_DELAY_MS);
+                app_anc_fadein(app_anc_table_get_types(mode));
+                status = ANC_STATUS_ON;
+            } else {
+                ASSERT(0, "[%s] Open: status(%d) is invalid", __func__, status);
+            }
+        } else if (mode == APP_ANC_MODE_OFF) {
+            // Close ...
+            if (status == ANC_STATUS_ON) {
+                app_anc_fadeout(app_anc_table_get_types(g_app_anc_mode), ANC_FADE_MS);//Modify by lewis
+                osDelay(ANC_SMOOTH_SWITCH_GAIN_MS);
+                app_anc_close_impl(g_app_anc_mode);
+                status = ANC_STATUS_OFF;
+            } else {
+                ASSERT(0, "[%s] Close: status(%d) is invalid", __func__, status);
+            }
+        } else {
+            // Switch ...
+            if (status == ANC_STATUS_ON) {
+                app_anc_fadeout(app_anc_table_get_types(g_app_anc_mode), ANC_FADE_MS);//Modify by lewis
+                osDelay(ANC_SMOOTH_SWITCH_GAIN_MS);
+				//update awareness mode level here
+				app_anc_thread_update_awareness_mode_anc_level(mode, anc_level);
+                app_anc_switch_coef(g_app_anc_mode, mode, false);
+                app_anc_fadein(app_anc_table_get_types(mode));
+#if defined(ANC_ASSIST_ENABLED)
+                app_anc_assist_algo_reset();
+#endif
+            } else {
+                ASSERT(0, "[%s] Switch: status(%d) is invalid", __func__, status);
+            }
+        }
+        g_app_anc_mode = mode;
+    }
+
+    return status;
+}
+/* End Add by lewis */
+
 static inline int32_t anc_thread_process(ANC_MESSAGE_T *msg)
 {
     uint32_t evt = msg->id;
     uint32_t arg0 = msg->param0;
+	uint32_t arg1 = msg->param1; //Add by lewis
 
     TRACE(4, "[%s] evt: %d, arg0: %d, anc status :%d", __func__, evt, arg0, g_anc_work_status);
 
@@ -785,6 +908,26 @@ static inline int32_t anc_thread_process(ANC_MESSAGE_T *msg)
                 TRACE(0, "[%s] WARNING: Same mode: %d", __func__, arg0);
             }
             break;
+
+		/* Add by lewis */
+		case ANC_EVENT_BLE_SYNC_SWITCH_MODE:
+			if ((g_app_anc_mode != arg0) || 
+				((g_app_anc_mode == arg0) && (arg1 != app_anc_thread_get_anc_level(arg0)))) {
+#if defined(IBRT)
+                app_anc_sync_mode(arg0);
+#endif
+
+#ifdef APP_ANC_TRIGGER_SYNC
+                TRACE(0,"[%s]Choose trigger sync method",__func__);
+#else
+                g_anc_work_status = app_ble_anc_switch_mode_impl(g_anc_work_status, arg0, arg1);
+#endif
+            } else {
+                TRACE(0, "[%s] WARNING: Same mode: %d", __func__, arg0);
+            }
+            break;
+		/* End Add by lewis */
+		
         case ANC_EVENT_SWITCH_MODE:
             g_anc_work_status = app_anc_switch_mode_impl(g_anc_work_status, arg0);
             break;
@@ -857,6 +1000,17 @@ int32_t app_anc_switch_locally(app_anc_mode_t mode)
     return 0;
 }
 
+/* Add by lewis */
+int32_t app_ble_anc_sync_switch(app_anc_mode_t mode, uint32_t anc_level)
+{
+    TRACE(0, "[%s] Mode: %d --> %d", __func__, g_app_anc_mode, mode);
+
+	app_ble_anc_post_msg(ANC_EVENT_BLE_SYNC_SWITCH_MODE, mode, anc_level);
+
+    return 0;
+}
+/* End Add by lewis */
+
 int32_t app_anc_loop_switch(void)
 {
 /* Modify by jay*/
@@ -873,28 +1027,40 @@ int32_t app_anc_loop_switch(void)
 	}
 
 	app_anc_mode_t mode = g_app_anc_mode;
+	TOTA_BLE_ANC_LEVEL_MAP nr_mode_level = user_custom_get_nr_mode_level();
+	TOTA_BLE_ANC_LEVEL_MAP awareness_mode_level = user_custom_get_awareness_mode_level();
+		
 	switch(mode)
 	{
 		case APP_ANC_MODE_OFF:
 			mode = APP_ANC_MODE2;
 			media_PlayAudio(AUD_ID_BT_AWARENESS_ON, 0);
+			app_ble_anc_sync_switch(mode, awareness_mode_level); //need to update anc level
 		break;
 
 		case APP_ANC_MODE1:
+		case APP_ANC_MODE4:	
+		case APP_ANC_MODE5:	
 			mode = APP_ANC_MODE_OFF;
 			media_PlayAudio(AUD_ID_BT_ANC_OFF, 0);
+			app_anc_switch(mode);
 		break;
 
 		case APP_ANC_MODE2:
-			mode = APP_ANC_MODE1;
+			if(nr_mode_level == BLE_ANC_LEVEL_MAP_MEDIUM) {
+				mode = APP_ANC_MODE4;
+			} else if(nr_mode_level == BLE_ANC_LEVEL_MAP_LOW) {
+				mode = APP_ANC_MODE5;
+			} else{
+				mode = APP_ANC_MODE1;
+			}
 			media_PlayAudio(AUD_ID_BT_ANC_ON, 0);
+			app_anc_switch(mode);
 		break;
 
 		default:
 		break;
 	}
-
-	app_anc_switch(mode);
 #endif
 /* End Modify by jay*/
 
@@ -912,11 +1078,33 @@ osTimerId anc_switch_sw_timer = NULL;
 static void anc_switch_swtimer_handler(void const *param);
 osTimerDef(ANC_SWITCH_TIMER, anc_switch_swtimer_handler);// define timers
 
+void app_pwron_anc_switch_processing(void)
+{
+	TOTA_BLE_ANC_LEVEL_MAP nr_mode_level = user_custom_get_nr_mode_level();
+
+	switch(nr_mode_level)
+	{
+		case BLE_ANC_LEVEL_MAP_MEDIUM:
+			app_anc_switch(APP_ANC_MODE4);
+		break;
+
+		case BLE_ANC_LEVEL_MAP_LOW:
+			app_anc_switch(APP_ANC_MODE5);
+		break;
+
+		case BLE_ANC_LEVEL_MAP_HIGH:
+		default:
+			app_anc_switch(APP_ANC_MODE1);
+		break;
+	}
+}
+
 static void anc_switch_swtimer_handler(void const *param)
 {
     TRACE(0, "%s", __func__);
 
-	app_anc_switch(APP_ANC_MODE1);
+	app_pwron_anc_switch_processing();
+	
 	osTimerDelete(anc_switch_sw_timer);
 }
 
@@ -945,8 +1133,8 @@ void app_pwron_anc_switch(uint32_t periodic_ms)
 {
 	TRACE(0, "%s", __func__);
 
-	if(periodic_ms == 0) {
-		app_anc_switch(APP_ANC_MODE1);
+	if(periodic_ms == 0) {		
+		app_pwron_anc_switch_processing();
 	} else{
 		app_anc_switch_swtimer_start(periodic_ms);
 	}
@@ -959,7 +1147,7 @@ void app_reset_anc_switch(void)
 	app_anc_switch(APP_ANC_MODE1);
 }
 
-uint8_t app_ble_anc_switch(app_anc_mode_t mode, bool promt_on)
+uint8_t app_ble_anc_switch(app_anc_mode_t mode, uint8_t anc_level, bool promt_on)
 {
 	if(mode < APP_ANC_MODE_OFF || mode >= APP_ANC_MODE_QTY)
 		return -1;
@@ -968,26 +1156,24 @@ uint8_t app_ble_anc_switch(app_anc_mode_t mode, bool promt_on)
 	{
 		case APP_ANC_MODE_OFF:
 			if(promt_on) media_PlayAudio(AUD_ID_BT_ANC_OFF, 0);
-			app_anc_switch(APP_ANC_MODE_OFF);
+			app_anc_switch(mode); //don't need change level
 		break;
 
 		case APP_ANC_MODE1:
+		case APP_ANC_MODE4:
+		case APP_ANC_MODE5:	
 			if(promt_on) media_PlayAudio(AUD_ID_BT_ANC_ON, 0);
-			app_anc_switch(APP_ANC_MODE1);
+			app_anc_switch(mode); //don't need change level
 		break;
 
 		case APP_ANC_MODE2:
 			if(promt_on) media_PlayAudio(AUD_ID_BT_AWARENESS_ON, 0);
-			app_anc_switch(APP_ANC_MODE2);
+			app_ble_anc_sync_switch(mode, anc_level);
 		break;
 
 		default:
 		break;
 	}
-
-	//TODO: handle Noise Cancelling level
-	//anc_switch_via_ble(mode, level)
-	//handle level in anc_thread_process
 
 	return 0;
 }

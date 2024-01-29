@@ -30,9 +30,9 @@ static const app_anc_coef_index_cfg_t app_anc_coef_index_cfg[APP_ANC_MODE_QTY] =
     /* Enable by lewis */
     {0x01, 0x01, XXXX, XXXX, XXXX, XXXX},   // APP_ANC_MODE2
     {0x02, 0x02, XXXX, XXXX, XXXX, XXXX},   // APP_ANC_MODE3
+    {0x03, 0x03, XXXX, XXXX, XXXX, XXXX},   // APP_ANC_MODE4
+    {0x04, 0x04, 0x00, XXXX, XXXX, XXXX},   // APP_ANC_MODE5
     /* End Enable by lewis */
-    // {0x03, 0x03, XXXX, XXXX, XXXX, XXXX},   // APP_ANC_MODE4
-    // {XXXX, 0x04, 0x00, XXXX, XXXX, XXXX},   // APP_ANC_MODE5
     // {XXXX, 0x04, 0x01, XXXX, XXXX, XXXX},   // APP_ANC_MODE6
     // {XXXX, 0x04, 0x02, XXXX, XXXX, XXXX},   // APP_ANC_MODE7
     // {XXXX, 0x04, 0x03, 0x00, XXXX, XXXX},   // APP_ANC_MODE8

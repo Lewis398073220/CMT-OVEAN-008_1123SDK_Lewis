@@ -47,7 +47,6 @@
 #include "nvrecord_env.h"
 #include "crash_dump_section.h"
 #include "log_section.h"
-#include "factory_section.h"
 #include "a2dp_api.h"
 #include "me_api.h"
 #include "btapp.h"
@@ -58,6 +57,8 @@
 #include "hal_codec.h"
 #include "hal_pwm.h"
 #include "iir_process.h"
+#include "aud_section.h"
+#include "co_math.h"
 
 #if defined(IBRT)
 #include "app_ibrt_internal.h"
@@ -90,11 +91,18 @@
 
 /********************************************** User Info Start **********************************************/
 extern const IIR_CFG_T * const audio_eq_hw_dac_iir_cfg_list[];
+extern const struct_anc_cfg * anc_coef_list_50p7k[ANC_COEF_LIST_NUM];
+extern const struct_anc_cfg * anc_coef_list_48k[ANC_COEF_LIST_NUM];
+extern const struct_anc_cfg * anc_coef_list_44p1k[ANC_COEF_LIST_NUM];
+
 extern void app_set_10_second_timer(uint8_t timer_id, uint8_t enable, uint32_t period);
 extern uint32_t app_get_count_of_10_second_timer(uint8_t timer_id);
 extern uint32_t app_get_period_of_10_second_timer(uint8_t timer_id);
 
 app_user_custom_data_t user_data;
+int32_t awareness_mode_gain_table[] = {   
+	153, 287, 512
+};
 
 bool user_custom_is_touch_locked(void)
 {
@@ -222,7 +230,7 @@ void user_custom_set_EQ_mode(TOTA_BLE_EQ_MAP mode, bool isSave)
 
 void update_user_EQ(USER_IIR_CFG_T user_eq)
 {
-	IIR_CFG_T **audio_eq_list;
+	IIR_CFG_T **audio_eq_list = NULL;
 	uint8_t i = 0;
 	
 	audio_eq_list = (IIR_CFG_T **)audio_eq_hw_dac_iir_cfg_list;
@@ -366,6 +374,140 @@ uint16_t user_custom_get_remaining_time(void)
 	return remaining_time;
 }
 
+uint8_t user_custom_get_nr_mode_level(void)
+{
+	return user_data.nr_mode_level;
+}
+
+void user_custom_set_nr_mode_level(uint8_t anc_level, bool isSave)
+{
+	user_data.nr_mode_level = anc_level;
+
+	if(isSave)
+	{
+		struct nvrecord_user_t *nvrecord_user;
+
+		nv_record_user_info_get(&nvrecord_user);
+		nvrecord_user->nr_mode_level = anc_level;
+		nv_record_user_info_set(nvrecord_user);
+	}
+}
+
+uint8_t user_custom_get_awareness_mode_level(void)
+{
+	return user_data.awareness_mode_level;
+}
+
+void user_custom_set_awareness_mode_level(uint8_t anc_level, bool isSave)
+{
+	user_data.awareness_mode_level = anc_level;
+
+	if(isSave)
+	{
+		struct nvrecord_user_t *nvrecord_user;
+
+		nv_record_user_info_get(&nvrecord_user);
+		nvrecord_user->awareness_mode_level = anc_level;
+		nv_record_user_info_set(nvrecord_user);
+	}
+}
+
+uint8_t app_anc_thread_get_anc_level(app_anc_mode_t mode)
+{
+	uint8_t anc_level = 0;
+	const struct_anc_cfg **anc_list; 
+	int32_t total_gain_ff_l;
+	int32_t total_gain_ff_r;
+	uint8_t i = 0;
+	
+	anc_list = anc_coef_list_50p7k; //need to check whether audio_resample is open
+
+	switch(mode)
+	{
+		case APP_ANC_MODE2:
+			total_gain_ff_l = anc_list[APP_ANC_MODE2 - 1]->anc_cfg_ff_l.total_gain;
+			total_gain_ff_r = anc_list[APP_ANC_MODE2 - 1]->anc_cfg_ff_r.total_gain;
+
+			//find gain in table
+			for(i = 0; i < ARRAY_LEN(awareness_mode_gain_table); i++)
+			{
+				if((total_gain_ff_l == awareness_mode_gain_table[i]) && 
+					(total_gain_ff_r == awareness_mode_gain_table[i]))
+				{
+					break;
+				}
+			}
+
+			if(i == 1) {
+				anc_level = BLE_ANC_LEVEL_MAP_MEDIUM;
+			} else if(i == 0) {
+				anc_level = BLE_ANC_LEVEL_MAP_LOW;
+			} else {
+				anc_level = BLE_ANC_LEVEL_MAP_HIGH;
+			}
+			
+			TRACE(0, "%s mode/level: %d/0x%X", __func__, mode, anc_level);
+		break;
+
+		//Except for APP_ANC_MODE2, other modes should be called through app_anc_switch
+		
+		default:
+			TRACE(0, "%s !!!warning: not mode2 %d ", __func__, mode);
+		break;
+	}
+
+	return anc_level;
+}
+
+void app_anc_thread_update_awareness_mode_anc_level(app_anc_mode_t anc_mode, uint8_t anc_level)
+{
+	struct_anc_cfg **anc_list = (struct_anc_cfg **)anc_coef_list_50p7k; //need to check whether audio resample is open
+
+	//make sure that APP_ANC_MODE2 is not const value and not be load from audsec
+	if(anc_mode == APP_ANC_MODE2)
+	{
+		TRACE(0, "%s level: 0x%X", __func__, anc_level);
+		
+		switch(anc_level)
+		{
+			case BLE_ANC_LEVEL_MAP_MEDIUM:
+				anc_list[APP_ANC_MODE2 - 1]->anc_cfg_ff_l.total_gain = awareness_mode_gain_table[1];
+				anc_list[APP_ANC_MODE2 - 1]->anc_cfg_ff_r.total_gain = awareness_mode_gain_table[1];
+			break;
+
+			case BLE_ANC_LEVEL_MAP_LOW:
+				anc_list[APP_ANC_MODE2 - 1]->anc_cfg_ff_l.total_gain = awareness_mode_gain_table[0];
+				anc_list[APP_ANC_MODE2 - 1]->anc_cfg_ff_r.total_gain = awareness_mode_gain_table[0];
+			break;
+			
+			case BLE_ANC_LEVEL_MAP_HIGH:
+			default:
+				anc_list[APP_ANC_MODE2 - 1]->anc_cfg_ff_l.total_gain = awareness_mode_gain_table[2];
+				anc_list[APP_ANC_MODE2 - 1]->anc_cfg_ff_r.total_gain = awareness_mode_gain_table[2];
+			break;
+		}
+	}
+}
+
+void app_audsec_update_nr_mode_anc_level(void *anc_list)
+{
+	struct_anc_cfg **panc_list = (struct_anc_cfg **)anc_list;
+
+	TRACE(0, "%s", __func__);
+
+	//make sure that APP_ANC_MODE4 and APP_ANC_MODE5 is not const value and not be load from audsec
+	*panc_list[APP_ANC_MODE4 - 1] = *panc_list[APP_ANC_MODE1 - 1];
+	*panc_list[APP_ANC_MODE5 - 1] = *panc_list[APP_ANC_MODE1 - 1];
+
+	panc_list[APP_ANC_MODE4 - 1]->anc_cfg_fb_l.total_gain = 0;
+	panc_list[APP_ANC_MODE4 - 1]->anc_cfg_fb_r.total_gain = 0;
+	panc_list[APP_ANC_MODE4 - 1]->anc_cfg_mc_l.total_gain = 0;
+	panc_list[APP_ANC_MODE4 - 1]->anc_cfg_mc_r.total_gain = 0;
+
+	panc_list[APP_ANC_MODE5 - 1]->anc_cfg_ff_l.total_gain = 0;
+	panc_list[APP_ANC_MODE5 - 1]->anc_cfg_ff_r.total_gain = 0;
+}
+
 void user_custom_restore_default_settings(bool promt_on)
 {
 	struct nvrecord_user_t *nvrecord_user;
@@ -412,6 +554,10 @@ void user_custom_restore_default_settings(bool promt_on)
 
 	//default shutdown time config
 	nvrecord_user->shutdown_time = BLE_SHUTDOWN_TIME_MAP_NEVER_SHUTDOWN;
+
+	//default ANC level config
+	nvrecord_user->nr_mode_level = BLE_ANC_LEVEL_MAP_HIGH;
+	nvrecord_user->awareness_mode_level = BLE_ANC_LEVEL_MAP_HIGH;
 	
 	//update local user infor
 	user_data.touch_lock = nvrecord_user->touch_lock;
@@ -425,6 +571,8 @@ void user_custom_restore_default_settings(bool promt_on)
 	update_user_EQ(user_data.user_eq);
 	user_data.sidetone_on = nvrecord_user->sidetone_on;
 	user_data.shutdown_time = nvrecord_user->shutdown_time;
+	user_data.nr_mode_level = nvrecord_user->nr_mode_level;
+	user_data.awareness_mode_level = nvrecord_user->awareness_mode_level;
 	
 	//update function status via local user infor
 	app_reset_anc_switch();
@@ -433,7 +581,7 @@ void user_custom_restore_default_settings(bool promt_on)
 	ble_sidetone_switch(user_data.sidetone_on);
 	is_BT_connected = app_bt_get_connected_device_num()? true : false;
 	update_power_savingmode_shutdown_timer(user_data.shutdown_time, is_BT_connected);
-	
+
 	if(promt_on) media_PlayAudio(AUD_ID_BT_FACTORY_RESET, 0);
 }
 
@@ -479,6 +627,10 @@ void nvrecord_user_info_init_for_ota(struct nvrecord_user_t *pUserInfo)
 
 		//default shutdown time config
 		pUserInfo->shutdown_time = BLE_SHUTDOWN_TIME_MAP_NEVER_SHUTDOWN;
+
+		//default ANC level config
+		pUserInfo->nr_mode_level = BLE_ANC_LEVEL_MAP_HIGH;
+		pUserInfo->awareness_mode_level = BLE_ANC_LEVEL_MAP_HIGH;
 	}
 	else if(strncmp((const char *)saved_user_info_ver, "V0.0.2", strlen("V0.0.2")) == 0)
 	{
@@ -487,6 +639,10 @@ void nvrecord_user_info_init_for_ota(struct nvrecord_user_t *pUserInfo)
 
 		//default shutdown time config
 		pUserInfo->shutdown_time = BLE_SHUTDOWN_TIME_MAP_NEVER_SHUTDOWN;
+
+		//default ANC level config
+		pUserInfo->nr_mode_level = BLE_ANC_LEVEL_MAP_HIGH;
+		pUserInfo->awareness_mode_level = BLE_ANC_LEVEL_MAP_HIGH;
 	}
 	//if saved user infor ver is V0.0.0 or other, should init all user infor
 	else
@@ -530,6 +686,10 @@ void nvrecord_user_info_init_for_ota(struct nvrecord_user_t *pUserInfo)
 
 		//default shutdown time config
 		pUserInfo->shutdown_time = BLE_SHUTDOWN_TIME_MAP_NEVER_SHUTDOWN;
+
+		//default ANC level config
+		pUserInfo->nr_mode_level = BLE_ANC_LEVEL_MAP_HIGH;
+		pUserInfo->awareness_mode_level = BLE_ANC_LEVEL_MAP_HIGH;
 	}
 	
 	//update user info's history
@@ -603,6 +763,11 @@ void user_custom_nvrecord_user_info_get(void)
 	user_data.shutdown_time = nvrecord_user->shutdown_time;
 	TRACE(0, "*** [%s] shutdown time: 0x%X", __func__, user_data.shutdown_time);
 	update_power_savingmode_shutdown_timer(user_data.shutdown_time, false); //don't start shutdown timer when system is in init status
+
+	user_data.nr_mode_level = nvrecord_user->nr_mode_level;
+	TRACE(0, "*** [%s] nr mode level: 0x%X", __func__, user_data.nr_mode_level);
+	user_data.awareness_mode_level = nvrecord_user->awareness_mode_level;
+	TRACE(0, "*** [%s] awareness mode level: 0x%X", __func__, user_data.awareness_mode_level);
 }
 
 void user_custom_nvrecord_rebuild_user_info(uint8_t *pUserInfo, bool isRebuildAll)
@@ -648,7 +813,11 @@ void user_custom_nvrecord_rebuild_user_info(uint8_t *pUserInfo, bool isRebuildAl
 
 	//default shutdown time config
 	user_info->shutdown_time = BLE_SHUTDOWN_TIME_MAP_NEVER_SHUTDOWN;
-	
+
+	//default ANC level config
+	user_info->nr_mode_level = BLE_ANC_LEVEL_MAP_HIGH;
+	user_info->awareness_mode_level = BLE_ANC_LEVEL_MAP_HIGH;
+		
 	//when BES chip is blank, nv_record_extension_init
 	if(isRebuildAll)
 	{
@@ -672,6 +841,8 @@ void user_custom_nvrecord_rebuild_user_info(uint8_t *pUserInfo, bool isRebuildAl
 		update_user_EQ(user_data.user_eq);
 		user_data.sidetone_on = user_info->sidetone_on;
 		user_data.shutdown_time = user_info->shutdown_time;
+		user_data.nr_mode_level = user_info->nr_mode_level;
+		user_data.awareness_mode_level = user_info->awareness_mode_level;
 	}
 }
 /********************************************** User Info End **********************************************/

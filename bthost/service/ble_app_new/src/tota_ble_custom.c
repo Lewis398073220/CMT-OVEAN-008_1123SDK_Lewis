@@ -76,6 +76,10 @@
 #include "app_anc.h"
 #endif
 
+APP_DATA_T app_data = {
+	.ble_anc_mode = BLE_ANC_MODE_MAP_ANC_INVALID,
+};
+
 bool user_custom_tota_ble_send_response(uint8_t cmdType, uint8_t cmdID, TOTA_BLE_STATUS_E rsp_status, uint8_t* ptrData, uint32_t ptrData_len)
 {
 	PACKET_STRUCTURE *rsp_ptrData = NULL;
@@ -114,28 +118,30 @@ bool user_custom_tota_ble_send_response(uint8_t cmdType, uint8_t cmdID, TOTA_BLE
 	return true;
 }
 
-TOTA_BLE_ANC_MAP anc_map_get_via_anc_mode(app_anc_mode_t mode)
+TOTA_BLE_ANC_MODE_MAP ble_get_anc_mode_map(app_anc_mode_t mode)
 {
-	TOTA_BLE_ANC_MAP map = ANC_INVALID;
+	TOTA_BLE_ANC_MODE_MAP map = BLE_ANC_MODE_MAP_ANC_INVALID;
 	
 	switch(mode)
 	{
 		case APP_ANC_MODE_OFF:
-			map = ANC_OFF;
+			map = BLE_ANC_MODE_MAP_ANC_OFF;
 		break;
 
 		case APP_ANC_MODE1:
-			map = ANC_ON;
+		case APP_ANC_MODE4:
+		case APP_ANC_MODE5:	
+			map = BLE_ANC_MODE_MAP_ANC_ON;
 		break;
 
 		case APP_ANC_MODE2:
-			map = TRANSPARENT;
+			map = BLE_ANC_MODE_MAP_TRANSPARENT;
 		break;
 
 		//TODO: APP_ANC_MODE3
 		
 		default:
-			map = ANC_INVALID;
+			map = BLE_ANC_MODE_MAP_ANC_INVALID;
 		break;
 	}
 
@@ -151,46 +157,69 @@ static void user_custom_tota_ble_command_set_handle(PACKET_STRUCTURE *ptrPacket)
     switch (ptrPacket->cmdID)
     {
 		case TOTA_BLE_CMT_COMMAND_SET_NOISE_CANCELLING_MODE_AND_LEVEL:
-			/* define Noise Cancelling mode.
-             *  +----------------+--------------+
-             *  |     NC mode    |   payload[0] |
-             *  +----------------+--------------+
-             *  |     ANC OFF    |     0x00     |
-             *  +----------------+--------------+
-             *  | Default-ANC ON |     0x01     |
-             *  +----------------+--------------+
-             *  |   Transparent  |     0x02     |
-             *  +----------------+--------------+
-             *  |     MODE 1     |     0x03     |
-             *  +----------------+--------------+
-             *  |     MODE 2     |     0x04     |
-             *  +----------------+--------------+
-             */
-
-			switch(ptrPacket->payload[0])
 			{
-				case ANC_OFF:
-					app_ble_anc_switch(APP_ANC_MODE_OFF, true);
-					rsp_status = SUCCESS_STATUS;
-				break;
+				/* define Noise Cancelling mode.
+	             *  +----------------+--------------+
+	             *  |     NC mode    |   payload[0] |
+	             *  +----------------+--------------+
+	             *  |     ANC OFF    |     0x00     |
+	             *  +----------------+--------------+
+	             *  | Default-ANC ON |     0x01     |
+	             *  +----------------+--------------+
+	             *  |   Transparent  |     0x02     |
+	             *  +----------------+--------------+
+	             *  |     MODE 1     |     0x03     |
+	             *  +----------------+--------------+
+	             *  |     MODE 2     |     0x04     |
+	             *  +----------------+--------------+
+	             */
 
-				case ANC_ON:
-					app_ble_anc_switch(APP_ANC_MODE1, true);
-					rsp_status = SUCCESS_STATUS;
-				break;
-
-				case TRANSPARENT:
-					app_ble_anc_switch(APP_ANC_MODE2, true);
-					rsp_status = SUCCESS_STATUS;
-				break;
+				bool promt_on = false;
+				TOTA_BLE_ANC_MODE_MAP anc_mode_to_set = ptrPacket->payload[0];
+				TOTA_BLE_ANC_LEVEL_MAP anc_level_to_set = ptrPacket->payload[1];
+					
+				if(app_data.ble_anc_mode != anc_mode_to_set)
+				{
+					promt_on = true;
+				} 
 				
-				default:
-					rsp_status = PARAMETER_ERROR_STATUS;
-				break;
-			}
+				switch(anc_mode_to_set)
+				{
+					case BLE_ANC_MODE_MAP_ANC_OFF:
+						app_ble_anc_switch(APP_ANC_MODE_OFF, anc_mode_to_set, promt_on);
+						rsp_status = SUCCESS_STATUS;
+					break;
 
-			user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_SET, ptrPacket->cmdID, rsp_status, NULL, 0);
-        break;
+					case BLE_ANC_MODE_MAP_ANC_ON:
+						user_custom_set_nr_mode_level(anc_level_to_set, true);
+						if(anc_level_to_set == BLE_ANC_LEVEL_MAP_MEDIUM) {
+							app_ble_anc_switch(APP_ANC_MODE4, anc_level_to_set, promt_on);
+							rsp_status = SUCCESS_STATUS;
+						} else if(anc_level_to_set == BLE_ANC_LEVEL_MAP_LOW) {
+							app_ble_anc_switch(APP_ANC_MODE5, anc_level_to_set, promt_on);
+							rsp_status = SUCCESS_STATUS;
+						} else {
+							app_ble_anc_switch(APP_ANC_MODE1, anc_level_to_set, promt_on);
+							rsp_status = SUCCESS_STATUS;
+						}
+					break;
+
+					case BLE_ANC_MODE_MAP_TRANSPARENT:
+						user_custom_set_awareness_mode_level(anc_level_to_set, true);
+						app_ble_anc_switch(APP_ANC_MODE2, anc_level_to_set, promt_on);
+						rsp_status = SUCCESS_STATUS;
+					break;
+					
+					default:
+						rsp_status = PARAMETER_ERROR_STATUS;
+					break;
+				}
+
+				app_data.ble_anc_mode = anc_mode_to_set;
+				
+				user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_SET, ptrPacket->cmdID, rsp_status, NULL, 0);
+			}
+		break;
 
 		case TOTA_BLE_CMT_COMMAND_SET_LOW_LATENCY_MODE:
 			if(ptrPacket->payload[0] == 0x00) {
@@ -456,10 +485,14 @@ static void user_custom_tota_ble_command_get_handle(PACKET_STRUCTURE *ptrPacket)
     {
     	case TOTA_BLE_CMT_COMMAND_GET_NOISE_CANCELLING_MODE_AND_LEVEL:
 			{
-				uint8_t temp[2] = {0};
-
-				temp[0] = anc_map_get_via_anc_mode(app_anc_get_curr_mode());
-				temp[1] = 100; //TODO: get Noise Cancelling level via curr_anc_mode
+				uint8_t temp[3] = {0};
+				app_anc_mode_t cur_anc_mode = app_anc_get_curr_mode();
+				
+				temp[0] = ble_get_anc_mode_map(cur_anc_mode); //current noise cancelling mode
+				temp[1] = user_custom_get_nr_mode_level(); //noise reduction mode level
+				temp[2] = user_custom_get_awareness_mode_level(); //awareness mode level
+				app_data.ble_anc_mode = temp[0];
+					
 				rsp_status = NO_NEED_STATUS_RESP;
 				
 				user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_GET, ptrPacket->cmdID, rsp_status, temp, sizeof(temp));
@@ -727,13 +760,15 @@ void battery_level_change_notify(uint8_t battery_level)
 
 void noise_cancelling_mode_change_notify(app_anc_mode_t mode)
 {
-	uint8_t temp[2] = {0};
-
-	temp[0] = anc_map_get_via_anc_mode(mode);
-	temp[1] = 100;//TODO: get Noise Cancelling level via curr_anc_mode
-
-	TOTA_LOG_DBG(2 ,"%s: mode %d", __func__, temp[0]);
+	uint8_t temp[3] = {0};
 	
+	temp[0] = ble_get_anc_mode_map(mode); //current noise cancelling mode
+	temp[1] = user_custom_get_nr_mode_level(); //noise reduction mode level
+	temp[2] = user_custom_get_awareness_mode_level(); //awareness mode level
+	app_data.ble_anc_mode = temp[0];
+
+	TOTA_LOG_DBG(2 ,"%s: mode %d level: 0x%X/0x%X", __func__, temp[0], temp[1], temp[2]);
+		
 	user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_NOTIFY, \
 		TOTA_BLE_CMT_COMMAND_NOTIFY_NOISE_CANCELLING_MODE_AND_LEVEL, NO_NEED_STATUS_RESP, temp, sizeof(temp));
 }

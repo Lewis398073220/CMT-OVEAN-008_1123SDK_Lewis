@@ -22,6 +22,7 @@
 #include "hal_location.h"
 #include "hal_trace.h"
 #include "hal_sysfreq.h"
+#include "../../apps/user/app_user.h" //Add by lewis
 
 #ifdef USB_ANC_MC_EQ_TUNING
 #include "string.h"
@@ -144,6 +145,7 @@ int anc_load_cfg(void)
         TRACE(2,"[%s] WARNING(%d): Can not load anc coefficient from audio section!!!", __func__, res);
         } else {
         TRACE(1,"[%s] Load anc coefficient from audio section.", __func__);
+		app_audsec_update_nr_mode_anc_level(list); //Add by lewis
 #if (AUD_SECTION_STRUCT_VERSION == 1)
         TRACE(5,"[%s] L: gain = %d, len = %d, dac = %d, adc = %d", __func__, list[0]->anc_cfg_ff_l.total_gain, list[0]->anc_cfg_ff_l.fir_len, list[0]->anc_cfg_ff_l.dac_gain_offset, list[0]->anc_cfg_ff_l.adc_gain_offset);
         TRACE(5,"[%s] R: gain = %d, len = %d, dac = %d, adc = %d", __func__, list[0]->anc_cfg_ff_r.total_gain, list[0]->anc_cfg_ff_r.fir_len, list[0]->anc_cfg_ff_r.dac_gain_offset, list[0]->anc_cfg_ff_r.adc_gain_offset);

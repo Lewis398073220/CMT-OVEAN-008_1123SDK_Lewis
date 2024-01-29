@@ -278,6 +278,9 @@ struct nvrecord_user_t {
 	bool sidetone_on;
 
 	uint16_t shutdown_time;//Minutes
+
+	uint8_t nr_mode_level;//noise reduction mode
+	uint8_t awareness_mode_level;//awareness mode
 };
 /* End Add by lewis */
 

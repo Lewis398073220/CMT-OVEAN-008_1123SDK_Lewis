@@ -57,6 +57,9 @@ typedef struct {
 	bool sidetone_on;
 
 	uint16_t shutdown_time;//Minutes
+
+	uint8_t nr_mode_level;//noise reduction mode
+	uint8_t awareness_mode_level;//awareness mode
 	
 	uint8_t quick_conversation_mode;
 } app_user_custom_data_t;
@@ -170,6 +173,13 @@ uint16_t user_custom_get_shutdown_time(void);
 void user_custom_set_shutdown_time(uint16_t minute, bool isSave);
 void update_power_savingmode_shutdown_timer(uint16_t minute, bool isEn);
 uint16_t user_custom_get_remaining_time(void);
+uint8_t user_custom_get_nr_mode_level(void);
+void user_custom_set_nr_mode_level(uint8_t anc_level, bool isSave);
+uint8_t user_custom_get_awareness_mode_level(void);
+void user_custom_set_awareness_mode_level(uint8_t anc_level, bool isSave);
+uint8_t app_anc_thread_get_anc_level(app_anc_mode_t mode);
+void app_anc_thread_update_awareness_mode_anc_level(app_anc_mode_t anc_mode, uint8_t anc_level);
+void app_audsec_update_nr_mode_anc_level(void *anc_list);
 void user_custom_restore_default_settings(bool promt_on);
 void user_custom_nvrecord_rebuild_user_info(uint8_t *pUserInfo, bool isRebuildAll);
 void user_custom_nvrecord_user_info_get(void);

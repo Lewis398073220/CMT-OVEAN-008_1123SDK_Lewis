@@ -65,6 +65,8 @@ ccflags-y +=  \
     -Iapps/dsp_m55 \
     -Iplatform/drivers/cp_accel \
     -Iservices/audio_manager \
+    -Iservices/nv_section/aud_section \
+    -Iservices/nv_section/include \
     -Iplatform/drivers/ac107 \
     -Iplatform/drivers/cst820
     

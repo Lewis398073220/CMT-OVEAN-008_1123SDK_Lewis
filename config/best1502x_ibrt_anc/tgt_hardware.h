@@ -168,7 +168,7 @@ extern const struct HAL_KEY_GPIOKEY_CFG_T cfg_hw_gpio_key_cfg[CFG_HW_GPIOKEY_NUM
 #define ANC_FUNCTION_KEY                    HAL_KEY_CODE_PWR
 
 // ANC coefficient curve number
-#define ANC_COEF_NUM                        (3) //(1) /* Modified by lewis, changed from 2 to 3.*/
+#define ANC_COEF_NUM                        (5) //(1) /* Modified by lewis, changed from 2 to 5.*/
 
 #define PSAP_COEF_LIST_NUM                  (1)
 
