@@ -169,8 +169,9 @@ enum AF_I2S_SYNC_TYPE_T {
 #if (defined(BT_USB_AUDIO_DUAL_MODE) || defined(BTUSB_AUDIO_MODE))
 #define USB_AUDIO_MIX_SUPPRESS_GAIN_DB      		 -25
 #endif
+//fade in time too long will cause osMailAlloc error dump, see APP_AUDIO_MAILBOX_MAX
 #define FADE_OUT_MS_DEFAULT           				 300
-#define FADE_IN_MS_DEFAULT             				 1000
+#define FADE_IN_MS_DEFAULT             				 300 //1000 
 
 #define FADE_OUT_SIGNAL_ID           17
 #define FADE_IN_SIGNAL_ID            16
