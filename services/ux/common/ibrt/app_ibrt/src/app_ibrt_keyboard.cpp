@@ -640,11 +640,10 @@ void app_ibrt_ui_handle_pwr_key(bt_bdaddr_t *remote, APP_KEY_STATUS *status, voi
 			if(app_bt_count_connected_device()) {
 				TRACE(0, "BT disconnect by headset end");
 				app_disconnect_all_bt_connections(false);
-				
 			} else{
 				TRACE(0, "BT reconnect by headset end");
-				//app_ibrt_if_event_entry(APP_UI_EV_DOCK);
-                //app_ibrt_if_event_entry(APP_UI_EV_CASE_CLOSE);
+				app_ibrt_if_event_entry(APP_UI_EV_DOCK);
+                app_ibrt_if_event_entry(APP_UI_EV_CASE_CLOSE);
 
                 //app_ibrt_if_event_entry(APP_UI_EV_CASE_OPEN);
                 //app_ibrt_if_event_entry(APP_UI_EV_UNDOCK);

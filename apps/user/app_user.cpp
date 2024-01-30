@@ -984,7 +984,8 @@ static void jack_detn_handler(void const *param)
 				}
 #endif
 
-				//app_ibrt_if_event_entry(APP_UI_EV_DOCK);
+				app_disconnect_all_bt_connections(false);
+				app_ibrt_if_event_entry(APP_UI_EV_DOCK);
 	       		app_ibrt_if_event_entry(APP_UI_EV_CASE_CLOSE);
 
 #ifdef CMT_008_AC107_ADC
@@ -1045,7 +1046,7 @@ static void jack_detn_handler(void const *param)
 			ac107_hw_close();
 #endif
 
-			app_ibrt_if_event_entry(APP_UI_EV_CASE_OPEN);
+			//app_ibrt_if_event_entry(APP_UI_EV_CASE_OPEN);
         	//app_ibrt_if_event_entry(APP_UI_EV_UNDOCK);
 			app_bt_profile_connect_manager_opening_reconnect();
 

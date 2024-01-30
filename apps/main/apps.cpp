@@ -2757,7 +2757,12 @@ extern int rpc_service_setup(void);
 #ifdef FREEMAN_ENABLED_STERO
 					{
 						TRACE(0,"ibrt_ui_log: power on enter BT pairing");
-						app_ibrt_if_enter_freeman_pairing();
+						//app_ibrt_if_enter_freeman_pairing();
+						//first call FREE_MAN_MODE, then call CASE_OPEN, if call app_ibrt_if_enter_freeman_pairing, 
+						//the time of enter pairing will be up to 10s, 1123sdk's BUG, I don't know why
+						app_ibrt_if_event_entry(APP_UI_EV_FREE_MAN_MODE);
+						app_ibrt_if_event_entry(APP_UI_EV_CASE_OPEN);
+						app_ibrt_if_event_entry(APP_UI_EV_UNDOCK);
 					}
 #endif
 #endif

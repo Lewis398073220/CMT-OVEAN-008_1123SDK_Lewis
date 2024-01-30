@@ -3662,6 +3662,7 @@ void app_bt_profile_connect_manager_opening_reconnect(void)
     {
         TRACE(0,"!!!start reconnect first device\n");
 
+#if 0
 #ifdef IBRT_UI
 #ifdef FREEMAN_ENABLED_STERO
         app_ibrt_if_init_open_box_state_for_evb();
@@ -3685,6 +3686,10 @@ void app_bt_profile_connect_manager_opening_reconnect(void)
 #endif
 
         app_bt_start_poweron_reconnect();
+#else
+		app_ibrt_if_event_entry(APP_UI_EV_CASE_OPEN);
+		app_ibrt_if_event_entry(APP_UI_EV_UNDOCK);
+#endif
 		app_status_indication_set(APP_STATUS_INDICATION_PAGESCAN); //Add by lewis
     }
     else
