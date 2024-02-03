@@ -89,7 +89,7 @@ bool        btusb_a2dp_connect_status_timer_on = false;
 osTimerDef(BTUSB_A2DP_CONNECT_STATUS_CHECK_TIMER, btusb_a2dp_connect_timer_cb);
 
 extern void btusb_switch_to_usb_timer_cb(void const *n);
-#define BTUSB_SWITCH_TO_USB_DELAY_MS  1000
+#define BTUSB_SWITCH_TO_USB_DELAY_MS  2000//1000  //Modify by lewis from 1000 to 2000, wait for uart_usbaudio_start_switch_to done, otherwise iphone15 can't be identified
 osTimerId   btusb_switch_to_usb_timer_id;
 osTimerDef(BTUSB_SWITCH_TO_USB_TIMER, btusb_switch_to_usb_timer_cb);
 
