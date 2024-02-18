@@ -2498,6 +2498,19 @@ void enter_exit_low_latency_mode(bool isEn, bool promt_on)
 	}
 }
 
+void key_low_latency_mode_switch(bool promt_on)
+{
+	if(g_low_latency_mode_on_flag) {
+		enter_exit_low_latency_mode(false, promt_on);
+	} else{
+		enter_exit_low_latency_mode(true, promt_on);
+	}
+
+#ifdef CMT_008_BLE_ENABLE
+	low_latency_mode_change_notify(g_low_latency_mode_on_flag);
+#endif
+}
+
 void ble_low_latency_mode_switch(bool isEn, bool promt_on)
 {
 	enter_exit_low_latency_mode(isEn, promt_on);

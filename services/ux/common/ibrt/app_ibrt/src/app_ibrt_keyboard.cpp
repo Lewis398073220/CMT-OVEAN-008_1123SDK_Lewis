@@ -32,6 +32,7 @@
 /* Add by lewis */
 #include "app_media_player.h"
 #include "app_anc.h"
+#include "tota_ble_custom.h"
 
 #if (defined(BT_USB_AUDIO_DUAL_MODE) || defined(BTUSB_AUDIO_MODE))
 #include "usb_audio.h"
@@ -592,6 +593,109 @@ extern int open_siri_flag;
 extern struct BT_DEVICE_MANAGER_T app_bt_manager;
 
 extern HFCALL_MACHINE_ENUM app_get_hfcall_machine(void);
+#if defined(ANC_APP)
+extern void app_anc_key(APP_KEY_STATUS *status, void *param);
+#endif
+
+void app_ibrt_ui_dynamic_handle_key_function(TOTA_BLE_KET_FUN_MAP key_func)
+{
+	POSSIBLY_UNUSED struct BT_DEVICE_T* a2dp_device = app_bt_get_device(app_bt_audio_get_curr_a2dp_device());
+	btif_hf_call_setup_t is_call_setup = btapp_hfp_get_call_setup();
+	btif_hf_call_active_t is_call_active = btapp_hfp_is_call_active();
+
+	TRACE(0, "%s key_func: %d", __func__, key_func);
+
+	switch(key_func)
+	{
+		case BLE_KEY_FUN_MAP_NONE:
+			TRACE(0, "key func is none");
+		break;
+
+		case BLE_KEY_FUN_MAP_PLAYPAUSE:
+			TRACE(0, "key func is music play/pause");
+			if (btapp_hfp_is_sco_active() || btapp_hfp_get_call_active())
+			{
+				TRACE(0, "now is calling, ignore");
+				return;
+			}
+			if(a2dp_device && (a2dp_device->a2dp_play_pause_flag == 0)){
+				a2dp_handleKey(AVRCP_KEY_PLAY);
+			}else{
+				a2dp_handleKey(AVRCP_KEY_PAUSE);
+			}
+		break;
+
+		case BLE_KEY_FUN_MAP_PRE_SONG:
+			TRACE(0, "key func is switch previous song");
+			if (btapp_hfp_is_sco_active() || btapp_hfp_get_call_active())
+			{
+				TRACE(0, "now is calling, ignore");
+				return;
+			}
+			a2dp_handleKey(AVRCP_KEY_BACKWARD);
+		break;
+
+		case BLE_KEY_FUN_MAP_NEXT_SONG:
+			TRACE(0, "key func is switch next song");
+			if (btapp_hfp_is_sco_active() || btapp_hfp_get_call_active())
+			{
+				TRACE(0, "now is calling, ignore");
+				return;
+			}
+			a2dp_handleKey(AVRCP_KEY_FORWARD);
+		break;
+
+		case BLE_KEY_FUN_MAP_VA:
+			TRACE(0, "key func is trigger/exit VA");
+			if(is_call_setup || is_call_active) {
+				TRACE(0, "now is calling, ignore");
+				return;
+			}
+			
+			TRACE(0, "now call is idle, process VA");
+			
+			if(!user_custom_is_VA_control_on())
+			{
+				TRACE(0,"VA control is off, ignore");
+				return;
+			}
+			
+#ifdef SUPPORT_SIRI
+			if(open_siri_flag == 1){
+				TRACE(0,"close siri");
+				app_hfp_siri_voice(false);
+			} 
+			else{
+				TRACE(0,"open siri");
+				app_hfp_siri_voice(true);
+			}
+#endif	
+		break;
+
+		case BLE_KEY_FUN_MAP_VOL_UP:
+			TRACE(0, "key func is volume up");
+			app_bt_volumeup();
+		break;
+
+		case BLE_KEY_FUN_MAP_VOL_DOWN:
+			TRACE(0, "key func is volume down");
+			app_bt_volumedown();
+		break;
+
+		case BLE_KEY_FUN_MAP_GAME_MODE:
+			key_low_latency_mode_switch(true);
+		break;
+		
+		case BLE_KEY_FUN_MAP_ANC:
+			TRACE(0, "key func is ANC");
+			app_anc_key(NULL, NULL);
+		break;
+		
+		default:
+			TRACE(0, "!!!warning, undefined key function");
+		break;
+	}
+}
 
 osTimerId mic_mute_sw_timer = NULL;
 static void mic_mute_swtimer_handler(void const *param);
@@ -842,6 +946,92 @@ void app_ibrt_ui_handle_touch_key(bt_bdaddr_t *remote, APP_KEY_STATUS *status, v
 			TRACE(2,"%s Invalid key event", __func__);
         break;
     }
+}
+
+void app_ibrt_ui_dynamic_handle_touch_key(bt_bdaddr_t *remote, APP_KEY_STATUS *status, void *param)
+{
+	TOTA_BLE_KET_FUN_MAP key_func = BLE_KEY_FUN_MAP_INVALID;
+
+	TRACE(0, "%s key event: %d", __func__, status->event);
+
+	//for tws, should identify L or R earbud
+	switch(status->event)
+	{
+		case APP_KEY_EVENT_SLIDE_LEFT:
+			key_func = user_custom_find_key_func(BLE_LR_EARBUD_MAP_R,
+				BLE_KET_CODE_MAP_TOUCH, BLE_KEY_EVENT_MAP_SWIPE_LEFT);
+        break;
+
+		case APP_KEY_EVENT_SLIDE_RIGHT:
+			key_func = user_custom_find_key_func(BLE_LR_EARBUD_MAP_R,
+				BLE_KET_CODE_MAP_TOUCH, BLE_KEY_EVENT_MAP_SWIPE_RIGHT);
+		break;
+
+		case APP_KEY_EVENT_SLIDE_UP:
+		case APP_KEY_EVENT_SLIDE_UP_AND_HOLD:
+			key_func = user_custom_find_key_func(BLE_LR_EARBUD_MAP_R,
+				BLE_KET_CODE_MAP_TOUCH, BLE_KEY_EVENT_MAP_SWIPE_UP);
+			if(APP_KEY_EVENT_SLIDE_UP_AND_HOLD == status->event)
+			{
+				if(!((BLE_KEY_FUN_MAP_VOL_UP == key_func) || (BLE_KEY_FUN_MAP_VOL_DOWN == key_func)))
+				{
+					TRACE(0, "up and hold event, but not vol up/down func, ignore");
+					return;
+				}
+			}
+		break;
+
+		case APP_KEY_EVENT_SLIDE_DOWN:
+		case APP_KEY_EVENT_SLIDE_DOWN_AND_HOLD:
+			key_func = user_custom_find_key_func(BLE_LR_EARBUD_MAP_R,
+				BLE_KET_CODE_MAP_TOUCH, BLE_KEY_EVENT_MAP_SWIPE_DOWN);
+			if(APP_KEY_EVENT_SLIDE_DOWN_AND_HOLD == status->event)
+			{
+				if(!((BLE_KEY_FUN_MAP_VOL_UP == key_func) || (BLE_KEY_FUN_MAP_VOL_DOWN == key_func))) 
+				{
+					TRACE(0, "up and hold event, but not vol up/down func, ignore");
+					return;
+				}
+			}
+		break;
+
+		case APP_KEY_EVENT_CLICK:
+			key_func = user_custom_find_key_func(BLE_LR_EARBUD_MAP_R,
+				BLE_KET_CODE_MAP_TOUCH, BLE_KET_EVENT_MAP_CLICK);
+		break;
+
+		case APP_KEY_EVENT_DOUBLECLICK:
+			key_func = user_custom_find_key_func(BLE_LR_EARBUD_MAP_R,
+				BLE_KET_CODE_MAP_TOUCH, BLE_KET_EVENT_MAP_DOUBLE);
+		break;
+
+		case APP_KEY_EVENT_TRIPLECLICK:
+			key_func = user_custom_find_key_func(BLE_LR_EARBUD_MAP_R,
+				BLE_KET_CODE_MAP_TOUCH, BLE_KEY_EVENT_MAP_TRIPLE);
+		break;
+
+		case APP_KEY_EVENT_LONGPRESS:
+		key_func = user_custom_find_key_func(BLE_LR_EARBUD_MAP_R,
+			BLE_KET_CODE_MAP_TOUCH, BLE_KEY_EVENT_MAP_LONG);
+		break;
+		
+		case APP_KEY_EVENT_COVER_PRESS:
+			app_switch_to_quick_conversation_mode();
+		break;
+
+		case APP_KEY_EVENT_COVER_LEAVE:
+			app_exit_quick_conversation_mode();
+		break;
+		
+		default:
+			TRACE(2,"%s Invalid key event", __func__);
+        break;
+	}
+
+	if(key_func != BLE_KEY_FUN_MAP_INVALID)
+	{
+		app_ibrt_ui_dynamic_handle_key_function(key_func);
+	}
 }
 #endif
 

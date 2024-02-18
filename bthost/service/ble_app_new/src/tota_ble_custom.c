@@ -56,6 +56,7 @@
 #include "app_tota.h"
 #include "app_user.h"
 #include "ble_datapath.h"
+#include "co_math.h"
 
 #if defined(IBRT)
 #include "app_ibrt_internal.h"
@@ -458,6 +459,22 @@ static void user_custom_tota_ble_command_set_handle(PACKET_STRUCTURE *ptrPacket)
 			user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_SET, ptrPacket->cmdID, rsp_status, NULL, 0);
 		break;
 
+		case TOTA_BLE_CMT_COMMAND_SET_KEY_REDEFINITION:
+			{
+				int8_t ret = 0;
+				ret = user_custom_redefine_key_func(ptrPacket->payload[0], ptrPacket->payload[1], 
+					ptrPacket->payload[2], ptrPacket->payload[3], true);
+
+				if(ret) {
+					rsp_status = PARAMETER_ERROR_STATUS;
+				} else{
+					rsp_status = SUCCESS_STATUS;
+				}
+				
+				user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_SET, ptrPacket->cmdID, rsp_status, NULL, 0);
+			}
+		break;
+		
 		case TOTA_BLE_CMT_COMMAND_SET_VOICE_ASSISTANT_CONTROL:
 			if(ptrPacket->payload[0] == 0x00) {
 				user_custom_on_off_VA_control(false, true);
@@ -700,6 +717,36 @@ static void user_custom_tota_ble_command_get_handle(PACKET_STRUCTURE *ptrPacket)
 			}
 		break;
 
+		case TOTA_BLE_CMT_COMMAND_GET_KEY_REDEFINITION:
+			{
+        		uint8_t temp[4 * 8] = {0};
+				uint8_t i = 0, write_pos = 0;
+				TOTA_BLE_KET_EVENT_MAP R_touch_key_event[8] = {
+					BLE_KET_EVENT_MAP_CLICK,
+					BLE_KET_EVENT_MAP_DOUBLE,
+					BLE_KEY_EVENT_MAP_TRIPLE,
+					BLE_KEY_EVENT_MAP_LONG,
+					BLE_KEY_EVENT_MAP_SWIPE_UP,
+					BLE_KEY_EVENT_MAP_SWIPE_DOWN,
+					BLE_KEY_EVENT_MAP_SWIPE_LEFT,
+					BLE_KEY_EVENT_MAP_SWIPE_RIGHT,
+				};
+
+				write_pos = 0;
+				for(i = 0; i < ARRAY_LEN(R_touch_key_event); i++)
+				{
+					temp[write_pos + i*4] = BLE_LR_EARBUD_MAP_R;
+					temp[write_pos + 1 + i*4] = BLE_KET_CODE_MAP_TOUCH;
+					temp[write_pos + 2 + i*4] = R_touch_key_event[i];
+					temp[write_pos + 3 + i*4] = user_custom_find_key_func(temp[write_pos + i*4], temp[write_pos + 1 + i*4], temp[write_pos + 2 + i*4]);
+				}
+				
+				rsp_status = NO_NEED_STATUS_RESP;
+
+				user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_GET, ptrPacket->cmdID, rsp_status, temp, sizeof(temp));
+			}
+		break;
+		
 		case TOTA_BLE_CMT_COMMAND_GET_FIRMWARE_VERSION:
 			{
 				uint8_t temp[3] = {0};
@@ -796,6 +843,18 @@ void noise_cancelling_mode_change_notify(app_anc_mode_t mode)
 		
 	user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_NOTIFY, \
 		TOTA_BLE_CMT_COMMAND_NOTIFY_NOISE_CANCELLING_MODE_AND_LEVEL, NO_NEED_STATUS_RESP, temp, sizeof(temp));
+}
+
+void low_latency_mode_change_notify(bool isEn)
+{
+	uint8_t temp[1] = {0};
+	
+	temp[0] = isEn;
+
+	TOTA_LOG_DBG(2 ,"%s: isEn %d", __func__, temp[0]);
+		
+	user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_NOTIFY, \
+		TOTA_BLE_CMT_COMMAND_NOTIFY_LOW_LATENCY_MODE, NO_NEED_STATUS_RESP, temp, sizeof(temp));
 }
 #endif /* CMT_008_BLE_ENABLE */
 

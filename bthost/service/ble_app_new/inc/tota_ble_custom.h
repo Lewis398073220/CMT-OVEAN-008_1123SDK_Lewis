@@ -81,6 +81,47 @@ typedef enum {
 	BLE_SHUTDOWN_TIME_MAP_INVALID,
 } TOTA_BLE_SHUTDOWN_TIME_MAP;
 
+typedef enum {
+	BLE_LR_EARBUD_MAP_L = 0x01,
+	BLE_LR_EARBUD_MAP_R = 0x00,
+	BLE_LR_EARBUD_MAP_INVALID = 0xFF,
+} TOTA_BLE_LR_EARBUD_MAP;
+
+typedef enum {
+	BLE_KET_CODE_MAP_MFB = 0x01,
+	BLE_KET_CODE_MAP_VOL_UP = 0x02,
+	BLE_KET_CODE_MAP_VOL_DOWN = 0x03,
+	BLE_KET_CODE_MAP_ANC = 0x04,
+	BLE_KET_CODE_MAP_TOUCH = 0x05,
+	BLE_KET_CODE_MAP_INVALID = 0xFF,
+} TOTA_BLE_KET_CODE_MAP;
+
+typedef enum {
+	BLE_KET_EVENT_MAP_CLICK = 0x01,
+	BLE_KET_EVENT_MAP_DOUBLE = 0x02,
+	BLE_KEY_EVENT_MAP_TRIPLE = 0x03,
+	BLE_KEY_EVENT_MAP_LONG = 0x04,
+	BLE_KEY_EVENT_MAP_SWIPE_UP = 0x05,
+	BLE_KEY_EVENT_MAP_SWIPE_DOWN = 0x06,
+	BLE_KEY_EVENT_MAP_SWIPE_LEFT = 0x07,
+	BLE_KEY_EVENT_MAP_SWIPE_RIGHT = 0x08,
+	BLE_KET_EVENT_MAP_INVALID = 0xFF,
+} TOTA_BLE_KET_EVENT_MAP;
+
+typedef enum {
+	BLE_KEY_FUN_MAP_NONE = 0x00,
+	BLE_KEY_FUN_MAP_PLAYPAUSE = 0x01,
+	BLE_KEY_FUN_MAP_PRE_SONG = 0x03,
+	BLE_KEY_FUN_MAP_NEXT_SONG = 0x04,
+	BLE_KEY_FUN_MAP_VA = 0x05,
+	BLE_KEY_FUN_MAP_VOL_UP = 0x06,
+	BLE_KEY_FUN_MAP_VOL_DOWN = 0x07,
+	BLE_KEY_FUN_MAP_GAME_MODE = 0x08,
+	BLE_KEY_FUN_MAP_ANC = 0x09,
+	BLE_KEY_FUN_MAP_LED_MODE = 0x0A,
+	BLE_KEY_FUN_MAP_INVALID = 0xFF,
+} TOTA_BLE_KET_FUN_MAP;
+
 //record the app's setting params
 typedef struct {
 	TOTA_BLE_ANC_MODE_MAP ble_anc_mode;
@@ -183,6 +224,7 @@ typedef struct {
 void user_custom_tota_ble_data_handle(const uint8_t* ptrData, uint32_t length);
 void battery_level_change_notify(uint8_t battery_level);
 void noise_cancelling_mode_change_notify(app_anc_mode_t mode);
+void low_latency_mode_change_notify(bool isEn);
 
 #ifdef __cplusplus
 }

@@ -349,6 +349,7 @@ uint32_t app_linein_need_pcm_data(uint8_t* pcm_buf, uint32_t len);
 void app_ble_eq_set(void);
 bool is_low_latency_mode_on(void);
 void enter_exit_low_latency_mode(bool isEn, bool promt_on);
+void key_low_latency_mode_switch(bool promt_on);
 void ble_low_latency_mode_switch(bool isEn, bool promt_on);
 void update_sidetone_on_status(bool isOn);
 void ble_sidetone_switch(bool isOn);

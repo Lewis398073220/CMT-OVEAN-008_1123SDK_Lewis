@@ -83,6 +83,7 @@ void app_ibrt_ui_handle_VA_key(bt_bdaddr_t *remote, APP_KEY_STATUS *status, void
 
 #ifdef CMT_008_CST820_TOUCH
 void app_ibrt_ui_handle_touch_key(bt_bdaddr_t *remote, APP_KEY_STATUS *status, void *param);
+void app_ibrt_ui_dynamic_handle_touch_key(bt_bdaddr_t *remote, APP_KEY_STATUS *status, void *param);
 #endif
 
 #if (defined(BT_USB_AUDIO_DUAL_MODE) || defined(BTUSB_AUDIO_MODE))

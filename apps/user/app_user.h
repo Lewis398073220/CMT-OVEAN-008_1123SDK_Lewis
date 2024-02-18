@@ -30,12 +30,23 @@ extern "C" {
 #include "../../multimedia/inc/audio/process/filters/include/iir_process.h"
 #include "tgt_hardware.h"
 
+/********************************************** User Info Start **********************************************/
 typedef struct {
     float   gain0;
     float   gain1;
     int     num;
     IIR_PARAM_T param[USER_EQ_BANDS];
 } USER_IIR_CFG_T;
+
+//If other key redefinitions are added after MP, use this structure to define variable
+typedef struct {
+	uint8_t key_event;
+	uint8_t key_function;
+} KEY_CFG_T;
+
+typedef struct {
+	KEY_CFG_T R_touch_key_cfg[12]; //button cfg of right side's touch, 4 reserved
+} BUTTON_REDEFINE_T;
 
 typedef struct {
 	uint8_t nvrecord_user_ver_H;
@@ -62,16 +73,19 @@ typedef struct {
 	uint8_t awareness_mode_level;//awareness mode
 
 	bool VA_control_on;
-	
+
+	BUTTON_REDEFINE_T button_redefine;
+		
 	uint8_t quick_conversation_mode;
 } app_user_custom_data_t;
 
 //Record user info's history
 #define NV_USER_VERSION_H       0
 #define NV_USER_VERSION_M       0
-#define NV_USER_VERSION_L       3
+#define NV_USER_VERSION_L       4
 
 #define BT_NAME_LEN             27 //27 = CLASSIC_BTNAME_LEN
+/********************************************** User Info End **********************************************/
 
 
 typedef enum {
@@ -184,6 +198,10 @@ void app_anc_thread_update_awareness_mode_anc_level(app_anc_mode_t anc_mode, uin
 void app_audsec_update_nr_mode_anc_level(void *anc_list);
 bool user_custom_is_VA_control_on(void);
 void user_custom_on_off_VA_control(bool isOn, bool isSave);
+TOTA_BLE_KET_FUN_MAP user_custom_find_key_func(TOTA_BLE_LR_EARBUD_MAP lr,
+			TOTA_BLE_KET_CODE_MAP key_code, TOTA_BLE_KET_EVENT_MAP key_event);
+int8_t user_custom_redefine_key_func(TOTA_BLE_LR_EARBUD_MAP lr, TOTA_BLE_KET_CODE_MAP key_code, 
+			TOTA_BLE_KET_EVENT_MAP key_event, TOTA_BLE_KET_FUN_MAP key_fun, bool isSave);
 void user_custom_restore_default_settings(bool promt_on);
 void user_custom_nvrecord_rebuild_user_info(uint8_t *pUserInfo, bool isRebuildAll);
 void user_custom_nvrecord_user_info_get(void);

@@ -2066,7 +2066,8 @@ void app_ibrt_ui_touch_key(APP_KEY_STATUS *status, void *param)
     }
     else
     {
-		app_ibrt_ui_handle_touch_key(&curr_device->remote, status, param);
+		//app_ibrt_ui_handle_touch_key(&curr_device->remote, status, param);
+		app_ibrt_ui_dynamic_handle_touch_key(&curr_device->remote, status, param);
     }
 }
 #endif
@@ -2088,7 +2089,9 @@ const APP_KEY_HANDLE  app_ibrt_ui_v2_test_key_cfg[] =
 	{{APP_KEY_CODE_TOUCH_PANEL,APP_KEY_EVENT_SLIDE_UP_AND_HOLD},"touch key", app_ibrt_ui_touch_key, NULL},
 	{{APP_KEY_CODE_TOUCH_PANEL,APP_KEY_EVENT_SLIDE_DOWN},"touch key", app_ibrt_ui_touch_key, NULL},
 	{{APP_KEY_CODE_TOUCH_PANEL,APP_KEY_EVENT_SLIDE_DOWN_AND_HOLD},"touch key", app_ibrt_ui_touch_key, NULL},
+	{{APP_KEY_CODE_TOUCH_PANEL,APP_KEY_EVENT_CLICK},"touch key", app_ibrt_ui_touch_key, NULL},
 	{{APP_KEY_CODE_TOUCH_PANEL,APP_KEY_EVENT_DOUBLECLICK},"touch key", app_ibrt_ui_touch_key, NULL},
+	{{APP_KEY_CODE_TOUCH_PANEL,APP_KEY_EVENT_TRIPLECLICK},"touch key", app_ibrt_ui_touch_key, NULL},
 	{{APP_KEY_CODE_TOUCH_PANEL,APP_KEY_EVENT_LONGPRESS},"touch key", app_ibrt_ui_touch_key, NULL},
 	{{APP_KEY_CODE_TOUCH_PANEL,APP_KEY_EVENT_COVER_PRESS},"touch key", app_ibrt_ui_touch_key, NULL},
 	{{APP_KEY_CODE_TOUCH_PANEL,APP_KEY_EVENT_COVER_LEAVE},"touch key", app_ibrt_ui_touch_key, NULL},

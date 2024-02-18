@@ -283,6 +283,8 @@ struct nvrecord_user_t {
 	uint8_t awareness_mode_level;//awareness mode
 
 	bool VA_control_on;
+
+	BUTTON_REDEFINE_T button_redefine;
 };
 /* End Add by lewis */
 

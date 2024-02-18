@@ -185,8 +185,8 @@ extern const struct HAL_KEY_GPIOKEY_CFG_T cfg_hw_gpio_key_cfg[CFG_HW_GPIOKEY_NUM
 
 #define ANC_FF_MIC_CH_L                     AUD_CHANNEL_MAP_CH2
 #define ANC_FB_MIC_CH_L                     AUD_CHANNEL_MAP_CH4
-#define ANC_FF_MIC_CH_R                     AUD_CHANNEL_MAP_CH1
-#define ANC_FB_MIC_CH_R                     AUD_CHANNEL_MAP_CH0
+#define ANC_FF_MIC_CH_R                     AUD_CHANNEL_MAP_CH0
+#define ANC_FB_MIC_CH_R                     AUD_CHANNEL_MAP_CH1
 
 #else /*CMT_008_MIC_CONFIG*/
 #define ANC_FF_MIC_CH_L                     AUD_CHANNEL_MAP_CH0
@@ -208,7 +208,7 @@ extern const struct HAL_KEY_GPIOKEY_CFG_T cfg_hw_gpio_key_cfg[CFG_HW_GPIOKEY_NUM
 #ifdef CMT_008_MIC_CONFIG
 
 #define ANC_TT_MIC_CH_L                     AUD_CHANNEL_MAP_CH2  //5 ADC, need reuse, same with FF channel L.
-#define ANC_TT_MIC_CH_R                     AUD_CHANNEL_MAP_CH1  //5 ADC, need reuse, same with FF channel R.
+#define ANC_TT_MIC_CH_R                     AUD_CHANNEL_MAP_CH0  //5 ADC, need reuse, same with FF channel R.
 
 #else /*CMT_008_MIC_CONFIG*/
 #define ANC_TT_MIC_CH_L                     AUD_CHANNEL_MAP_CH0
