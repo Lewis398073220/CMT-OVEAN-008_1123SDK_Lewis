@@ -177,8 +177,9 @@ static void user_custom_tota_ble_command_set_handle(PACKET_STRUCTURE *ptrPacket)
 
 				bool promt_on = false;
 				TOTA_BLE_ANC_MODE_MAP anc_mode_to_set = ptrPacket->payload[0];
-				TOTA_BLE_ANC_LEVEL_MAP anc_level_to_set = ptrPacket->payload[1];
-					
+				TOTA_BLE_ANC_LEVEL_MAP nr_mode_level = ptrPacket->payload[1];
+				TOTA_BLE_ANC_LEVEL_MAP awareness_mode_level = ptrPacket->payload[2];
+				
 				if(app_data.ble_anc_mode != anc_mode_to_set)
 				{
 					promt_on = true;
@@ -187,27 +188,27 @@ static void user_custom_tota_ble_command_set_handle(PACKET_STRUCTURE *ptrPacket)
 				switch(anc_mode_to_set)
 				{
 					case BLE_ANC_MODE_MAP_ANC_OFF:
-						app_ble_anc_switch(APP_ANC_MODE_OFF, anc_mode_to_set, promt_on);
+						app_ble_anc_switch(APP_ANC_MODE_OFF, BLE_ANC_LEVEL_MAP_INVALID, promt_on);
 						rsp_status = SUCCESS_STATUS;
 					break;
 
 					case BLE_ANC_MODE_MAP_ANC_ON:
-						user_custom_set_nr_mode_level(anc_level_to_set, true);
-						if(anc_level_to_set == BLE_ANC_LEVEL_MAP_MEDIUM) {
-							app_ble_anc_switch(APP_ANC_MODE4, anc_level_to_set, promt_on);
+						user_custom_set_nr_mode_level(nr_mode_level, true);
+						if(nr_mode_level == BLE_ANC_LEVEL_MAP_MEDIUM) {
+							app_ble_anc_switch(APP_ANC_MODE4, nr_mode_level, promt_on);
 							rsp_status = SUCCESS_STATUS;
-						} else if(anc_level_to_set == BLE_ANC_LEVEL_MAP_LOW) {
-							app_ble_anc_switch(APP_ANC_MODE5, anc_level_to_set, promt_on);
+						} else if(nr_mode_level == BLE_ANC_LEVEL_MAP_LOW) {
+							app_ble_anc_switch(APP_ANC_MODE5, nr_mode_level, promt_on);
 							rsp_status = SUCCESS_STATUS;
 						} else {
-							app_ble_anc_switch(APP_ANC_MODE1, anc_level_to_set, promt_on);
+							app_ble_anc_switch(APP_ANC_MODE1, nr_mode_level, promt_on);
 							rsp_status = SUCCESS_STATUS;
 						}
 					break;
 
 					case BLE_ANC_MODE_MAP_TRANSPARENT:
-						user_custom_set_awareness_mode_level(anc_level_to_set, true);
-						app_ble_anc_switch(APP_ANC_MODE2, anc_level_to_set, promt_on);
+						user_custom_set_awareness_mode_level(awareness_mode_level, true);
+						app_ble_anc_switch(APP_ANC_MODE2, awareness_mode_level, promt_on);
 						rsp_status = SUCCESS_STATUS;
 					break;
 					
