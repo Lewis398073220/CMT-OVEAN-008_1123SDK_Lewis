@@ -273,6 +273,7 @@ static void user_custom_tota_ble_command_set_handle(PACKET_STRUCTURE *ptrPacket)
 		break;
 		
     	case TOTA_BLE_CMT_COMMAND_SET_SOUND_PROMPTS_LEVEL:
+/* don't need set prompt volume at present
 #ifdef CODEC_DAC_PROMPT_ALONE_VOLUME_TABLE
 			if(ptrPacket->payload[0] < TGT_PROMPT_VOL_LEVEL_QTY)
 #else
@@ -285,7 +286,17 @@ static void user_custom_tota_ble_command_set_handle(PACKET_STRUCTURE *ptrPacket)
 			else{
 				rsp_status = PARAMETER_ERROR_STATUS;
 			}
-			
+*/			
+			if(ptrPacket->payload[0] == 0x00) {
+				user_custom_en_dis_prompt(false, true);
+				rsp_status = SUCCESS_STATUS;
+			} else if(ptrPacket->payload[0] == 0x01) {
+				user_custom_en_dis_prompt(true, true);
+				rsp_status = SUCCESS_STATUS;
+			} else{
+				rsp_status = PARAMETER_ERROR_STATUS;
+			}
+	
 			user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_SET, ptrPacket->cmdID, rsp_status, NULL, 0);
         break;
 
@@ -599,9 +610,10 @@ static void user_custom_tota_ble_command_get_handle(PACKET_STRUCTURE *ptrPacket)
 		
     	case TOTA_BLE_CMT_COMMAND_GET_SOUND_PROMPTS_LEVEL:
         	{
-        		uint8_t temp[1] = {0};
+        		uint8_t temp[2] = {0};
 				
-        		temp[0] = user_custom_get_prompt_volume_level();
+        		temp[0] = user_custom_is_prompt_en();
+				temp[1] = user_custom_get_prompt_volume_level();
 				rsp_status = NO_NEED_STATUS_RESP;
 
 				user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_GET, ptrPacket->cmdID, rsp_status, temp, sizeof(temp));

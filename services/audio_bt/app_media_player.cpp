@@ -845,9 +845,9 @@ static bool media_playAudio_pre_processing(AUD_ID_ENUM id, uint8_t device_id, me
 {
 /* Add by lewis */
 #ifdef CMT_008_BLE_ENABLE
-		if(!user_custom_get_prompt_volume_level())
+		if(!user_custom_is_prompt_en())
 		{
-			TRACE(0,"%s now vol level is 0, ignore", __func__);
+			TRACE(0,"%s now prompt playing is disable, ignore", __func__);
 			return false;
 		}
 #endif
