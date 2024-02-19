@@ -628,6 +628,7 @@ void user_custom_restore_default_settings(bool promt_on)
 {
 	struct nvrecord_user_t *nvrecord_user;
 	bool is_BT_connected = false;
+	uint8_t i = 0;
 	
 	nv_record_user_info_get(&nvrecord_user);
 	
@@ -682,32 +683,26 @@ void user_custom_restore_default_settings(bool promt_on)
 	KEY_CFG_T *nv_key_cfg = NULL;
 	nv_key_cfg = nvrecord_user->button_redefine.R_touch_key_cfg;
 	//R_touch_key_cfg is a array with 12 members
-	nv_key_cfg[0].key_event = BLE_KET_EVENT_MAP_CLICK;
-	nv_key_cfg[0].key_function = BLE_KEY_FUN_MAP_NONE;
-	nv_key_cfg[1].key_event = BLE_KET_EVENT_MAP_DOUBLE;
-	nv_key_cfg[1].key_function = BLE_KEY_FUN_MAP_PLAYPAUSE;
-	nv_key_cfg[2].key_event = BLE_KEY_EVENT_MAP_TRIPLE;
-	nv_key_cfg[2].key_function = BLE_KEY_FUN_MAP_NONE;
-	nv_key_cfg[3].key_event = BLE_KEY_EVENT_MAP_LONG;
-	nv_key_cfg[3].key_function = BLE_KEY_FUN_MAP_NONE;
-	nv_key_cfg[4].key_event = BLE_KEY_EVENT_MAP_SWIPE_UP;
-	nv_key_cfg[4].key_function = BLE_KEY_FUN_MAP_VOL_UP;
-	nv_key_cfg[5].key_event = BLE_KEY_EVENT_MAP_SWIPE_DOWN;
-	nv_key_cfg[5].key_function = BLE_KEY_FUN_MAP_VOL_DOWN;
-	nv_key_cfg[6].key_event = BLE_KEY_EVENT_MAP_SWIPE_LEFT;
-	nv_key_cfg[6].key_function = BLE_KEY_FUN_MAP_PRE_SONG;
-	nv_key_cfg[7].key_event = BLE_KEY_EVENT_MAP_SWIPE_RIGHT;
-	nv_key_cfg[7].key_function = BLE_KEY_FUN_MAP_NEXT_SONG;
-	//reserved
-	nv_key_cfg[8].key_event = BLE_KET_EVENT_MAP_INVALID;
-	nv_key_cfg[8].key_function = BLE_KEY_FUN_MAP_INVALID;
-	nv_key_cfg[9].key_event = BLE_KET_EVENT_MAP_INVALID;
-	nv_key_cfg[9].key_function = BLE_KEY_FUN_MAP_INVALID;
-	nv_key_cfg[10].key_event = BLE_KET_EVENT_MAP_INVALID;
-	nv_key_cfg[10].key_function = BLE_KEY_FUN_MAP_INVALID;
-	nv_key_cfg[11].key_event = BLE_KET_EVENT_MAP_INVALID;
-	nv_key_cfg[11].key_function = BLE_KEY_FUN_MAP_INVALID;
-	
+	KEY_CFG_T R_touch_key_cfg[12]  = {
+		{BLE_KET_EVENT_MAP_CLICK,       BLE_KEY_FUN_MAP_NONE},
+		{BLE_KET_EVENT_MAP_DOUBLE,      BLE_KEY_FUN_MAP_PLAYPAUSE},
+		{BLE_KEY_EVENT_MAP_TRIPLE,      BLE_KEY_FUN_MAP_NONE},
+		{BLE_KEY_EVENT_MAP_LONG,        BLE_KEY_FUN_MAP_NONE},
+		{BLE_KEY_EVENT_MAP_SWIPE_UP,    BLE_KEY_FUN_MAP_VOL_UP},
+		{BLE_KEY_EVENT_MAP_SWIPE_DOWN,  BLE_KEY_FUN_MAP_VOL_DOWN},
+		{BLE_KEY_EVENT_MAP_SWIPE_LEFT,  BLE_KEY_FUN_MAP_PRE_SONG},
+		{BLE_KEY_EVENT_MAP_SWIPE_RIGHT, BLE_KEY_FUN_MAP_NEXT_SONG},
+		//reserved
+		{BLE_KET_EVENT_MAP_INVALID,     BLE_KEY_FUN_MAP_INVALID},
+		{BLE_KET_EVENT_MAP_INVALID,     BLE_KEY_FUN_MAP_INVALID},
+		{BLE_KET_EVENT_MAP_INVALID,     BLE_KEY_FUN_MAP_INVALID},
+		{BLE_KET_EVENT_MAP_INVALID,     BLE_KEY_FUN_MAP_INVALID},
+	};
+	for(i = 0; i < ARRAY_LEN(nvrecord_user->button_redefine.R_touch_key_cfg); i++)
+	{
+		nv_key_cfg[i] = R_touch_key_cfg[i];
+	}
+
 	nv_record_user_info_set(nvrecord_user);
 	
 	//update local user infor
@@ -725,34 +720,14 @@ void user_custom_restore_default_settings(bool promt_on)
 	user_data.nr_mode_level = nvrecord_user->nr_mode_level;
 	user_data.awareness_mode_level = nvrecord_user->awareness_mode_level;
 	user_data.VA_control_on = nvrecord_user->VA_control_on;
+	//R_touch_key_cfg is a array with 12 members
 	KEY_CFG_T *local_key_cfg = NULL;
 	local_key_cfg = user_data.button_redefine.R_touch_key_cfg;
-	//R_touch_key_cfg is a array with 12 members
-	local_key_cfg[0].key_event = nv_key_cfg[0].key_event;
-	local_key_cfg[0].key_function = nv_key_cfg[0].key_function;
-	local_key_cfg[1].key_event = nv_key_cfg[1].key_event;
-	local_key_cfg[1].key_function = nv_key_cfg[1].key_function;
-	local_key_cfg[2].key_event = nv_key_cfg[2].key_event;
-	local_key_cfg[2].key_function = nv_key_cfg[2].key_function;
-	local_key_cfg[3].key_event = nv_key_cfg[3].key_event;
-	local_key_cfg[3].key_function = nv_key_cfg[3].key_function;
-	local_key_cfg[4].key_event = nv_key_cfg[4].key_event;
-	local_key_cfg[4].key_function = nv_key_cfg[4].key_function;
-	local_key_cfg[5].key_event = nv_key_cfg[5].key_event;
-	local_key_cfg[5].key_function = nv_key_cfg[5].key_function;
-	local_key_cfg[6].key_event = nv_key_cfg[6].key_event;
-	local_key_cfg[6].key_function = nv_key_cfg[6].key_function;
-	local_key_cfg[7].key_event = nv_key_cfg[7].key_event;
-	local_key_cfg[7].key_function = nv_key_cfg[7].key_function;
-	//reserved
-	local_key_cfg[8].key_event = nv_key_cfg[8].key_event;
-	local_key_cfg[8].key_function = nv_key_cfg[8].key_function;
-	local_key_cfg[9].key_event = nv_key_cfg[9].key_event;
-	local_key_cfg[9].key_function = nv_key_cfg[9].key_function;
-	local_key_cfg[10].key_event = nv_key_cfg[10].key_event;
-	local_key_cfg[10].key_function = nv_key_cfg[10].key_function;
-	local_key_cfg[11].key_event = nv_key_cfg[11].key_event;
-	local_key_cfg[11].key_function = nv_key_cfg[11].key_function;
+	nv_key_cfg = nvrecord_user->button_redefine.R_touch_key_cfg;
+	for(i = 0; i < ARRAY_LEN(user_data.button_redefine.R_touch_key_cfg); i++)
+	{
+		local_key_cfg[i] = nv_key_cfg[i];
+	}
 	
 	//update function status via local user infor
 	app_reset_anc_switch();
@@ -768,6 +743,43 @@ void user_custom_restore_default_settings(bool promt_on)
 void nvrecord_user_info_init_for_ota(struct nvrecord_user_t *pUserInfo)
 {
 	uint8_t saved_user_info_ver[13];
+	uint8_t	i = 0;
+	
+	USER_IIR_CFG_T user_eq  = {
+	    .gain0 = 0,
+	    .gain1 = 0,
+	    .num = USER_EQ_BANDS,
+	    .param = {
+	        {IIR_TYPE_PEAK,       0,   32.0,   0.7},
+	        {IIR_TYPE_PEAK,       0,   64.0,   0.7},
+	        {IIR_TYPE_PEAK,       0,  125.0,   0.7},
+	        {IIR_TYPE_PEAK,       0,  250.0,   0.7},
+	        {IIR_TYPE_PEAK,       0,  500.0,   0.7},
+	        {IIR_TYPE_PEAK,       0, 1000.0,   0.7},
+	        {IIR_TYPE_PEAK,       0, 2000.0,   0.7},
+	        {IIR_TYPE_PEAK,       0, 4000.0,   0.7},
+	        {IIR_TYPE_PEAK,       0, 8000.0,   0.7},
+	        {IIR_TYPE_PEAK,       0,16000.0,   0.7},
+	    }
+	};
+		
+	KEY_CFG_T *nv_key_cfg = NULL;
+	//R_touch_key_cfg is a array with 12 members
+	KEY_CFG_T R_touch_key_cfg[12]  = {
+		{BLE_KET_EVENT_MAP_CLICK,       BLE_KEY_FUN_MAP_NONE},
+		{BLE_KET_EVENT_MAP_DOUBLE,      BLE_KEY_FUN_MAP_PLAYPAUSE},
+		{BLE_KEY_EVENT_MAP_TRIPLE,      BLE_KEY_FUN_MAP_NONE},
+		{BLE_KEY_EVENT_MAP_LONG,        BLE_KEY_FUN_MAP_NONE},
+		{BLE_KEY_EVENT_MAP_SWIPE_UP,    BLE_KEY_FUN_MAP_VOL_UP},
+		{BLE_KEY_EVENT_MAP_SWIPE_DOWN,  BLE_KEY_FUN_MAP_VOL_DOWN},
+		{BLE_KEY_EVENT_MAP_SWIPE_LEFT,  BLE_KEY_FUN_MAP_PRE_SONG},
+		{BLE_KEY_EVENT_MAP_SWIPE_RIGHT, BLE_KEY_FUN_MAP_NEXT_SONG},
+		//reserved
+		{BLE_KET_EVENT_MAP_INVALID,     BLE_KEY_FUN_MAP_INVALID},
+		{BLE_KET_EVENT_MAP_INVALID,     BLE_KEY_FUN_MAP_INVALID},
+		{BLE_KET_EVENT_MAP_INVALID,     BLE_KEY_FUN_MAP_INVALID},
+		{BLE_KET_EVENT_MAP_INVALID,     BLE_KEY_FUN_MAP_INVALID},
+	};
 			
 	TRACE(0, "*** [%s] enter", __func__);
 
@@ -783,23 +795,6 @@ void nvrecord_user_info_init_for_ota(struct nvrecord_user_t *pUserInfo)
 
 		//default eq config
 		pUserInfo->eq_mode = BLE_EQ_MAP_STUDIO;
-		USER_IIR_CFG_T user_eq  = {
-		    .gain0 = 0,
-		    .gain1 = 0,
-		    .num = USER_EQ_BANDS,
-		    .param = {
-		        {IIR_TYPE_PEAK,       0,   32.0,   0.7},
-		        {IIR_TYPE_PEAK,       0,   64.0,   0.7},
-		        {IIR_TYPE_PEAK,       0,  125.0,   0.7},
-		        {IIR_TYPE_PEAK,       0,  250.0,   0.7},
-		        {IIR_TYPE_PEAK,       0,  500.0,   0.7},
-		        {IIR_TYPE_PEAK,       0, 1000.0,   0.7},
-		        {IIR_TYPE_PEAK,       0, 2000.0,   0.7},
-		        {IIR_TYPE_PEAK,       0, 4000.0,   0.7},
-		        {IIR_TYPE_PEAK,       0, 8000.0,   0.7},
-		        {IIR_TYPE_PEAK,       0,16000.0,   0.7},
-		    }
-		};
 		pUserInfo->user_eq = user_eq;
 
 		//default sidetone config
@@ -816,34 +811,12 @@ void nvrecord_user_info_init_for_ota(struct nvrecord_user_t *pUserInfo)
 		pUserInfo->VA_control_on = true;
 
 		//default button redefine config
-		KEY_CFG_T *nv_key_cfg = NULL;
-		nv_key_cfg = pUserInfo->button_redefine.R_touch_key_cfg;
 		//R_touch_key_cfg is a array with 12 members
-		nv_key_cfg[0].key_event = BLE_KET_EVENT_MAP_CLICK;
-		nv_key_cfg[0].key_function = BLE_KEY_FUN_MAP_NONE;
-		nv_key_cfg[1].key_event = BLE_KET_EVENT_MAP_DOUBLE;
-		nv_key_cfg[1].key_function = BLE_KEY_FUN_MAP_PLAYPAUSE;
-		nv_key_cfg[2].key_event = BLE_KEY_EVENT_MAP_TRIPLE;
-		nv_key_cfg[2].key_function = BLE_KEY_FUN_MAP_NONE;
-		nv_key_cfg[3].key_event = BLE_KEY_EVENT_MAP_LONG;
-		nv_key_cfg[3].key_function = BLE_KEY_FUN_MAP_NONE;
-		nv_key_cfg[4].key_event = BLE_KEY_EVENT_MAP_SWIPE_UP;
-		nv_key_cfg[4].key_function = BLE_KEY_FUN_MAP_VOL_UP;
-		nv_key_cfg[5].key_event = BLE_KEY_EVENT_MAP_SWIPE_DOWN;
-		nv_key_cfg[5].key_function = BLE_KEY_FUN_MAP_VOL_DOWN;
-		nv_key_cfg[6].key_event = BLE_KEY_EVENT_MAP_SWIPE_LEFT;
-		nv_key_cfg[6].key_function = BLE_KEY_FUN_MAP_PRE_SONG;
-		nv_key_cfg[7].key_event = BLE_KEY_EVENT_MAP_SWIPE_RIGHT;
-		nv_key_cfg[7].key_function = BLE_KEY_FUN_MAP_NEXT_SONG;
-		//reserved
-		nv_key_cfg[8].key_event = BLE_KET_EVENT_MAP_INVALID;
-		nv_key_cfg[8].key_function = BLE_KEY_FUN_MAP_INVALID;
-		nv_key_cfg[9].key_event = BLE_KET_EVENT_MAP_INVALID;
-		nv_key_cfg[9].key_function = BLE_KEY_FUN_MAP_INVALID;
-		nv_key_cfg[10].key_event = BLE_KET_EVENT_MAP_INVALID;
-		nv_key_cfg[10].key_function = BLE_KEY_FUN_MAP_INVALID;
-		nv_key_cfg[11].key_event = BLE_KET_EVENT_MAP_INVALID;
-		nv_key_cfg[11].key_function = BLE_KEY_FUN_MAP_INVALID;
+		nv_key_cfg = pUserInfo->button_redefine.R_touch_key_cfg;
+		for(i = 0; i < ARRAY_LEN(pUserInfo->button_redefine.R_touch_key_cfg); i++)
+		{
+			nv_key_cfg[i] = R_touch_key_cfg[i];
+		}
 	}
 	else if(strncmp((const char *)saved_user_info_ver, "V0.0.2", strlen("V0.0.2")) == 0)
 	{
@@ -861,66 +834,22 @@ void nvrecord_user_info_init_for_ota(struct nvrecord_user_t *pUserInfo)
 		pUserInfo->VA_control_on = true;
 
 		//default button redefine config
-		KEY_CFG_T *nv_key_cfg = NULL;
-		nv_key_cfg = pUserInfo->button_redefine.R_touch_key_cfg;
 		//R_touch_key_cfg is a array with 12 members
-		nv_key_cfg[0].key_event = BLE_KET_EVENT_MAP_CLICK;
-		nv_key_cfg[0].key_function = BLE_KEY_FUN_MAP_NONE;
-		nv_key_cfg[1].key_event = BLE_KET_EVENT_MAP_DOUBLE;
-		nv_key_cfg[1].key_function = BLE_KEY_FUN_MAP_PLAYPAUSE;
-		nv_key_cfg[2].key_event = BLE_KEY_EVENT_MAP_TRIPLE;
-		nv_key_cfg[2].key_function = BLE_KEY_FUN_MAP_NONE;
-		nv_key_cfg[3].key_event = BLE_KEY_EVENT_MAP_LONG;
-		nv_key_cfg[3].key_function = BLE_KEY_FUN_MAP_NONE;
-		nv_key_cfg[4].key_event = BLE_KEY_EVENT_MAP_SWIPE_UP;
-		nv_key_cfg[4].key_function = BLE_KEY_FUN_MAP_VOL_UP;
-		nv_key_cfg[5].key_event = BLE_KEY_EVENT_MAP_SWIPE_DOWN;
-		nv_key_cfg[5].key_function = BLE_KEY_FUN_MAP_VOL_DOWN;
-		nv_key_cfg[6].key_event = BLE_KEY_EVENT_MAP_SWIPE_LEFT;
-		nv_key_cfg[6].key_function = BLE_KEY_FUN_MAP_PRE_SONG;
-		nv_key_cfg[7].key_event = BLE_KEY_EVENT_MAP_SWIPE_RIGHT;
-		nv_key_cfg[7].key_function = BLE_KEY_FUN_MAP_NEXT_SONG;
-		//reserved
-		nv_key_cfg[8].key_event = BLE_KET_EVENT_MAP_INVALID;
-		nv_key_cfg[8].key_function = BLE_KEY_FUN_MAP_INVALID;
-		nv_key_cfg[9].key_event = BLE_KET_EVENT_MAP_INVALID;
-		nv_key_cfg[9].key_function = BLE_KEY_FUN_MAP_INVALID;
-		nv_key_cfg[10].key_event = BLE_KET_EVENT_MAP_INVALID;
-		nv_key_cfg[10].key_function = BLE_KEY_FUN_MAP_INVALID;
-		nv_key_cfg[11].key_event = BLE_KET_EVENT_MAP_INVALID;
-		nv_key_cfg[11].key_function = BLE_KEY_FUN_MAP_INVALID;
+		nv_key_cfg = pUserInfo->button_redefine.R_touch_key_cfg;
+		for(i = 0; i < ARRAY_LEN(pUserInfo->button_redefine.R_touch_key_cfg); i++)
+		{
+			nv_key_cfg[i] = R_touch_key_cfg[i];
+		}
 	}
 	else if(strncmp((const char *)saved_user_info_ver, "V0.0.3", strlen("V0.0.3")) == 0)
 	{
 		//default button redefine config
-		KEY_CFG_T *nv_key_cfg = NULL;
-		nv_key_cfg = pUserInfo->button_redefine.R_touch_key_cfg;
 		//R_touch_key_cfg is a array with 12 members
-		nv_key_cfg[0].key_event = BLE_KET_EVENT_MAP_CLICK;
-		nv_key_cfg[0].key_function = BLE_KEY_FUN_MAP_NONE;
-		nv_key_cfg[1].key_event = BLE_KET_EVENT_MAP_DOUBLE;
-		nv_key_cfg[1].key_function = BLE_KEY_FUN_MAP_PLAYPAUSE;
-		nv_key_cfg[2].key_event = BLE_KEY_EVENT_MAP_TRIPLE;
-		nv_key_cfg[2].key_function = BLE_KEY_FUN_MAP_NONE;
-		nv_key_cfg[3].key_event = BLE_KEY_EVENT_MAP_LONG;
-		nv_key_cfg[3].key_function = BLE_KEY_FUN_MAP_NONE;
-		nv_key_cfg[4].key_event = BLE_KEY_EVENT_MAP_SWIPE_UP;
-		nv_key_cfg[4].key_function = BLE_KEY_FUN_MAP_VOL_UP;
-		nv_key_cfg[5].key_event = BLE_KEY_EVENT_MAP_SWIPE_DOWN;
-		nv_key_cfg[5].key_function = BLE_KEY_FUN_MAP_VOL_DOWN;
-		nv_key_cfg[6].key_event = BLE_KEY_EVENT_MAP_SWIPE_LEFT;
-		nv_key_cfg[6].key_function = BLE_KEY_FUN_MAP_PRE_SONG;
-		nv_key_cfg[7].key_event = BLE_KEY_EVENT_MAP_SWIPE_RIGHT;
-		nv_key_cfg[7].key_function = BLE_KEY_FUN_MAP_NEXT_SONG;
-		//reserved
-		nv_key_cfg[8].key_event = BLE_KET_EVENT_MAP_INVALID;
-		nv_key_cfg[8].key_function = BLE_KEY_FUN_MAP_INVALID;
-		nv_key_cfg[9].key_event = BLE_KET_EVENT_MAP_INVALID;
-		nv_key_cfg[9].key_function = BLE_KEY_FUN_MAP_INVALID;
-		nv_key_cfg[10].key_event = BLE_KET_EVENT_MAP_INVALID;
-		nv_key_cfg[10].key_function = BLE_KEY_FUN_MAP_INVALID;
-		nv_key_cfg[11].key_event = BLE_KET_EVENT_MAP_INVALID;
-		nv_key_cfg[11].key_function = BLE_KEY_FUN_MAP_INVALID;
+		nv_key_cfg = pUserInfo->button_redefine.R_touch_key_cfg;
+		for(i = 0; i < ARRAY_LEN(pUserInfo->button_redefine.R_touch_key_cfg); i++)
+		{
+			nv_key_cfg[i] = R_touch_key_cfg[i];
+		}
 	}
 	//if saved user infor ver is V0.0.0 or other, should init all user infor
 	else
@@ -940,23 +869,6 @@ void nvrecord_user_info_init_for_ota(struct nvrecord_user_t *pUserInfo)
 
 		//default eq config
 		pUserInfo->eq_mode = BLE_EQ_MAP_STUDIO;
-		USER_IIR_CFG_T user_eq  = {
-		    .gain0 = 0,
-		    .gain1 = 0,
-		    .num = USER_EQ_BANDS,
-		    .param = {
-		        {IIR_TYPE_PEAK,       0,   32.0,   0.7},
-		        {IIR_TYPE_PEAK,       0,   64.0,   0.7},
-		        {IIR_TYPE_PEAK,       0,  125.0,   0.7},
-		        {IIR_TYPE_PEAK,       0,  250.0,   0.7},
-		        {IIR_TYPE_PEAK,       0,  500.0,   0.7},
-		        {IIR_TYPE_PEAK,       0, 1000.0,   0.7},
-		        {IIR_TYPE_PEAK,       0, 2000.0,   0.7},
-		        {IIR_TYPE_PEAK,       0, 4000.0,   0.7},
-		        {IIR_TYPE_PEAK,       0, 8000.0,   0.7},
-		        {IIR_TYPE_PEAK,       0,16000.0,   0.7},
-		    }
-		};
 		pUserInfo->user_eq = user_eq;
 
 		//default sidetone config
@@ -973,34 +885,12 @@ void nvrecord_user_info_init_for_ota(struct nvrecord_user_t *pUserInfo)
 		pUserInfo->VA_control_on = true;
 
 		//default button redefine config
-		KEY_CFG_T *nv_key_cfg = NULL;
-		nv_key_cfg = pUserInfo->button_redefine.R_touch_key_cfg;
 		//R_touch_key_cfg is a array with 12 members
-		nv_key_cfg[0].key_event = BLE_KET_EVENT_MAP_CLICK;
-		nv_key_cfg[0].key_function = BLE_KEY_FUN_MAP_NONE;
-		nv_key_cfg[1].key_event = BLE_KET_EVENT_MAP_DOUBLE;
-		nv_key_cfg[1].key_function = BLE_KEY_FUN_MAP_PLAYPAUSE;
-		nv_key_cfg[2].key_event = BLE_KEY_EVENT_MAP_TRIPLE;
-		nv_key_cfg[2].key_function = BLE_KEY_FUN_MAP_NONE;
-		nv_key_cfg[3].key_event = BLE_KEY_EVENT_MAP_LONG;
-		nv_key_cfg[3].key_function = BLE_KEY_FUN_MAP_NONE;
-		nv_key_cfg[4].key_event = BLE_KEY_EVENT_MAP_SWIPE_UP;
-		nv_key_cfg[4].key_function = BLE_KEY_FUN_MAP_VOL_UP;
-		nv_key_cfg[5].key_event = BLE_KEY_EVENT_MAP_SWIPE_DOWN;
-		nv_key_cfg[5].key_function = BLE_KEY_FUN_MAP_VOL_DOWN;
-		nv_key_cfg[6].key_event = BLE_KEY_EVENT_MAP_SWIPE_LEFT;
-		nv_key_cfg[6].key_function = BLE_KEY_FUN_MAP_PRE_SONG;
-		nv_key_cfg[7].key_event = BLE_KEY_EVENT_MAP_SWIPE_RIGHT;
-		nv_key_cfg[7].key_function = BLE_KEY_FUN_MAP_NEXT_SONG;
-		//reserved
-		nv_key_cfg[8].key_event = BLE_KET_EVENT_MAP_INVALID;
-		nv_key_cfg[8].key_function = BLE_KEY_FUN_MAP_INVALID;
-		nv_key_cfg[9].key_event = BLE_KET_EVENT_MAP_INVALID;
-		nv_key_cfg[9].key_function = BLE_KEY_FUN_MAP_INVALID;
-		nv_key_cfg[10].key_event = BLE_KET_EVENT_MAP_INVALID;
-		nv_key_cfg[10].key_function = BLE_KEY_FUN_MAP_INVALID;
-		nv_key_cfg[11].key_event = BLE_KET_EVENT_MAP_INVALID;
-		nv_key_cfg[11].key_function = BLE_KEY_FUN_MAP_INVALID;
+		nv_key_cfg = pUserInfo->button_redefine.R_touch_key_cfg;
+		for(i = 0; i < ARRAY_LEN(pUserInfo->button_redefine.R_touch_key_cfg); i++)
+		{
+			nv_key_cfg[i] = R_touch_key_cfg[i];
+		}
 	}
 	
 	//update user info's history
@@ -1084,37 +974,13 @@ void user_custom_nvrecord_user_info_get(void)
 	TRACE(0, "*** [%s] VA control on: %d", __func__, user_data.VA_control_on);
 
 	KEY_CFG_T *nv_key_cfg = NULL;
-	nv_key_cfg = nvrecord_user->button_redefine.R_touch_key_cfg;
 	KEY_CFG_T *local_key_cfg = NULL;
+	nv_key_cfg = nvrecord_user->button_redefine.R_touch_key_cfg;
 	local_key_cfg = user_data.button_redefine.R_touch_key_cfg;
 	//R_touch_key_cfg is a array with 12 members
-	local_key_cfg[0].key_event = nv_key_cfg[0].key_event;
-	local_key_cfg[0].key_function = nv_key_cfg[0].key_function;
-	local_key_cfg[1].key_event = nv_key_cfg[1].key_event;
-	local_key_cfg[1].key_function = nv_key_cfg[1].key_function;
-	local_key_cfg[2].key_event = nv_key_cfg[2].key_event;
-	local_key_cfg[2].key_function = nv_key_cfg[2].key_function;
-	local_key_cfg[3].key_event = nv_key_cfg[3].key_event;
-	local_key_cfg[3].key_function = nv_key_cfg[3].key_function;
-	local_key_cfg[4].key_event = nv_key_cfg[4].key_event;
-	local_key_cfg[4].key_function = nv_key_cfg[4].key_function;
-	local_key_cfg[5].key_event = nv_key_cfg[5].key_event;
-	local_key_cfg[5].key_function = nv_key_cfg[5].key_function;
-	local_key_cfg[6].key_event = nv_key_cfg[6].key_event;
-	local_key_cfg[6].key_function = nv_key_cfg[6].key_function;
-	local_key_cfg[7].key_event = nv_key_cfg[7].key_event;
-	local_key_cfg[7].key_function = nv_key_cfg[7].key_function;
-	//reserved
-	local_key_cfg[8].key_event = nv_key_cfg[8].key_event;
-	local_key_cfg[8].key_function = nv_key_cfg[8].key_function;
-	local_key_cfg[9].key_event = nv_key_cfg[9].key_event;
-	local_key_cfg[9].key_function = nv_key_cfg[9].key_function;
-	local_key_cfg[10].key_event = nv_key_cfg[10].key_event;
-	local_key_cfg[10].key_function = nv_key_cfg[10].key_function;
-	local_key_cfg[11].key_event = nv_key_cfg[11].key_event;
-	local_key_cfg[11].key_function = nv_key_cfg[11].key_function;
 	for(i = 0; i < ARRAY_LEN(user_data.button_redefine.R_touch_key_cfg); i++)
 	{
+		local_key_cfg[i] = nv_key_cfg[i];
 		TRACE(0, "*** [%s] R touch-->event/func: %d/%d", __func__, local_key_cfg[i].key_event, local_key_cfg[i].key_function);
 	}
 }
@@ -1122,7 +988,8 @@ void user_custom_nvrecord_user_info_get(void)
 void user_custom_nvrecord_rebuild_user_info(uint8_t *pUserInfo, bool isRebuildAll)
 {
 	struct nvrecord_user_t *user_info = (struct nvrecord_user_t *)pUserInfo;
-
+	uint8_t i = 0;
+	
 	//default touch config
 	user_info->touch_lock = false;
 	
@@ -1174,31 +1041,25 @@ void user_custom_nvrecord_rebuild_user_info(uint8_t *pUserInfo, bool isRebuildAl
 	KEY_CFG_T *nv_key_cfg = NULL;
 	nv_key_cfg = user_info->button_redefine.R_touch_key_cfg;
 	//R_touch_key_cfg is a array with 12 members
-	nv_key_cfg[0].key_event = BLE_KET_EVENT_MAP_CLICK;
-	nv_key_cfg[0].key_function = BLE_KEY_FUN_MAP_NONE;
-	nv_key_cfg[1].key_event = BLE_KET_EVENT_MAP_DOUBLE;
-	nv_key_cfg[1].key_function = BLE_KEY_FUN_MAP_PLAYPAUSE;
-	nv_key_cfg[2].key_event = BLE_KEY_EVENT_MAP_TRIPLE;
-	nv_key_cfg[2].key_function = BLE_KEY_FUN_MAP_NONE;
-	nv_key_cfg[3].key_event = BLE_KEY_EVENT_MAP_LONG;
-	nv_key_cfg[3].key_function = BLE_KEY_FUN_MAP_NONE;
-	nv_key_cfg[4].key_event = BLE_KEY_EVENT_MAP_SWIPE_UP;
-	nv_key_cfg[4].key_function = BLE_KEY_FUN_MAP_VOL_UP;
-	nv_key_cfg[5].key_event = BLE_KEY_EVENT_MAP_SWIPE_DOWN;
-	nv_key_cfg[5].key_function = BLE_KEY_FUN_MAP_VOL_DOWN;
-	nv_key_cfg[6].key_event = BLE_KEY_EVENT_MAP_SWIPE_LEFT;
-	nv_key_cfg[6].key_function = BLE_KEY_FUN_MAP_PRE_SONG;
-	nv_key_cfg[7].key_event = BLE_KEY_EVENT_MAP_SWIPE_RIGHT;
-	nv_key_cfg[7].key_function = BLE_KEY_FUN_MAP_NEXT_SONG;
-	//reserved
-	nv_key_cfg[8].key_event = BLE_KET_EVENT_MAP_INVALID;
-	nv_key_cfg[8].key_function = BLE_KEY_FUN_MAP_INVALID;
-	nv_key_cfg[9].key_event = BLE_KET_EVENT_MAP_INVALID;
-	nv_key_cfg[9].key_function = BLE_KEY_FUN_MAP_INVALID;
-	nv_key_cfg[10].key_event = BLE_KET_EVENT_MAP_INVALID;
-	nv_key_cfg[10].key_function = BLE_KEY_FUN_MAP_INVALID;
-	nv_key_cfg[11].key_event = BLE_KET_EVENT_MAP_INVALID;
-	nv_key_cfg[11].key_function = BLE_KEY_FUN_MAP_INVALID;
+	KEY_CFG_T R_touch_key_cfg[12]  = {
+		{BLE_KET_EVENT_MAP_CLICK,       BLE_KEY_FUN_MAP_NONE},
+		{BLE_KET_EVENT_MAP_DOUBLE,      BLE_KEY_FUN_MAP_PLAYPAUSE},
+		{BLE_KEY_EVENT_MAP_TRIPLE,      BLE_KEY_FUN_MAP_NONE},
+		{BLE_KEY_EVENT_MAP_LONG,        BLE_KEY_FUN_MAP_NONE},
+		{BLE_KEY_EVENT_MAP_SWIPE_UP,    BLE_KEY_FUN_MAP_VOL_UP},
+		{BLE_KEY_EVENT_MAP_SWIPE_DOWN,  BLE_KEY_FUN_MAP_VOL_DOWN},
+		{BLE_KEY_EVENT_MAP_SWIPE_LEFT,  BLE_KEY_FUN_MAP_PRE_SONG},
+		{BLE_KEY_EVENT_MAP_SWIPE_RIGHT, BLE_KEY_FUN_MAP_NEXT_SONG},
+		//reserved
+		{BLE_KET_EVENT_MAP_INVALID,     BLE_KEY_FUN_MAP_INVALID},
+		{BLE_KET_EVENT_MAP_INVALID,     BLE_KEY_FUN_MAP_INVALID},
+		{BLE_KET_EVENT_MAP_INVALID,     BLE_KEY_FUN_MAP_INVALID},
+		{BLE_KET_EVENT_MAP_INVALID,     BLE_KEY_FUN_MAP_INVALID},
+	};
+	for(i = 0; i < ARRAY_LEN(user_info->button_redefine.R_touch_key_cfg); i++)
+	{
+		nv_key_cfg[i] = R_touch_key_cfg[i];
+	}
 	
 	//when BES chip is blank, nv_record_extension_init
 	if(isRebuildAll)
@@ -1226,34 +1087,14 @@ void user_custom_nvrecord_rebuild_user_info(uint8_t *pUserInfo, bool isRebuildAl
 		user_data.nr_mode_level = user_info->nr_mode_level;
 		user_data.awareness_mode_level = user_info->awareness_mode_level;
 		user_data.VA_control_on = user_info->VA_control_on;
+		//R_touch_key_cfg is a array with 12 members
 		KEY_CFG_T *local_key_cfg = NULL;
 		local_key_cfg = user_data.button_redefine.R_touch_key_cfg;
-		//R_touch_key_cfg is a array with 12 members
-		local_key_cfg[0].key_event = nv_key_cfg[0].key_event;
-		local_key_cfg[0].key_function = nv_key_cfg[0].key_function;
-		local_key_cfg[1].key_event = nv_key_cfg[1].key_event;
-		local_key_cfg[1].key_function = nv_key_cfg[1].key_function;
-		local_key_cfg[2].key_event = nv_key_cfg[2].key_event;
-		local_key_cfg[2].key_function = nv_key_cfg[2].key_function;
-		local_key_cfg[3].key_event = nv_key_cfg[3].key_event;
-		local_key_cfg[3].key_function = nv_key_cfg[3].key_function;
-		local_key_cfg[4].key_event = nv_key_cfg[4].key_event;
-		local_key_cfg[4].key_function = nv_key_cfg[4].key_function;
-		local_key_cfg[5].key_event = nv_key_cfg[5].key_event;
-		local_key_cfg[5].key_function = nv_key_cfg[5].key_function;
-		local_key_cfg[6].key_event = nv_key_cfg[6].key_event;
-		local_key_cfg[6].key_function = nv_key_cfg[6].key_function;
-		local_key_cfg[7].key_event = nv_key_cfg[7].key_event;
-		local_key_cfg[7].key_function = nv_key_cfg[7].key_function;
-		//reserved
-		local_key_cfg[8].key_event = nv_key_cfg[8].key_event;
-		local_key_cfg[8].key_function = nv_key_cfg[8].key_function;
-		local_key_cfg[9].key_event = nv_key_cfg[9].key_event;
-		local_key_cfg[9].key_function = nv_key_cfg[9].key_function;
-		local_key_cfg[10].key_event = nv_key_cfg[10].key_event;
-		local_key_cfg[10].key_function = nv_key_cfg[10].key_function;
-		local_key_cfg[11].key_event = nv_key_cfg[11].key_event;
-		local_key_cfg[11].key_function = nv_key_cfg[11].key_function;
+		nv_key_cfg = user_info->button_redefine.R_touch_key_cfg;
+		for(i = 0; i < ARRAY_LEN(user_data.button_redefine.R_touch_key_cfg); i++)
+		{
+			local_key_cfg[i] = nv_key_cfg[i];
+		}
 	}
 }
 /********************************************** User Info End **********************************************/

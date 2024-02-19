@@ -948,6 +948,90 @@ void app_ibrt_ui_handle_touch_key(bt_bdaddr_t *remote, APP_KEY_STATUS *status, v
     }
 }
 
+void app_ibrt_ui_dynamic_handle_touch_key_double_click(void)
+{
+    HFCALL_MACHINE_ENUM hfcall_machine = app_get_hfcall_machine();
+	TOTA_BLE_KET_FUN_MAP key_func = BLE_KEY_FUN_MAP_INVALID;
+	
+	switch(hfcall_machine)
+    {
+		case HFCALL_MACHINE_CURRENT_IDLE:
+		case HFCALL_MACHINE_CURRENT_IDLE_ANOTHER_IDLE:
+			key_func = user_custom_find_key_func(BLE_LR_EARBUD_MAP_R,
+				BLE_KET_CODE_MAP_TOUCH, BLE_KET_EVENT_MAP_DOUBLE);
+			if(key_func != BLE_KEY_FUN_MAP_INVALID)
+			{
+				app_ibrt_ui_dynamic_handle_key_function(key_func);
+			}
+		break;
+
+		case HFCALL_MACHINE_CURRENT_INCOMMING:
+        case HFCALL_MACHINE_CURRENT_INCOMMING_ANOTHER_IDLE:
+            hfp_handle_key(HFP_KEY_ANSWER_CALL);
+        break;
+
+        case HFCALL_MACHINE_CURRENT_3WAY_INCOMMING:
+		case HFCALL_MACHINE_CURRENT_3WAY_INCOMMING_ANOTHER_IDLE:
+            hfp_handle_key(HFP_KEY_THREEWAY_HOLD_AND_ANSWER);
+        break;
+
+		case HFCALL_MACHINE_CURRENT_3WAY_HOLD_CALLING:
+        case HFCALL_MACHINE_CURRENT_3WAY_HOLD_CALLING_ANOTHER_IDLE:
+            hfp_handle_key(HFP_KEY_THREEWAY_HOLD_AND_ANSWER);
+        break;
+		
+   		default:
+        break;
+	}
+}
+
+void app_ibrt_ui_dynamic_handle_touch_key_longpress(void)
+{
+    HFCALL_MACHINE_ENUM hfcall_machine = app_get_hfcall_machine();
+	TOTA_BLE_KET_FUN_MAP key_func = BLE_KEY_FUN_MAP_INVALID;
+
+	switch(hfcall_machine)
+    {
+		case HFCALL_MACHINE_CURRENT_IDLE:
+		case HFCALL_MACHINE_CURRENT_IDLE_ANOTHER_IDLE:
+			key_func = user_custom_find_key_func(BLE_LR_EARBUD_MAP_R,
+				BLE_KET_CODE_MAP_TOUCH, BLE_KEY_EVENT_MAP_LONG);
+			if(key_func != BLE_KEY_FUN_MAP_INVALID)
+			{
+				app_ibrt_ui_dynamic_handle_key_function(key_func);
+			}
+		break;
+	
+        case HFCALL_MACHINE_CURRENT_INCOMMING:
+		case HFCALL_MACHINE_CURRENT_INCOMMING_ANOTHER_IDLE:
+			hfp_handle_key(HFP_KEY_HANGUP_CALL);
+		break;
+
+		case HFCALL_MACHINE_CURRENT_OUTGOING:
+		case HFCALL_MACHINE_CURRENT_OUTGOING_ANOTHER_IDLE:
+			hfp_handle_key(HFP_KEY_HANGUP_CALL);
+		break;
+
+		case HFCALL_MACHINE_CURRENT_CALLING:
+		case HFCALL_MACHINE_CURRENT_CALLING_ANOTHER_IDLE:
+			hfp_handle_key(HFP_KEY_HANGUP_CALL);
+		break;
+		
+		case HFCALL_MACHINE_CURRENT_3WAY_INCOMMING:
+		case HFCALL_MACHINE_CURRENT_3WAY_INCOMMING_ANOTHER_IDLE:
+			hfp_handle_key(HFP_KEY_THREEWAY_HOLD_REL_INCOMING);
+		break;
+
+		case HFCALL_MACHINE_CURRENT_3WAY_HOLD_CALLING:
+        case HFCALL_MACHINE_CURRENT_3WAY_HOLD_CALLING_ANOTHER_IDLE:
+			hfp_handle_key(HFP_KEY_THREEWAY_HANGUP_AND_ANSWER);
+		break;
+
+        default:
+        break;
+    }
+}
+
 void app_ibrt_ui_dynamic_handle_touch_key(bt_bdaddr_t *remote, APP_KEY_STATUS *status, void *param)
 {
 	TOTA_BLE_KET_FUN_MAP key_func = BLE_KEY_FUN_MAP_INVALID;
@@ -1001,8 +1085,8 @@ void app_ibrt_ui_dynamic_handle_touch_key(bt_bdaddr_t *remote, APP_KEY_STATUS *s
 		break;
 
 		case APP_KEY_EVENT_DOUBLECLICK:
-			key_func = user_custom_find_key_func(BLE_LR_EARBUD_MAP_R,
-				BLE_KET_CODE_MAP_TOUCH, BLE_KET_EVENT_MAP_DOUBLE);
+			app_ibrt_ui_dynamic_handle_touch_key_double_click();
+			return;
 		break;
 
 		case APP_KEY_EVENT_TRIPLECLICK:
@@ -1011,8 +1095,8 @@ void app_ibrt_ui_dynamic_handle_touch_key(bt_bdaddr_t *remote, APP_KEY_STATUS *s
 		break;
 
 		case APP_KEY_EVENT_LONGPRESS:
-		key_func = user_custom_find_key_func(BLE_LR_EARBUD_MAP_R,
-			BLE_KET_CODE_MAP_TOUCH, BLE_KEY_EVENT_MAP_LONG);
+			app_ibrt_ui_dynamic_handle_touch_key_longpress();
+			return;
 		break;
 		
 		case APP_KEY_EVENT_COVER_PRESS:
