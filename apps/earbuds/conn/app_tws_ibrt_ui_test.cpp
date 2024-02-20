@@ -2095,6 +2095,10 @@ const APP_KEY_HANDLE  app_ibrt_ui_v2_test_key_cfg[] =
 	{{APP_KEY_CODE_TOUCH_PANEL,APP_KEY_EVENT_LONGPRESS},"touch key", app_ibrt_ui_touch_key, NULL},
 	{{APP_KEY_CODE_TOUCH_PANEL,APP_KEY_EVENT_COVER_PRESS},"touch key", app_ibrt_ui_touch_key, NULL},
 	{{APP_KEY_CODE_TOUCH_PANEL,APP_KEY_EVENT_COVER_LEAVE},"touch key", app_ibrt_ui_touch_key, NULL},
+	{{APP_KEY_CODE_TOUCH_PANEL,APP_KEY_EVENT_1CLICK_AND_HOLD},"touch key", app_ibrt_ui_touch_key, NULL},
+	{{APP_KEY_CODE_TOUCH_PANEL,APP_KEY_EVENT_1CLICK_AND_HOLD_LEAVE},"touch key", app_ibrt_ui_touch_key, NULL},
+	{{APP_KEY_CODE_TOUCH_PANEL,APP_KEY_EVENT_2CLICK_AND_HOLD},"touch key", app_ibrt_ui_touch_key, NULL},
+	{{APP_KEY_CODE_TOUCH_PANEL,APP_KEY_EVENT_2CLICK_AND_HOLD_LEAVE},"touch key", app_ibrt_ui_touch_key, NULL},
 #endif
 
 #else

@@ -32,7 +32,7 @@ APP_KEY_CONFIG app_key_conifg = {
     .key_list = NULL
 };
 
-osPoolDef (app_key_handle_mempool, 20, APP_KEY_HANDLE);
+osPoolDef (app_key_handle_mempool, 23, APP_KEY_HANDLE); //Modify by lewis from 20 to 23 because mempool is not enough big
 osPoolId   app_key_handle_mempool = NULL;
 static uint8_t key_event_cnt = 0;
 

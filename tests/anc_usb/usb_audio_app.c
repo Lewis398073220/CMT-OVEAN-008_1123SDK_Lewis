@@ -299,7 +299,7 @@ enum CODEC_MUTE_USER_T {
 struct USB_AUDIO_KEY_MAP_T {
     enum USB_AUDIO_HID_EVENT_T hid_event;
     enum HAL_KEY_CODE_T key_code;
-    uint32_t key_event_bitset;
+    uint64_t key_event_bitset; //Modify by lewis from uint32_t to uint64_t because key_event_bitset size is too small
 };
 
 STATIC_ASSERT(8 * sizeof(((struct USB_AUDIO_KEY_MAP_T *)0)->key_event_bitset) >= HAL_KEY_EVENT_NUM,

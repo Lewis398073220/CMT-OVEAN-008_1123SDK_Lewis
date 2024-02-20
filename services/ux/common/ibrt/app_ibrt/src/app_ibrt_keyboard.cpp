@@ -1106,6 +1106,22 @@ void app_ibrt_ui_dynamic_handle_touch_key(bt_bdaddr_t *remote, APP_KEY_STATUS *s
 		case APP_KEY_EVENT_COVER_LEAVE:
 			app_exit_quick_conversation_mode();
 		break;
+
+		case APP_KEY_EVENT_1CLICK_AND_HOLD:
+			a2dp_handleKey(AVRCP_KEY_FAST_FORWARD_START);
+		break;
+
+		case APP_KEY_EVENT_1CLICK_AND_HOLD_LEAVE:
+			a2dp_handleKey(AVRCP_KEY_FAST_FORWARD_STOP);
+		break;
+
+		case APP_KEY_EVENT_2CLICK_AND_HOLD:
+			a2dp_handleKey(AVRCP_KEY_REWIND_START);
+		break;
+
+		case APP_KEY_EVENT_2CLICK_AND_HOLD_LEAVE:
+			a2dp_handleKey(AVRCP_KEY_REWIND_STOP);
+		break;
 		
 		default:
 			TRACE(2,"%s Invalid key event", __func__);

@@ -292,6 +292,24 @@ void touch_gesture_id_send_via_key(uint8_t gesture_id)
 			send_key_event((enum HAL_KEY_CODE_T)APP_KEY_CODE_TOUCH_PANEL, HAL_KEY_EVENT_UP_AFTER_LONGPRESS);
 		break;
 
+		case CTP_1CLICK_AND_HOLD:
+			send_key_event((enum HAL_KEY_CODE_T)APP_KEY_CODE_TOUCH_PANEL, HAL_KEY_EVENT_1CLICK_AND_HOLD);
+		break;
+
+		
+		case CTP_1CLICK_AND_HOLD_LEAVE:
+			send_key_event((enum HAL_KEY_CODE_T)APP_KEY_CODE_TOUCH_PANEL, HAL_KEY_EVENT_1CLICK_AND_HOLD_LEAVE);
+		break;
+
+		
+		case CTP_2CLICK_AND_HOLD:
+			send_key_event((enum HAL_KEY_CODE_T)APP_KEY_CODE_TOUCH_PANEL, HAL_KEY_EVENT_2CLICK_AND_HOLD);
+		break;
+
+		case CTP_2CLICK_AND_HOLD_LEAVE:
+			send_key_event((enum HAL_KEY_CODE_T)APP_KEY_CODE_TOUCH_PANEL, HAL_KEY_EVENT_2CLICK_AND_HOLD_LEAVE);
+		break;
+
 		case CTP_GESTURE_NONE:
 		default:
 		break;
@@ -367,12 +385,32 @@ static void touch_gesture_handle(uint8_t gesture_id)
 			touch_gesture_id_send_via_key(gesture_id);
 		break;
 
+		case CTP_1CLICK_AND_HOLD:
+			CTP_DBG_TRACE(0, "*** [%s] 1CLICK_AND_HOLD", __func__);
+			touch_gesture_id_send_via_key(gesture_id);
+		break;
+
+		case CTP_1CLICK_AND_HOLD_LEAVE:
+			CTP_DBG_TRACE(0, "*** [%s] 1CLICK_AND_HOLD_LEAVE", __func__);
+			touch_gesture_id_send_via_key(gesture_id);
+		break;
+
+		case CTP_2CLICK_AND_HOLD:
+			CTP_DBG_TRACE(0, "*** [%s] 2CLICK_AND_HOLD", __func__);
+			touch_gesture_id_send_via_key(gesture_id);
+		break;
+
+		case CTP_2CLICK_AND_HOLD_LEAVE:
+			CTP_DBG_TRACE(0, "*** [%s] 2CLICK_AND_HOLD_LEAVE", __func__);
+			touch_gesture_id_send_via_key(gesture_id);
+		break;
+		
 		case CTP_GESTURE_NONE:
 			CTP_DBG_TRACE(0, "*** [%s] NONE", __func__);
 		break;
 		
 		default:
-			CTP_DBG_TRACE(0, "*** [%s] !!!undefined gesture id: %d", __func__, gesture_id);
+			CTP_DBG_TRACE(0, "*** [%s] !!!undefined gesture id: 0x%02X", __func__, gesture_id);
 		break;
 	}
 }
