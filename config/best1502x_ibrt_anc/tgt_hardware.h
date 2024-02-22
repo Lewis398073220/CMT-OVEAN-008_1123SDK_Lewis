@@ -207,8 +207,8 @@ extern const struct HAL_KEY_GPIOKEY_CFG_T cfg_hw_gpio_key_cfg[CFG_HW_GPIOKEY_NUM
  **/
 #ifdef CMT_008_MIC_CONFIG
 
-#define ANC_TT_MIC_CH_L                     AUD_CHANNEL_MAP_CH2  //5 ADC, need reuse, same with FF channel L.
-#define ANC_TT_MIC_CH_R                     AUD_CHANNEL_MAP_CH0  //5 ADC, need reuse, same with FF channel R.
+#define ANC_TT_MIC_CH_L                     0  //5 ADC, need reuse, same with FF channel L.
+#define ANC_TT_MIC_CH_R                     0  //5 ADC, need reuse, same with FF channel R.
 
 #else /*CMT_008_MIC_CONFIG*/
 #define ANC_TT_MIC_CH_L                     AUD_CHANNEL_MAP_CH0
@@ -253,10 +253,11 @@ extern const struct AUD_IO_PATH_CFG_T cfg_audio_input_path_cfg[CFG_HW_AUD_INPUT_
 
 #ifdef CMT_008_MIC_CONFIG
 #define CFG_HW_AUD_SIDETONE_MIC_DEV         (AUD_CHANNEL_MAP_CH3)
+#define CFG_HW_AUD_SIDETONE_GAIN_DBVAL      (-5)
 #else
 #define CFG_HW_AUD_SIDETONE_MIC_DEV         (AUD_CHANNEL_MAP_CH0)
-#endif
 #define CFG_HW_AUD_SIDETONE_GAIN_DBVAL      (-20)
+#endif
 
 //bt config
 extern const char *BT_LOCAL_NAME;

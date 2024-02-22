@@ -186,6 +186,7 @@ void hal_codec_sync_adc_disable(void)
         (defined(CFG_HW_AUD_SIDETONE_MIC_DEV) && (CFG_HW_AUD_SIDETONE_MIC_DEV)) && \
         defined(CFG_HW_AUD_SIDETONE_GAIN_DBVAL)
 #define SIDETONE_ENABLE
+#define SIDETONE_RESERVED_ADC_CHAN //Add by lewis to fix problem that sidetone will not take effect when ANC Off 
 #if (CFG_HW_AUD_SIDETONE_GAIN_DBVAL > MAX_SIDETONE_DBVAL) || \
         (CFG_HW_AUD_SIDETONE_GAIN_DBVAL < MIN_SIDETONE_DBVAL) || \
         defined(CFG_HW_AUD_SIDETONE_IIR_INDEX) || \

@@ -7118,11 +7118,12 @@ static int bt_sco_player(bool on, enum APP_SYSFREQ_FREQ_T freq)
 #ifdef CMT_008_BLE_ENABLE
 		if(is_sidetone_on() && (btapp_hfp_is_call_active() || btapp_hfp_get_call_setup()))
 		{
-			hal_codec_dac_mute(true);
-			osDelay(100);
+			TRACE(0, "is call active: %d, is call setup: %d", btapp_hfp_is_call_active(), btapp_hfp_get_call_setup());
+			//hal_codec_dac_mute(true);
+			//osDelay(100);
 			hal_codec_sidetone_enable();
-			osDelay(100);
-			hal_codec_dac_mute(false);
+			//osDelay(100);
+			//hal_codec_dac_mute(false);
 		}
 #else
         hal_codec_sidetone_enable();
