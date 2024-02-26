@@ -70,6 +70,7 @@ static const char * const app_status_indication_str[] =
 #ifdef CMT_008_NTC_DETECT
 	"[NTC_ERROR]",
 #endif
+	"[FACTORY_RESET]",
 	"[AUDIO_LINEIN]",
 /* End Add by lewis */
 };
@@ -366,6 +367,28 @@ int app_status_indication_set(APP_STATUS_INDICATION_T status)
             app_pwl_start(APP_PWL_ID_1);
             break;	
 #endif
+
+		case APP_STATUS_INDICATION_FACTORY_RESET:
+			cfg0.part[0].level = 1;
+            cfg0.part[0].time = (200);
+            cfg0.part[1].level = 0;
+            cfg0.part[1].time = (200);
+            cfg0.part[2].level = 1;
+            cfg0.part[2].time = (200);
+            cfg0.part[3].level = 0;
+            cfg0.part[3].time = (200);
+            cfg0.part[4].level = 1;
+            cfg0.part[4].time = (200);
+            cfg0.part[5].level = 0;
+            cfg0.part[5].time = (200);
+            cfg0.parttotal = 6;
+            cfg0.startlevel = 1;
+            cfg0.periodic = false;
+
+            app_pwl_setup(APP_PWL_ID_0, &cfg0);
+            app_pwl_start(APP_PWL_ID_0);
+		break;
+
 		case APP_STATUS_INDICATION_AUDIO_LINEIN:
 			cfg0.part[0].level = 1;
 			cfg0.part[0].time = (300);

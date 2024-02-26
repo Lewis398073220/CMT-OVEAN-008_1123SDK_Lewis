@@ -320,6 +320,7 @@ enum APP_POWERON_CASE_T {
     APP_POWERON_CASE_CHARGING,
     APP_POWERON_CASE_FACTORY,
     APP_POWERON_CASE_TEST,
+    APP_POWERON_CASE_FACTORY_RESET, //Add by lewis for factory reset operation of production line
     APP_POWERON_CASE_INVALID,
 
     APP_POWERON_CASE_NUM
@@ -2321,6 +2322,15 @@ extern int rpc_service_setup(void);
         TRACE(0,"To enter test mode!!!");
     }
 
+	/* Add by lewis for factory reset operation of production line */
+	if (hal_sw_bootmode_get() & HAL_SW_BOOTMODE_CUSTOM_OP1_AFTER_REBOOT){
+        hal_sw_bootmode_clear(HAL_SW_BOOTMODE_CUSTOM_OP1_AFTER_REBOOT);
+		pwron_case = APP_POWERON_CASE_FACTORY_RESET;
+		need_check_key = false;
+        TRACE(0,"Factory Reset operation of production line!!!");
+    }
+	/* End Add by lewis */
+
 #if !defined(IS_CUSTOM_UART_APPLICATION_ENABLED)
 #ifdef APP_UART_MODULE
     app_uart_init();
@@ -2337,7 +2347,13 @@ extern int rpc_service_setup(void);
 
     nRet = app_battery_open();
     TRACE(1,"BATTERY %d",nRet);
+/* Modify by lewis for factory reset operation of production line */
+#if 0
     if (pwron_case != APP_POWERON_CASE_TEST){
+#else
+	if ((pwron_case != APP_POWERON_CASE_TEST) && (pwron_case != APP_POWERON_CASE_FACTORY_RESET)){
+#endif
+/* End Modify by lewis */
         switch (nRet) {
             case APP_BATTERY_OPEN_MODE_NORMAL:
                 nRet = 0;
@@ -2685,6 +2701,74 @@ extern int rpc_service_setup(void);
         }
     }
 #endif
+/* Add by lewis for factory reset operation of production line */
+	else if(pwron_case == APP_POWERON_CASE_FACTORY_RESET){
+		nv_record_rebuild(NV_REBUILD_CUSTOMER_ONLY);
+		osDelay(500);
+		app_status_indication_set(APP_STATUS_INDICATION_FACTORY_RESET);
+		osDelay(1500);
+		
+        app_bt_sleep_init();
+
+#if defined(OTA_ENABLE)
+        ota_basic_env_init();
+#endif
+
+
+#if defined(BES_OTA)
+#if !defined(OTA_OVER_TOTA_ENABLED)
+        bes_ota_init();
+#endif
+#endif
+
+#if defined(IBRT)
+#ifdef IBRT_SEARCH_UI
+        if(is_charging_poweron==false)
+        {
+            if(IBRT_UNKNOW == nvrecord_env->ibrt_mode.mode)
+            {
+                TRACE(0,"power on unknow mode");
+                app_ibrt_enter_limited_mode();
+            }
+            else
+            {
+                TRACE(1,"power on %d fetch out", nvrecord_env->ibrt_mode.mode);
+#ifdef SEARCH_UI_COMPATIBLE_UI_V2
+                app_ibrt_if_event_entry(APP_UI_EV_UNDOCK);
+#else
+                app_ibrt_ui_event_entry(IBRT_FETCH_OUT_EVENT);
+#endif
+            }
+        }
+#endif
+#else
+        bes_bt_me_write_access_mode(BTIF_BAM_NOT_ACCESSIBLE, 1);
+#endif
+
+        app_key_init();
+        app_battery_start();
+#if defined(__BTIF_EARPHONE__) && defined(__BTIF_AUTOPOWEROFF__)
+#if 0
+		app_start_10_second_timer(APP_POWEROFF_TIMER_ID);
+#else
+		if(!app_battery_is_charging()) app_start_10_second_timer(APP_POWEROFF_TIMER_ID);
+#endif
+#endif
+
+#ifdef __THIRDPARTY
+#if defined(__AI_VOICE__)
+        app_thirdparty_specific_lib_event_handle(THIRDPARTY_FUNC_NO1,THIRDPARTY_INIT, AI_SPEC_INIT);
+        app_thirdparty_specific_lib_event_handle(THIRDPARTY_FUNC_NO1,THIRDPARTY_START, AI_SPEC_INIT);
+        app_thirdparty_specific_lib_event_handle(THIRDPARTY_FUNC_NO2,THIRDPARTY_BT_CONNECTABLE, AI_SPEC_INIT);
+        app_thirdparty_specific_lib_event_handle(THIRDPARTY_FUNC_NO3,THIRDPARTY_START, AI_SPEC_INIT);
+#endif
+#endif
+
+		//Shutdown after Factory Reset done
+		nRet = -1;
+		goto exit;
+    }
+/* End Add by lewis */
     else{
 #if 0 //Disable by lewis
         app_status_indication_set(APP_STATUS_INDICATION_POWERON);
