@@ -2384,6 +2384,11 @@ extern int rpc_service_setup(void);
 				}
 #endif 
 
+//Add by lewis, fix problem that iphone15 can't be identified
+#ifdef CMT_008_UART_USBAUDIO_SWITCH
+				uart_usbaudio_start_switch_to(UARTUSB_SWITCH_USB);
+#endif
+
 #if (defined(BT_USB_AUDIO_DUAL_MODE) || defined(BTUSB_AUDIO_MODE))			
 				app_status_indication_set(APP_STATUS_INDICATION_CHARGING);
 #endif
