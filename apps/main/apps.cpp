@@ -622,7 +622,7 @@ static void app_poweron_normal(APP_KEY_STATUS *status, void *param)
     g_pwron_case = APP_POWERON_CASE_NORMAL;
 
 /* Add by lewis */
-    app_status_indication_set(APP_STATUS_INDICATION_POWERON);
+	app_status_indication_delay_set(APP_STATUS_INDICATION_POWERON, 2500);
 #ifdef MEDIA_PLAYER_SUPPORT
     media_PlayAudio(AUD_ID_POWER_ON, 0);
 #endif
@@ -665,19 +665,21 @@ void app_factory_reset(void)
 
 	nv_record_rebuild(NV_REBUILD_CUSTOMER_ONLY);
 	osDelay(500);
+
+    media_PlayAudio(AUD_ID_BT_FACTORY_RESET, 0);
+	app_status_indication_delay_set(APP_STATUS_INDICATION_FACTORY_RESET, 1500);
 	
 	app_disconnect_all_bt_connections(false);
 	osDelay(500);
-	
-    media_PlayAudio(AUD_ID_BT_FACTORY_RESET, 0);
 
     //app_ibrt_if_event_entry(APP_UI_EV_DOCK);
     //app_ibrt_if_event_entry(APP_UI_EV_CASE_CLOSE);
     //osDelay(800);
     app_ibrt_if_event_entry(APP_UI_EV_CASE_OPEN);
 	app_ibrt_if_event_entry(APP_UI_EV_FREE_MAN_MODE);
-	
-    app_reset_anc_switch();
+	app_status_indication_set(APP_STATUS_INDICATION_BOTHSCAN); //pairing LED indication
+
+	app_reset_anc_switch();
 	app_ble_eq_set();
 	enter_exit_low_latency_mode(false, true);
 	ble_sidetone_switch(user_custom_is_sidetone_on());
@@ -2584,8 +2586,13 @@ extern int rpc_service_setup(void);
 
     app_application_ready_to_start_callback();
     if (pwron_case == APP_POWERON_CASE_REBOOT){
-
+/* Modify by lewis */
+#if 0
         app_status_indication_set(APP_STATUS_INDICATION_POWERON);
+#else
+		app_status_indication_delay_set(APP_STATUS_INDICATION_POWERON, 2500);
+#endif
+/* End Modify by lewis */
 #ifdef MEDIA_PLAYER_SUPPORT
         media_PlayAudio(AUD_ID_POWER_ON, 0);
 #endif
@@ -2710,7 +2717,7 @@ extern int rpc_service_setup(void);
 	else if(pwron_case == APP_POWERON_CASE_FACTORY_RESET){
 		nv_record_rebuild(NV_REBUILD_CUSTOMER_ONLY);
 		osDelay(500);
-		app_status_indication_set(APP_STATUS_INDICATION_FACTORY_RESET);
+		app_status_indication_delay_set(APP_STATUS_INDICATION_FACTORY_RESET, 1500);
 		osDelay(1500);
 		
         app_bt_sleep_init();

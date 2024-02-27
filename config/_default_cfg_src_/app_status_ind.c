@@ -26,6 +26,10 @@
 
 static APP_STATUS_INDICATION_T app_status = APP_STATUS_INDICATION_NUM;
 static APP_STATUS_INDICATION_T app_status_ind_filter = APP_STATUS_INDICATION_NUM;
+/* Add by lewis */
+static bool app_is_status_ind_delay_on = false;
+static APP_STATUS_INDICATION_T app_status_ind_next = APP_STATUS_INDICATION_NUM;
+/* End Add by lewis */
 
 static const char * const app_status_indication_str[] =
 {
@@ -126,13 +130,38 @@ int app_status_indication_set(APP_STATUS_INDICATION_T status)
 			
 			default:
 				TRACE(0,"%s now is in shutdown process, ignore LED: %d", __func__, status);
-			return false;
+			return -1;
 		}
 	}
+
+	//if led status delay is ongoing, just save next led status
+	if(app_is_status_ind_delay_on)
+	{
+		app_status_ind_next = status;
+		TRACE(0,"led status delay is ongoing, just save LED: %d", status);
+		return -1;
+	}
 	/* End Add by lewis */
-	
+
+/* Modify by lewis */
+#if 0
     if (app_status == status)
         return 0;
+#else
+	if (app_status == status)
+	{
+		switch(status)
+		{
+			case APP_STATUS_INDICATION_CONNECTED:
+				TRACE(0,"allow LED: %d to repeat indicate", status);
+			break;
+			
+			default:
+			return 0;
+		}
+	}
+#endif
+/* End Modify by lewis */
 
     if (app_status_ind_filter == status)
         return 0;
@@ -168,12 +197,12 @@ int app_status_indication_set(APP_STATUS_INDICATION_T status)
         case APP_STATUS_INDICATION_INITIAL:
             break;
         case APP_STATUS_INDICATION_PAGESCAN:
-            cfg0.part[0].level = 0;
-			cfg0.part[0].time = (2000);
-			cfg0.part[1].level = 1;
-			cfg0.part[1].time = (300);
+            cfg0.part[0].level = 1;
+			cfg0.part[0].time = (300);
+			cfg0.part[1].level = 0;
+			cfg0.part[1].time = (2000);
 			cfg0.parttotal = 2;
-			cfg0.startlevel = 0;
+			cfg0.startlevel = 1;
 			cfg0.periodic = true;
             app_pwl_setup(APP_PWL_ID_0, &cfg0);
             app_pwl_start(APP_PWL_ID_0);
@@ -414,3 +443,86 @@ int app_status_indication_set(APP_STATUS_INDICATION_T status)
     }
     return 0;
 }
+
+/* Add by lewis */
+osTimerId led_status_sw_timer = NULL;
+static void led_status_indication_delay_handler(void const *param);
+osTimerDef(LED_STATUS_TIMER, led_status_indication_delay_handler);// define timers
+#define LED_STATUS_DEFAULT_SWTIMER_MS	(1000)
+
+static void led_status_indication_delay_handler(void const *param)
+{
+	//clear delay flag first
+	app_is_status_ind_delay_on = false;
+
+	if(app_status_ind_next != APP_STATUS_INDICATION_NUM)
+	{
+		//take effect next led status
+		app_status_indication_set(app_status_ind_next);	
+	
+		//clear next led status
+		app_status_ind_next = APP_STATUS_INDICATION_NUM;
+	}
+}
+
+void app_led_status_swtimer_start(uint32_t periodic_ms)
+{
+	TRACE(0,"%s delay: %dms",__func__, periodic_ms);
+	
+	if(led_status_sw_timer == NULL)
+		led_status_sw_timer = osTimerCreate(osTimer(LED_STATUS_TIMER), osTimerOnce, NULL);
+
+	osTimerStop(led_status_sw_timer);
+	if(periodic_ms == 0) {
+		osTimerStart(led_status_sw_timer,LED_STATUS_DEFAULT_SWTIMER_MS);
+	} else{
+		osTimerStart(led_status_sw_timer,periodic_ms);
+	}
+}
+
+void app_led_status_swtimer_stop(void)
+{
+	TRACE(0,"%s",__func__);
+
+	if(led_status_sw_timer == NULL)
+		return;
+	
+	osTimerStop(led_status_sw_timer);
+}
+
+/*
+ * function: use to delay a led status some time and recover next led status
+ */
+int app_status_indication_delay_set(APP_STATUS_INDICATION_T status, uint32_t delay_ms)
+{
+	if(app_is_power_off_in_progress())
+	{
+		switch(status)
+		{
+			case APP_STATUS_INDICATION_POWEROFF:
+			break;
+			
+			default:
+				TRACE(0,"%s now is in shutdown process, ignore LED: %d", __func__, status);
+			return -1;
+		}
+	}
+
+	//force clear delay flag and next led status first
+	app_led_status_swtimer_stop();
+	app_is_status_ind_delay_on = false;
+	app_status_ind_next = APP_STATUS_INDICATION_NUM;
+		
+	//take effect led status secondly
+	app_status_indication_set(status);
+
+	//set delay flag thirdly
+	app_is_status_ind_delay_on = true;
+
+	//open delay timer finally to check next led status
+	app_led_status_swtimer_start(delay_ms);
+	
+	return 0;
+}
+/* End Add by lewis */
+

@@ -80,6 +80,9 @@ const char *status2str(uint16_t status);
 int app_status_indication_filter_set(APP_STATUS_INDICATION_T status);
 APP_STATUS_INDICATION_T app_status_indication_get(void);
 int app_status_indication_set(APP_STATUS_INDICATION_T status);
+/* Add by lewis */
+int app_status_indication_delay_set(APP_STATUS_INDICATION_T status, uint32_t delay_ms);
+/* End Add by lewis */
 
 
 #ifdef __cplusplus

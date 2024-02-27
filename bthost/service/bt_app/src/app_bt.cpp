@@ -4086,7 +4086,7 @@ void app_bt_profile_connect_manager_hf(int id, btif_hf_channel_t* Chan, struct h
 #endif
 /* Add by lewis */
 #ifdef CMT_008_UI_LED_INDICATION
-		app_status_indication_set(APP_STATUS_INDICATION_CONNECTED);
+		app_status_indication_delay_set(APP_STATUS_INDICATION_CONNECTED, 2500);
 #endif		
 		app_stop_10_second_timer(APP_POWEROFF_TIMER_ID);
 		update_power_savingmode_shutdown_timer(user_custom_get_shutdown_time(), true);
@@ -4400,7 +4400,7 @@ void app_bt_profile_connect_manager_a2dp(int id, a2dp_stream_t *Stream, const   
 #endif
 /* Add by lewis */
 #ifdef CMT_008_UI_LED_INDICATION
-		app_status_indication_set(APP_STATUS_INDICATION_CONNECTED);
+		app_status_indication_delay_set(APP_STATUS_INDICATION_CONNECTED, 2500);
 #endif
 		app_stop_10_second_timer(APP_POWEROFF_TIMER_ID);
 		update_power_savingmode_shutdown_timer(user_custom_get_shutdown_time(), true);
