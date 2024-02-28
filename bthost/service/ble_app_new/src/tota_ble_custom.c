@@ -604,7 +604,7 @@ static void user_custom_tota_ble_command_get_handle(PACKET_STRUCTURE *ptrPacket)
 				memcpy(temp, BT_LOCAL_NAME, name_len);
 				rsp_status = NO_NEED_STATUS_RESP;
 
-				user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_GET, ptrPacket->cmdID, rsp_status, temp, sizeof(temp));
+				user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_GET, ptrPacket->cmdID, rsp_status, temp, name_len);
 			}
 		break;
 		
