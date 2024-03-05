@@ -2252,7 +2252,7 @@ uint8_t bt_audio_get_eq_index(AUDIO_EQ_TYPE_T audio_eq_type,uint8_t anc_status)
 			{
 				case APP_ANC_MODE1:
 				case APP_ANC_MODE3:
-				case APP_ANC_MODE4:
+				case APP_ANC_MODE5:
 					if(eq_mode == BLE_EQ_MAP_USER) {
 						audio_eq_hw_dac_iir_index = USER_EQ_ANC_ON;
 					} else if(eq_mode == BLE_EQ_MAP_BASS) {
@@ -2267,7 +2267,7 @@ uint8_t bt_audio_get_eq_index(AUDIO_EQ_TYPE_T audio_eq_type,uint8_t anc_status)
 				break;
 				
 				case APP_ANC_MODE2:
-				case APP_ANC_MODE5:
+				case APP_ANC_MODE4:
 				case APP_ANC_MODE_OFF:
 				default:
 					if(eq_mode == BLE_EQ_MAP_USER) {

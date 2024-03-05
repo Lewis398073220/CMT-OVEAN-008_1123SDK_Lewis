@@ -491,16 +491,16 @@ void app_anc_thread_update_awareness_mode_anc_level(app_anc_mode_t anc_mode, uin
 
 void app_audsec_update_nr_mode_anc_level(void *anc_list)
 {
-	struct_anc_cfg **panc_list = (struct_anc_cfg **)anc_list;
+	//struct_anc_cfg **panc_list = (struct_anc_cfg **)anc_list;
 
 	TRACE(0, "%s", __func__);
 
 	//make sure that APP_ANC_MODE4 and APP_ANC_MODE5 is not const value and not be load from audsec
-	*panc_list[APP_ANC_MODE4 - 1] = *panc_list[APP_ANC_MODE1 - 1];
+	//*panc_list[APP_ANC_MODE4 - 1] = *panc_list[APP_ANC_MODE1 - 1];
 	//*panc_list[APP_ANC_MODE5 - 1] = *panc_list[APP_ANC_MODE1 - 1];
 
-	panc_list[APP_ANC_MODE4 - 1]->anc_cfg_ff_l.total_gain = 0;
-	panc_list[APP_ANC_MODE4 - 1]->anc_cfg_ff_r.total_gain = 0;
+	//panc_list[APP_ANC_MODE4 - 1]->anc_cfg_ff_l.total_gain = 0;
+	//panc_list[APP_ANC_MODE4 - 1]->anc_cfg_ff_r.total_gain = 0;
 
 	//panc_list[APP_ANC_MODE5 - 1]->anc_cfg_ff_l.total_gain = 0;
 	//panc_list[APP_ANC_MODE5 - 1]->anc_cfg_ff_r.total_gain = 0;
