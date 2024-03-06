@@ -8235,7 +8235,13 @@ static uint8_t app_bt_stream_volumeup_generic(bool isToUpdateLocalVolumeLevel)
             if (a2dp_local_vol > TGT_VOLUME_LEVEL_MAX)
             {
                 a2dp_local_vol = TGT_VOLUME_LEVEL_MAX;
-                //prompt_id = AUD_ID_BT_WARNING; //Modify by lewis
+/* Modify by lewis */
+#if 0
+				prompt_id = AUD_ID_BT_WARNING;
+#else
+				prompt_id = AUD_ID_BT_VOLMAX_TONE;
+#endif
+/* End Modify by lewis */
             }
             a2dp_volume_set_local_vol(curr_device->device_id, a2dp_local_vol);
         }
@@ -8248,8 +8254,13 @@ static uint8_t app_bt_stream_volumeup_generic(bool isToUpdateLocalVolumeLevel)
             if (currentBtVol >= MAX_A2DP_VOL)
             {
                 currentBtVol = MAX_A2DP_VOL;
-                //prompt_id = AUD_ID_BT_WARNING; //Modify by lewis
-
+/* Modify by lewis */
+#if 0
+				prompt_id = AUD_ID_BT_WARNING;
+#else
+				prompt_id = AUD_ID_BT_VOLMAX_TONE;
+#endif
+/* End Modify by lewis */
             }
             else
             {
@@ -8513,7 +8524,13 @@ static uint8_t app_bt_stream_volumedown_generic(bool isToUpdateLocalVolumeLevel)
             {
                 a2dp_local_vol = TGT_VOLUME_LEVEL_MUTE;
 
-                //prompt_id = AUD_ID_BT_WARNING; //Modify by lewis
+/* Modify by lewis */
+#if 0
+				prompt_id = AUD_ID_BT_WARNING;
+#else
+				prompt_id = AUD_ID_BT_VOLMIN_TONE;
+#endif
+/* End Modify by lewis */
             }
 
             a2dp_volume_set_local_vol(curr_device->device_id, a2dp_local_vol);
@@ -8527,7 +8544,13 @@ static uint8_t app_bt_stream_volumedown_generic(bool isToUpdateLocalVolumeLevel)
             {
                 currentBtVol = 0;
 
-				//prompt_id = AUD_ID_BT_WARNING; //Modify by lewis
+/* Modify by lewis */
+#if 0
+				prompt_id = AUD_ID_BT_WARNING;
+#else
+				prompt_id = AUD_ID_BT_VOLMIN_TONE;
+#endif
+/* End Modify by lewis */
             }
             else
             {
@@ -8623,45 +8646,18 @@ void app_bt_stream_volume_edge_check(void)
         app_bt_stream_isrun(APP_BT_STREAM_HFP_VENDOR));
     bool isA2dpStream = (app_bt_stream_isrun(APP_BT_STREAM_A2DP_SBC) ||
         app_bt_stream_isrun(APP_BT_STREAM_A2DP_AAC) ||
-        app_bt_stream_isrun(APP_BT_STREAM_A2DP_VENDOR));
-/* Modify by lewis */
-#if 0		
+        app_bt_stream_isrun(APP_BT_STREAM_A2DP_VENDOR));	
     if (isHfpStream || isA2dpStream)
     {
         if (TGT_VOLUME_LEVEL_MUTE == stream_local_volume)
         {
-            media_PlayAudio(AUD_ID_BT_WARNING, 0);
+            //media_PlayAudio(AUD_ID_BT_WARNING, 0); //Modify by lewis
         }
         else if (TGT_VOLUME_LEVEL_MAX == stream_local_volume)
         {
-            media_PlayAudio(AUD_ID_BT_WARNING, 0);
+            //media_PlayAudio(AUD_ID_BT_WARNING, 0); //Modify by lewis
         }
     }
-#else
-	if(isA2dpStream)
-	{
-        if (TGT_VOLUME_LEVEL_MUTE == stream_local_volume)
-        {
-            media_PlayAudio(AUD_ID_BT_VOLMIN_TONE, 0);
-        }
-        else if (TGT_VOLUME_LEVEL_MAX == stream_local_volume)
-        {
-            media_PlayAudio(AUD_ID_BT_VOLMAX_TONE, 0);
-        }
-    }
-	else if(isHfpStream)
-	{
-        if (TGT_VOLUME_LEVEL_1 == stream_local_volume)
-        {
-            media_PlayAudio(AUD_ID_BT_VOLMIN_TONE, 0);
-        }
-        else if (TGT_VOLUME_LEVEL_MAX == stream_local_volume)
-        {
-            media_PlayAudio(AUD_ID_BT_VOLMAX_TONE, 0);
-        }
-    }
-#endif
-/* End Modify by lewis */
 #endif
 }
 
