@@ -236,7 +236,7 @@ const struct CODEC_DAC_VOL_T codec_dac_a2dp_vol[TGT_VOLUME_LEVEL_QTY] = {
 };
 
 const struct CODEC_DAC_VOL_T codec_dac_hfp_vol[TGT_VOLUME_LEVEL_QTY] = {
-    {TX_PA_GAIN,0x03,-99},
+    {TX_PA_GAIN,0x03,-51}, //Modify by lewis from -99 to -51 for some iphones will send vol_0 to earphone
     {TX_PA_GAIN,0x03,-51},
     {TX_PA_GAIN,0x03,-48},
     {TX_PA_GAIN,0x03,-45},
