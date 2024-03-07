@@ -847,7 +847,6 @@ static struct_anc_cfg POSSIBLY_UNUSED AncFirCoef_50p7k_mode3 = {
 		.iir_counter=1, 
 		
 		.iir_coef[0].coef_b={0x08000000,0xf022991b,0x07ddf8db}, .iir_coef[0].coef_a={0x08000000,0xf022991b,0x07ddf8db},
-
         .dac_gain_offset = 0,
         .adc_gain_offset = -24,
     },
@@ -858,7 +857,6 @@ static struct_anc_cfg POSSIBLY_UNUSED AncFirCoef_50p7k_mode3 = {
 		.iir_counter=1, 
 		
 		.iir_coef[0].coef_b={0x08000000,0xf022991b,0x07ddf8db}, .iir_coef[0].coef_a={0x08000000,0xf022991b,0x07ddf8db},
-
         .dac_gain_offset = 0,
         .adc_gain_offset = -24,
     },
@@ -947,7 +945,7 @@ static struct_anc_cfg POSSIBLY_UNUSED AncFirCoef_50p7k_mode4 = {
         .total_gain = 0,
 			
         .iir_bypass_flag = 0,
-		.iir_counter=1,
+		.iir_counter=1, 
 		
 		.iir_coef[0].coef_b={0x08000000,0xf022991b,0x07ddf8db}, .iir_coef[0].coef_a={0x08000000,0xf022991b,0x07ddf8db},
 
@@ -958,7 +956,7 @@ static struct_anc_cfg POSSIBLY_UNUSED AncFirCoef_50p7k_mode4 = {
         .total_gain = 0,
 			
         .iir_bypass_flag = 0,
-		.iir_counter=1,
+		.iir_counter=1, 
 		
 		.iir_coef[0].coef_b={0x08000000,0xf022991b,0x07ddf8db}, .iir_coef[0].coef_a={0x08000000,0xf022991b,0x07ddf8db},
 
