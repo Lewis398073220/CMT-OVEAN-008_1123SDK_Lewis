@@ -2634,7 +2634,13 @@ extern int rpc_service_setup(void);
         bes_bt_me_write_access_mode(BTIF_BAM_NOT_ACCESSIBLE, 1);
 #endif
 
+/* Modify by lewis */
+#if (defined(BT_USB_AUDIO_DUAL_MODE) || defined(BTUSB_AUDIO_MODE))
+		if(!app_battery_is_charging()) app_key_init();
+#else
         app_key_init();
+#endif
+/* End Modify by lewis */
         app_battery_start();
 #if defined(__BTIF_EARPHONE__) && defined(__BTIF_AUTOPOWEROFF__)
 /* Modify by lewis */
@@ -2757,7 +2763,12 @@ extern int rpc_service_setup(void);
         bes_bt_me_write_access_mode(BTIF_BAM_NOT_ACCESSIBLE, 1);
 #endif
 
+#if (defined(BT_USB_AUDIO_DUAL_MODE) || defined(BTUSB_AUDIO_MODE))
+		if(!app_battery_is_charging()) app_key_init();
+#else
         app_key_init();
+#endif
+
         app_battery_start();
 #if defined(__BTIF_EARPHONE__) && defined(__BTIF_AUTOPOWEROFF__)
 #if 0
@@ -2953,7 +2964,13 @@ extern int rpc_service_setup(void);
                 app_poweron_wait_finished();
 #endif
             }
-            app_key_init();
+/* Modify by lewis */
+#if (defined(BT_USB_AUDIO_DUAL_MODE) || defined(BTUSB_AUDIO_MODE))
+			if(!app_battery_is_charging()) app_key_init();
+#else
+			app_key_init();
+#endif
+/* End Modify by lewis */
             app_battery_start();
 #if defined(__BTIF_EARPHONE__) && defined(__BTIF_AUTOPOWEROFF__)
 /* Modify by lewis */
