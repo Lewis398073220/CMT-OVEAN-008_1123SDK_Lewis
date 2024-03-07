@@ -92,7 +92,7 @@ typedef struct
     uint8_t softwareRevByte3;
 } FIRMWARE_REV_INFO_T;
 
-static FIRMWARE_REV_INFO_T fwRevInfoInFlash __attribute((section(".fw_rev"))) = {0, 0, 3, 3};
+static FIRMWARE_REV_INFO_T fwRevInfoInFlash __attribute((section(".fw_rev"))) = {0, 0, 3, 4};
 FIRMWARE_REV_INFO_T fwRevInfoInRam;
 
 extern "C" void system_get_info(uint8_t *fw_rev_0, uint8_t *fw_rev_1,
