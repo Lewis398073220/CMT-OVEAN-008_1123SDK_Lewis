@@ -398,20 +398,22 @@ int app_status_indication_set(APP_STATUS_INDICATION_T status)
 #endif
 
 		case APP_STATUS_INDICATION_FACTORY_RESET:
-			cfg0.part[0].level = 1;
-            cfg0.part[0].time = (200);
-            cfg0.part[1].level = 0;
+			cfg0.part[0].level = 0;
+            cfg0.part[0].time = (500);
+			cfg0.part[1].level = 1;
             cfg0.part[1].time = (200);
-            cfg0.part[2].level = 1;
+            cfg0.part[2].level = 0;
             cfg0.part[2].time = (200);
-            cfg0.part[3].level = 0;
+            cfg0.part[3].level = 1;
             cfg0.part[3].time = (200);
-            cfg0.part[4].level = 1;
+            cfg0.part[4].level = 0;
             cfg0.part[4].time = (200);
-            cfg0.part[5].level = 0;
+            cfg0.part[5].level = 1;
             cfg0.part[5].time = (200);
-            cfg0.parttotal = 6;
-            cfg0.startlevel = 1;
+            cfg0.part[6].level = 0;
+            cfg0.part[6].time = (200);
+            cfg0.parttotal = 7;
+            cfg0.startlevel = 0;
             cfg0.periodic = false;
 
             app_pwl_setup(APP_PWL_ID_0, &cfg0);

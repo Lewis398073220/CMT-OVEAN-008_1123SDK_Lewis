@@ -667,7 +667,7 @@ void app_factory_reset(void)
 	osDelay(500);
 
     media_PlayAudio(AUD_ID_BT_FACTORY_RESET, 0);
-	app_status_indication_delay_set(APP_STATUS_INDICATION_FACTORY_RESET, 1500);
+	app_status_indication_delay_set(APP_STATUS_INDICATION_FACTORY_RESET, 2000);
 	
 	app_disconnect_all_bt_connections(false);
 	osDelay(500);
@@ -2723,8 +2723,8 @@ extern int rpc_service_setup(void);
 	else if(pwron_case == APP_POWERON_CASE_FACTORY_RESET){
 		nv_record_rebuild(NV_REBUILD_CUSTOMER_ONLY);
 		osDelay(500);
-		app_status_indication_delay_set(APP_STATUS_INDICATION_FACTORY_RESET, 1500);
-		osDelay(1500);
+		app_status_indication_delay_set(APP_STATUS_INDICATION_FACTORY_RESET, 2000);
+		osDelay(2000);
 		
         app_bt_sleep_init();
 
