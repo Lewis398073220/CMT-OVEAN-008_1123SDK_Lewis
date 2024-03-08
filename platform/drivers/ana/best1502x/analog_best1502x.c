@@ -2077,6 +2077,7 @@ static void analog_aud_enable_vmic(enum ANA_CODEC_USER_T user, uint32_t dev, boo
     int_unlock(lock);
 
     if (global_update) {
+		TRACE(0, "Lewis user=0x%x, dev=0x%x, en=%d", user, dev, en); //Add by lewis
         pmu_codec_mic_bias_enable(pmu_map, en);
 #ifdef VOICE_DETECTOR_EN
         pmu_codec_mic_bias_lowpower_mode(pmu_map, en);

@@ -568,7 +568,7 @@ int CMT_af_stream_fadeout_then_fadein_start(uint32_t fadeout_sample,
 			af_stream_fade.stable_weight = powf(10.f, (USB_AUDIO_MIX_SUPPRESS_GAIN_DB) / 20.f);
 		} else
 #endif
-#ifdef AUDIO_LINEIN
+#if (defined(AUDIO_LINEIN ) && defined(CMT_008_3_5JACK_CTR))
 		if(app_is_3_5jack_inplug()) {
 			af_stream_fade.stable_weight = powf(10.f, (AUDIO_LINEIN_MIX_SUPPRESS_GAIN_DB) / 20.f);
 		} else
@@ -626,7 +626,7 @@ int CMT_af_stream_stable_then_fadein_start(uint32_t stable_sample,
 			af_stream_fade.stable_weight = powf(10.f, (USB_AUDIO_MIX_SUPPRESS_GAIN_DB) / 20.f);
 		} else
 #endif
-#ifdef AUDIO_LINEIN
+#if (defined(AUDIO_LINEIN ) && defined(CMT_008_3_5JACK_CTR))
 		if(app_is_3_5jack_inplug()) {
 			af_stream_fade.stable_weight = powf(10.f, (AUDIO_LINEIN_MIX_SUPPRESS_GAIN_DB) / 20.f);
 		} else
