@@ -1108,19 +1108,19 @@ void app_ibrt_ui_dynamic_handle_touch_key(bt_bdaddr_t *remote, APP_KEY_STATUS *s
 		break;
 
 		case APP_KEY_EVENT_1CLICK_AND_HOLD:
-			a2dp_handleKey(AVRCP_KEY_FAST_FORWARD_START);
+			//a2dp_handleKey(AVRCP_KEY_FAST_FORWARD_START);
 		break;
 
 		case APP_KEY_EVENT_1CLICK_AND_HOLD_LEAVE:
-			a2dp_handleKey(AVRCP_KEY_FAST_FORWARD_STOP);
+			//a2dp_handleKey(AVRCP_KEY_FAST_FORWARD_STOP);
 		break;
 
 		case APP_KEY_EVENT_2CLICK_AND_HOLD:
-			a2dp_handleKey(AVRCP_KEY_REWIND_START);
+			//a2dp_handleKey(AVRCP_KEY_REWIND_START);
 		break;
 
 		case APP_KEY_EVENT_2CLICK_AND_HOLD_LEAVE:
-			a2dp_handleKey(AVRCP_KEY_REWIND_STOP);
+			//a2dp_handleKey(AVRCP_KEY_REWIND_STOP);
 		break;
 		
 		default:
