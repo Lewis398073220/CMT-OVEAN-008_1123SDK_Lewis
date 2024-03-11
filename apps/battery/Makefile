@@ -30,4 +30,5 @@ ccflags-y += \
     -Iutils/cqueue \
     -Iservices/audio_bt \
     -Iservices/audio_manager \
-    -Iapps/user
+    -Iapps/user \
+    -Itests/anc_usb

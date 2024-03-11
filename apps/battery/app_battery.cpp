@@ -40,6 +40,7 @@
 #include "app_user.h"
 #if (defined(BT_USB_AUDIO_DUAL_MODE) || defined(BTUSB_AUDIO_MODE))
 #include "hal_usb.h"
+#include "anc_usb_app.h"
 #endif
 /* End add by lewis */
 
@@ -597,6 +598,14 @@ int app_battery_handle_process_charging(uint32_t status,  union APP_BATTERY_MSG_
 			/* Add by Jay */
 			en_dis_charging(false);
 			app_battery_stop();
+#if (defined(BT_USB_AUDIO_DUAL_MODE) || defined(BTUSB_AUDIO_MODE))
+			//Close usb audio and ANC VMIC to save battery powery
+			if(!hal_usb_configured())
+			{
+				btusb_switch(BTUSB_MODE_BT);
+				anc_usb_app_term(); 
+			}
+#endif			
 //#ifdef  CMT_008_NTC_DETECT
 			//app_ntc_swtimer_stop();
 //#endif
