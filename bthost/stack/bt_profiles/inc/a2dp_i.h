@@ -217,7 +217,13 @@ enum av_conn_state_enum
 
 #define A2DP_VER_1_2 0x0102
 #define A2DP_VER_1_3 0x0103
+/* Modify by lewis */
+#ifdef BQB_TEST
+#define A2DP_LOCAL_VERSION 0x0104
+#else
 #define A2DP_LOCAL_VERSION A2DP_VER_1_3
+#endif
+/* End Modify by lewis */
 
 #define A2DP_MEDIA_TYPE_AUDIO 	    0x00
 
