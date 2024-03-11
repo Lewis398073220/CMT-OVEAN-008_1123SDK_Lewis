@@ -607,7 +607,8 @@ KBUILD_CPPFLAGS += -DAUDIO_OUTPUT_SWAP
 endif
 
 export TRACE_BUF_SIZE ?= 32*1024
-export TRACE_BAUD_RATE ?= 10*115200
+#chang by lewis from 1152000 to 921600 for BQB_TEST
+export TRACE_BAUD_RATE ?= 921600
 export BTM_MAX_LINK_NUMS ?= 3
 export BT_DEVICE_NUM ?= 2
 export AOB_CODEC_CP ?= 0

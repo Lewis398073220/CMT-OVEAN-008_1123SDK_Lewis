@@ -14,6 +14,14 @@ KBUILD_CPPFLAGS += \
     -DCMT_008_EN_LED_BREATH
 ##### HARDWARE CONFIG END ######
 
+export BQB_TEST ?= 1
+ifeq ($(BQB_TEST),1)
+KBUILD_CPPFLAGS += -DBQB_TEST
+export APP_TRACE_RX_ENABLE ?= 1
+export APP_RX_API_ENABLE ?= 1
+export BQB_PROFILE_TEST ?= 1
+endif
+
 #VIO supply of CST820 and ac107 should be 1.8v, to see pmu_vio_3v3.
 export PMU_VIO_3V3_ENABLE ?= 1
 ifeq ($(PMU_VIO_3V3_ENABLE),1)
