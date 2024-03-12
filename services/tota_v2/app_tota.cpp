@@ -309,7 +309,11 @@ static void s_app_tota_rx(uint8_t * cmd_buf, uint16_t len)
 /* Add by lewis */
 #if defined(CMT_008_SPP_TOTA_V2) || defined(CMT_008_BLE_ENABLE)
 	//It's very important that buf[0] can't be equal to 'H', otherwise will cause ANC wireless test fail
+#ifdef BQB_TEST
+	if((buf[0] == BOOTCODE) || (*(uint16_t *)buf) == OP_TOTA_CMT008_SPP_TEST_CMD || (*(uint16_t *)buf) == OP_TOTA_CMT008_BQB_TEST_CMD)
+#else
 	if((buf[0] == BOOTCODE) || (*(uint16_t *)buf) == OP_TOTA_CMT008_SPP_TEST_CMD)
+#endif
 	{
 		user_custom_app_tota_rx_unpack(buf, len);
 		return;

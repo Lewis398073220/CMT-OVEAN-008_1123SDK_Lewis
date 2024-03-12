@@ -152,8 +152,13 @@ typedef enum
     // TODO:?
     OP_TOTA_RAW_DATA_SET_CMD = 0x9100,
 
-	OP_TOTA_CMT008_SPP_TEST_CMD = 0x9200, //Add by Jay, for production test command.
-	
+/* Add by Jay */
+	OP_TOTA_CMT008_SPP_TEST_CMD = 0x9200, //for production test command.
+#ifdef BQB_TEST
+	OP_TOTA_CMT008_BQB_TEST_CMD = 0x9201,
+#endif
+/* End Add by Jay */
+
     /* commond count */
     OP_TOTA_COMMAND_COUNT,
     /* to mark that it's a data packet */

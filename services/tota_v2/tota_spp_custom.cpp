@@ -21,6 +21,7 @@
 #include "app_tota_cmd_handler.h"
 #include "app_tota_common.h"
 #include "app_bt.h"
+#include "app_bt_cmd.h"
 
 #include "app_anc.h"
 #include "apps.h"
@@ -121,6 +122,12 @@ static void _custom_spp_cmd_handle(APP_TOTA_CMD_CODE_E funcCode, uint8_t* ptrPar
 	
 	switch(funcCode)
 	{
+#ifdef BQB_TEST
+		case OP_TOTA_CMT008_BQB_TEST_CMD:
+			app_bt_cmd_line_handler((char *)ptrParam, paramLen);
+		break;
+#endif
+	
 		case OP_TOTA_CMT008_SPP_TEST_CMD:
 			if(ptrParam[0] == MIC_SELECT_TEST) 
 			{
@@ -308,5 +315,8 @@ static void _custom_spp_cmd_handle(APP_TOTA_CMD_CODE_E funcCode, uint8_t* ptrPar
 }
 
 TOTA_COMMAND_TO_ADD(OP_TOTA_CMT008_SPP_TEST_CMD, _custom_spp_cmd_handle, false, 0, NULL );
+#ifdef BQB_TEST
+TOTA_COMMAND_TO_ADD(OP_TOTA_CMT008_BQB_TEST_CMD, _custom_spp_cmd_handle, false, 0, NULL );
+#endif
 
 #endif
