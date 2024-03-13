@@ -154,9 +154,6 @@ typedef enum
 
 /* Add by Jay */
 	OP_TOTA_CMT008_SPP_TEST_CMD = 0x9200, //for production test command.
-#ifdef BQB_TEST
-	OP_TOTA_CMT008_BQB_TEST_CMD = 0x9201,
-#endif
 /* End Add by Jay */
 
     /* commond count */

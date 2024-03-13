@@ -208,6 +208,11 @@ bool app_bt_cmd_table_execute(const app_bt_cmd_handle_t *start_cmd, uint16_t cou
         if (strncmp((char *)cmd, command->string, cmd_length) == 0 || strstr(command->string, cmd))
         {
             command->function();
+/* Add by lewis */
+#ifdef BQB_TEST
+			TRACE(1, "%s %s", __func__, command->string);
+#endif
+/* Add by lewis */
             return true;
         }
     }
@@ -233,7 +238,13 @@ bool app_bt_cmd_table_with_param_execute(const app_bt_cmd_handle_with_parm_t *st
     return false;
 }
 
+/* Modify by lewis */
+#ifdef BQB_TEST
+uint8_t app_bt_cmd_line_handler(char *cmd, unsigned int cmd_length)
+#else
 void app_bt_cmd_line_handler(char *cmd, unsigned int cmd_length)
+#endif
+/* End Modify by lewis */
 {
     const app_bt_cmd_handle_table_t *table = NULL;
     const app_bt_cmd_handle_with_parm_table_t *table_with_parm = NULL;
@@ -260,7 +271,13 @@ void app_bt_cmd_line_handler(char *cmd, unsigned int cmd_length)
             {
                 if (app_bt_cmd_table_with_param_execute(table_with_parm->start_cmd, table_with_parm->cmd_count, cmd, cmd_length, cmd_param, param_len))
                 {
-                    return;
+/* Modify by lewis */
+#ifdef BQB_TEST
+					return 0;
+#else
+					return;
+#endif
+/* End Modify by lewis */
                 }
             }
         }
@@ -274,13 +291,24 @@ void app_bt_cmd_line_handler(char *cmd, unsigned int cmd_length)
             {
                 if (app_bt_cmd_table_execute(table->start_cmd, table->cmd_count, cmd, cmd_length))
                 {
-                    return;
+/* Modify by lewis */
+#ifdef BQB_TEST
+					return 0;
+#else
+					return;
+#endif
+/* End Modify by lewis */
                 }
             }
         }
     }
 
     TRACE(2, "%s cmd not found %s", __func__, cmd);
+/* Add by lewis */
+#ifdef BQB_TEST	
+	return 1;
+#endif
+/* End Add by lewis */
 }
 
 #ifdef IBRT

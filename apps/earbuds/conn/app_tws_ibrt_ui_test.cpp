@@ -1772,7 +1772,16 @@ const app_bt_cmd_handle_t app_ibrt_v2_uart_test_handle[]=
     {"gpio_wakeup_disable", app_trigger_gpio_irq_wakeup_disable_test},
 #endif
 
-#if 0
+/* Add by lewis */
+#ifdef BQB_TEST	
+	{"hf_answer_call",			app_pts_hf_answer_call},
+	{"hf_create_audio_link",	app_pts_hf_create_audio_link},
+	{"hf_redial_call",			app_pts_hf_redial_call},
+	{"hf_create_service_link",	app_bt_pts_create_hf_channel},
+#endif
+/* End Add by lewis */
+
+#if 1
     //A2DP/SNK/AVP/BI-01-C
     {"AVDTP_reject_INVALID_OBJECT_TYPE", btif_pts_reject_INVALID_OBJECT_TYPE},
     //A2DP/SNK/AVP/BI-02-C

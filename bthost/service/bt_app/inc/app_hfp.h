@@ -59,6 +59,11 @@ void app_pts_hf_update_ind_value(void);
 void app_pts_hf_report_mic_volume(void);
 void app_pts_hf_attach_voice_tag(void);
 void app_pts_hf_ind_activation(void);
+/* Add by lewis */
+#ifdef BQB_TEST	
+void app_bt_pts_create_hf_channel(void);
+#endif
+/* End Add by lewis */
 
 #define HF_VOICE_DISABLE  0
 #define HF_VOICE_ENABLE   1
