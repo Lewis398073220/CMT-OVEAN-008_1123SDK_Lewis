@@ -52,13 +52,7 @@ bt_bdaddr_t *app_bt_get_pts_address(void);
 
 void app_bt_register_test_ind_callback(app_bt_cmd_test_ind_handler_func cb);
 void app_bt_add_string_test_table(void);
-/* Modify by lewis */
-#ifdef BQB_TEST
-uint8_t app_bt_cmd_line_handler(char *cmd, unsigned int cmd_length);
-#else
 void app_bt_cmd_line_handler(char *cmd, unsigned int cmd_length);
-#endif
-/* End Modify by lewis */
 
 #if defined(APP_TRACE_RX_ENABLE) || defined(IBRT) || defined(APP_RX_API_ENABLE)
 

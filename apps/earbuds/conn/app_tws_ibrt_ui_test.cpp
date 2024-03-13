@@ -1781,7 +1781,7 @@ const app_bt_cmd_handle_t app_ibrt_v2_uart_test_handle[]=
 #endif
 /* End Add by lewis */
 
-#if 1
+#ifdef BQB_TEST	//#if 0 //Modify by lewis
     //A2DP/SNK/AVP/BI-01-C
     {"AVDTP_reject_INVALID_OBJECT_TYPE", btif_pts_reject_INVALID_OBJECT_TYPE},
     //A2DP/SNK/AVP/BI-02-C
