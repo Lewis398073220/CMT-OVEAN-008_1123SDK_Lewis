@@ -45,6 +45,13 @@ struct APP_PWL_CFG_T {
     bool periodic;
 };
 
+/* Add by lewis */
+enum APP_PWL_STATUS_T {
+	APP_PWL_STATUS_ONGOING = (1 << 0),
+	APP_PWL_STATUS_PERIODIC = (1 << 1),
+};
+/* End Add by lewis */
+
 int app_pwl_open(void);
 
 int app_pwl_start(enum APP_PWL_ID_T id);
@@ -54,6 +61,10 @@ int app_pwl_setup(enum APP_PWL_ID_T id, struct APP_PWL_CFG_T *cfg);
 int app_pwl_stop(enum APP_PWL_ID_T id);
 
 int app_pwl_close(void);
+
+/* Add by lewis */
+uint32_t app_get_pwl_timer_status(void);
+/* End Add by lewis */
 
 #ifdef __cplusplus
 }

@@ -29,6 +29,10 @@ static APP_STATUS_INDICATION_T app_status_ind_filter = APP_STATUS_INDICATION_NUM
 /* Add by lewis */
 static bool app_is_status_ind_delay_on = false;
 static APP_STATUS_INDICATION_T app_status_ind_next = APP_STATUS_INDICATION_NUM;
+//static APP_STATUS_INDICATION_CFG_T app_status_ind_cfg = {
+//	.status_ind_next = APP_STATUS_INDICATION_NUM,
+//	.repeat_cnt = 0,
+//};
 /* End Add by lewis */
 
 static const char * const app_status_indication_str[] =
@@ -112,6 +116,7 @@ int app_status_indication_set(APP_STATUS_INDICATION_T status)
     struct APP_PWL_CFG_T cfg0;
     struct APP_PWL_CFG_T cfg1;
 /* Add by lewis */
+	//uint32_t pwl_status = 0;
 #ifdef CMT_008_EN_LED_BREATH
 	APP_BREATH_CFG_T breath_cfg0;
 	APP_BREATH_CFG_T breath_cfg1;
@@ -135,12 +140,13 @@ int app_status_indication_set(APP_STATUS_INDICATION_T status)
 	}
 
 	//if led status delay is ongoing, just save next led status
-	if(app_is_status_ind_delay_on)
-	{
-		app_status_ind_next = status;
-		TRACE(0,"led status delay is ongoing, just save LED: %d", status);
-		return -1;
-	}
+	//if(app_is_status_ind_delay_on)
+	//{
+	//	app_status_ind_next = status;
+	//	TRACE(0,"led status delay is ongoing, just save LED: %d", status);
+	//	return -1;
+	//}
+	
 	/* End Add by lewis */
 
 /* Modify by lewis */

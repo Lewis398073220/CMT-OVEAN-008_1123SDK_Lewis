@@ -76,6 +76,14 @@ typedef enum APP_STATUS_INDICATION_T {
     APP_STATUS_INDICATION_NUM
 }APP_STATUS_INDICATION_T;
 
+/* Add by lewis */
+//typedef struct {
+//	APP_STATUS_INDICATION_T status_ind_next;
+//	uint8_t repeat_cnt; //At the beginning, it was for the connection status indication to be displayed repeatedly
+//} APP_STATUS_INDICATION_CFG_T;
+
+/* End Add by lewis */
+
 const char *status2str(uint16_t status);
 int app_status_indication_filter_set(APP_STATUS_INDICATION_T status);
 APP_STATUS_INDICATION_T app_status_indication_get(void);

@@ -38,6 +38,9 @@ struct APP_PWL_T {
     struct APP_PWL_CFG_T config;
     uint8_t partidx;
     osTimerId timer;
+	/* Add by lewis */
+	bool is_timer_ongoing;
+	/* End Add by lewis */
 };
 
 static struct APP_PWL_T app_pwl[APP_PWL_ID_QTY];
@@ -57,6 +60,9 @@ static void app_pwl_timehandler(void const *param)
         }
     }else{
         if (pwl->partidx >= cfg->parttotal){
+			/* Add by lewis */
+			pwl->is_timer_ongoing = false;
+			/* End Add by lewis */
             return;
         }
     }
@@ -122,7 +128,10 @@ int app_pwl_start(enum APP_PWL_ID_T id)
     }
 
     osTimerStop(pwl->timer);
-
+	/* Add by lewis */
+	pwl->is_timer_ongoing = false;
+	/* End Add by lewis */
+			
     APP_PWL_TRACE(3,"idx:%d pin:%d lvl:%d", pwl->partidx, cfg_hw_pinmux_pwl[pwl->id].pin, cfg->part[pwl->partidx].level);
     if(cfg->part[pwl->partidx].level){
 #if defined(__PMU_VIO_DYNAMIC_CTRL_MODE__)
@@ -136,6 +145,9 @@ int app_pwl_start(enum APP_PWL_ID_T id)
 #endif
     }
     osTimerStart(pwl->timer, cfg->part[pwl->partidx].time);
+	/* Add by lewis */
+	pwl->is_timer_ongoing = true;
+	/* End Add by lewis */
 #endif
     return 0;
 }
@@ -153,6 +165,9 @@ int app_pwl_setup(enum APP_PWL_ID_T id, struct APP_PWL_CFG_T *cfg)
     memcpy(&(app_pwl[id].config), cfg, sizeof(struct APP_PWL_CFG_T));
 
     osTimerStop(app_pwl[id].timer);
+	/* Add by lewis */
+	app_pwl[id].is_timer_ongoing = false;
+	/* End Add by lewis */
 #endif
     return 0;
 }
@@ -165,6 +180,9 @@ int app_pwl_stop(enum APP_PWL_ID_T id)
     }
 
     osTimerStop(app_pwl[id].timer);
+	/* Add by lewis */
+	app_pwl[id].is_timer_ongoing = false;
+	/* End Add by lewis */
     hal_gpio_pin_clr((enum HAL_GPIO_PIN_T)cfg_hw_pinmux_pwl[id].pin);
 #endif
     return 0;
@@ -177,9 +195,36 @@ int app_pwl_close(void)
     for (i=0;i<APP_PWL_ID_QTY;i++){
         if (app_pwl[i].id != APP_PWL_ID_QTY)
             app_pwl_stop((enum APP_PWL_ID_T)i);
+			/* Add by lewis */
+			app_pwl[i].is_timer_ongoing = false;
+			/* End Add by lewis */
     }
 #endif
     return 0;
 }
 
+/* Add by lewis */
+uint32_t app_get_pwl_timer_status(void)
+{
+	uint32_t pwl_status = 0;
+
+#if (CFG_HW_PWL_NUM > 0)
+    uint8_t i;
+    for(i = 0; i < APP_PWL_ID_QTY; i++)
+	{
+        if(app_pwl[i].id == APP_PWL_ID_QTY) 
+			continue;
+
+		//at least one pwl timer is ongoing
+		if(app_pwl[i].is_timer_ongoing) 
+		{
+			pwl_status |= APP_PWL_STATUS_ONGOING;
+			if(app_pwl[i].config.periodic) pwl_status |= APP_PWL_STATUS_PERIODIC;
+		}
+    }
+#endif
+
+	return pwl_status;
+}
+/* End Add by lewis */
 
