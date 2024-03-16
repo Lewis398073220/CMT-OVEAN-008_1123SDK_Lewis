@@ -21,6 +21,7 @@
 #include "pmu.h"
 #include "app_pwl.h"
 #include "string.h"
+#include "app_status_ind.h" //Add by lewis
 
 #define APP_PWL_TRACE(s,...)
 //TRACE(s, ##__VA_ARGS__)
@@ -62,6 +63,10 @@ static void app_pwl_timehandler(void const *param)
         if (pwl->partidx >= cfg->parttotal){
 			/* Add by lewis */
 			pwl->is_timer_ongoing = false;
+			if(!(app_get_current_pwl_timer_status() & APP_PWL_STATUS_ONGOING))
+			{
+				app_start_held_status_indication();
+			}
 			/* End Add by lewis */
             return;
         }
@@ -204,9 +209,9 @@ int app_pwl_close(void)
 }
 
 /* Add by lewis */
-uint32_t app_get_pwl_timer_status(void)
+APP_PWL_STATUS_T app_get_current_pwl_timer_status(void)
 {
-	uint32_t pwl_status = 0;
+	int32_t pwl_status = 0;
 
 #if (CFG_HW_PWL_NUM > 0)
     uint8_t i;
@@ -224,7 +229,7 @@ uint32_t app_get_pwl_timer_status(void)
     }
 #endif
 
-	return pwl_status;
+	return (APP_PWL_STATUS_T)pwl_status;
 }
 /* End Add by lewis */
 

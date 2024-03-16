@@ -77,10 +77,9 @@ typedef enum APP_STATUS_INDICATION_T {
 }APP_STATUS_INDICATION_T;
 
 /* Add by lewis */
-//typedef struct {
-//	APP_STATUS_INDICATION_T status_ind_next;
-//	uint8_t repeat_cnt; //At the beginning, it was for the connection status indication to be displayed repeatedly
-//} APP_STATUS_INDICATION_CFG_T;
+typedef struct {
+	APP_STATUS_INDICATION_T status_ind_hold;
+} APP_STATUS_INDICATION_CFG_T;
 
 /* End Add by lewis */
 
@@ -89,7 +88,7 @@ int app_status_indication_filter_set(APP_STATUS_INDICATION_T status);
 APP_STATUS_INDICATION_T app_status_indication_get(void);
 int app_status_indication_set(APP_STATUS_INDICATION_T status);
 /* Add by lewis */
-int app_status_indication_delay_set(APP_STATUS_INDICATION_T status, uint32_t delay_ms);
+int app_start_held_status_indication(void);
 /* End Add by lewis */
 
 

@@ -27,12 +27,9 @@
 static APP_STATUS_INDICATION_T app_status = APP_STATUS_INDICATION_NUM;
 static APP_STATUS_INDICATION_T app_status_ind_filter = APP_STATUS_INDICATION_NUM;
 /* Add by lewis */
-static bool app_is_status_ind_delay_on = false;
-static APP_STATUS_INDICATION_T app_status_ind_next = APP_STATUS_INDICATION_NUM;
-//static APP_STATUS_INDICATION_CFG_T app_status_ind_cfg = {
-//	.status_ind_next = APP_STATUS_INDICATION_NUM,
-//	.repeat_cnt = 0,
-//};
+static APP_STATUS_INDICATION_CFG_T app_status_ind_cfg = {
+	.status_ind_hold = APP_STATUS_INDICATION_NUM,
+};
 /* End Add by lewis */
 
 static const char * const app_status_indication_str[] =
@@ -116,7 +113,7 @@ int app_status_indication_set(APP_STATUS_INDICATION_T status)
     struct APP_PWL_CFG_T cfg0;
     struct APP_PWL_CFG_T cfg1;
 /* Add by lewis */
-	//uint32_t pwl_status = 0;
+	APP_PWL_STATUS_T pwl_status = 0;
 #ifdef CMT_008_EN_LED_BREATH
 	APP_BREATH_CFG_T breath_cfg0;
 	APP_BREATH_CFG_T breath_cfg1;
@@ -139,14 +136,19 @@ int app_status_indication_set(APP_STATUS_INDICATION_T status)
 		}
 	}
 
-	//if led status delay is ongoing, just save next led status
-	//if(app_is_status_ind_delay_on)
-	//{
-	//	app_status_ind_next = status;
-	//	TRACE(0,"led status delay is ongoing, just save LED: %d", status);
-	//	return -1;
-	//}
-	
+	pwl_status = app_get_current_pwl_timer_status();
+	//if a non-periodic LED status is ongoing, wait for it to handle complete
+	if((pwl_status & APP_PWL_STATUS_ONGOING) && !(pwl_status & APP_PWL_STATUS_PERIODIC))
+	{
+		app_status_ind_cfg.status_ind_hold = status;
+		TRACE(0,"a non-periodic LED status is ongoing, next LED status: %d", app_status_ind_cfg.status_ind_hold);
+		return -1;
+	} else
+	{
+		//when the LED status is stop, or a periodic LED status is ongoing
+		//clear LED status that has been held, and handle the new LED status immediately
+		app_status_ind_cfg.status_ind_hold = APP_STATUS_INDICATION_NUM;
+	}
 	/* End Add by lewis */
 
 /* Modify by lewis */
@@ -453,82 +455,18 @@ int app_status_indication_set(APP_STATUS_INDICATION_T status)
 }
 
 /* Add by lewis */
-osTimerId led_status_sw_timer = NULL;
-static void led_status_indication_delay_handler(void const *param);
-osTimerDef(LED_STATUS_TIMER, led_status_indication_delay_handler);// define timers
-#define LED_STATUS_DEFAULT_SWTIMER_MS	(1000)
-
-static void led_status_indication_delay_handler(void const *param)
+int app_start_held_status_indication(void)
 {
-	//clear delay flag first
-	app_is_status_ind_delay_on = false;
+	APP_STATUS_INDICATION_T status_ind_next = app_status_ind_cfg.status_ind_hold;
 
-	if(app_status_ind_next != APP_STATUS_INDICATION_NUM)
+	if(status_ind_next != APP_STATUS_INDICATION_NUM)
 	{
-		//take effect next led status
-		app_status_indication_set(app_status_ind_next);	
-	
-		//clear next led status
-		app_status_ind_next = APP_STATUS_INDICATION_NUM;
-	}
-}
-
-void app_led_status_swtimer_start(uint32_t periodic_ms)
-{
-	TRACE(0,"%s delay: %dms",__func__, periodic_ms);
-	
-	if(led_status_sw_timer == NULL)
-		led_status_sw_timer = osTimerCreate(osTimer(LED_STATUS_TIMER), osTimerOnce, NULL);
-
-	osTimerStop(led_status_sw_timer);
-	if(periodic_ms == 0) {
-		osTimerStart(led_status_sw_timer,LED_STATUS_DEFAULT_SWTIMER_MS);
-	} else{
-		osTimerStart(led_status_sw_timer,periodic_ms);
-	}
-}
-
-void app_led_status_swtimer_stop(void)
-{
-	TRACE(0,"%s",__func__);
-
-	if(led_status_sw_timer == NULL)
-		return;
-	
-	osTimerStop(led_status_sw_timer);
-}
-
-/*
- * function: use to delay a led status some time and recover next led status
- */
-int app_status_indication_delay_set(APP_STATUS_INDICATION_T status, uint32_t delay_ms)
-{
-	if(app_is_power_off_in_progress())
+		TRACE(2,"%s start held LED status: %d",__func__, status_ind_next);
+		app_status_indication_set(status_ind_next);
+	} else
 	{
-		switch(status)
-		{
-			case APP_STATUS_INDICATION_POWEROFF:
-			break;
-			
-			default:
-				TRACE(0,"%s now is in shutdown process, ignore LED: %d", __func__, status);
-			return -1;
-		}
+		TRACE(2,"%s no held LED status",__func__);
 	}
-
-	//force clear delay flag and next led status first
-	app_led_status_swtimer_stop();
-	app_is_status_ind_delay_on = false;
-	app_status_ind_next = APP_STATUS_INDICATION_NUM;
-		
-	//take effect led status secondly
-	app_status_indication_set(status);
-
-	//set delay flag thirdly
-	app_is_status_ind_delay_on = true;
-
-	//open delay timer finally to check next led status
-	app_led_status_swtimer_start(delay_ms);
 	
 	return 0;
 }
