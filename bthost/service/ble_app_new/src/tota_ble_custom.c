@@ -77,6 +77,8 @@
 #include "app_anc.h"
 #endif
 
+extern uint32_t __factory_start[];
+
 APP_DATA_T app_data = {
 	.ble_anc_mode = BLE_ANC_MODE_MAP_ANC_INVALID,
 };
@@ -595,13 +597,24 @@ static void user_custom_tota_ble_command_get_handle(PACKET_STRUCTURE *ptrPacket)
 			{
         		uint8_t temp[BT_NAME_LEN] = {0};
 				uint16_t name_len = 0;
+				const char *bt_name = NULL;
+				uint32_t *p_devdata_cache = __factory_start;
 
-				if(strlen(BT_LOCAL_NAME) < BT_NAME_LEN) {
-					name_len = strlen(BT_LOCAL_NAME);
+				if(0 != strlen(user_custom_get_BT_name()))
+				{
+					bt_name = user_custom_get_BT_name();
+				} else
+				{
+					//get bt name from factory sector
+					bt_name = (char *)&p_devdata_cache[rev2_dev_name];
+				}
+				
+				if(strlen(bt_name) < BT_NAME_LEN) {
+					name_len = strlen(bt_name);
 				} else{
 					name_len = BT_NAME_LEN - 1;
 				}
-				memcpy(temp, BT_LOCAL_NAME, name_len);
+				memcpy(temp, bt_name, name_len);
 				rsp_status = NO_NEED_STATUS_RESP;
 
 				user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_GET, ptrPacket->cmdID, rsp_status, temp, name_len);
