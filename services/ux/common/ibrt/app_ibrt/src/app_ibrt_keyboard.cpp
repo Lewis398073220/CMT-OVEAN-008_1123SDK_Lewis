@@ -709,7 +709,7 @@ static void mic_mute_swtimer_handler(void const *param)
 		media_PlayAudio(AUD_ID_BT_SINGLE_BEEP_TONE, 0);
 	} else{
 		osTimerStop(mic_mute_sw_timer);
-		osTimerDelete(mic_mute_sw_timer);
+		//osTimerDelete(mic_mute_sw_timer);
 	}
 }
 
