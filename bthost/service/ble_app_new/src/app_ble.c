@@ -2026,6 +2026,8 @@ bool app_ble_stub_adv_activity_prepare(ble_adv_activity_t *adv)
     BLE_ADV_PARAM_T legacy_param = {0};
     bool adv_legacy_enable = false;
 
+	TRACE(0, "%s", __func__); //Add by lewis
+	
     if (!ble_adv_is_allowed())
     {
         return false;

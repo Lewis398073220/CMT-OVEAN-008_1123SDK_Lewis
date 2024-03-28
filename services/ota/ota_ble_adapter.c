@@ -118,6 +118,11 @@ static void ota_ble_data_fill_handler(void *param)
         else if (!app_ibrt_conn_any_mobile_connected())
         {
             TRACE(1,"%s don't connect mobile", __func__);
+/* Add by lewis for BLE serial port assistant can't connect BLE when BT is disconnect */
+#ifdef CMT_008_BLE_ENABLE
+			adv_enable = true;
+#endif
+/* End Add by lewis */
         }
         else
         {
