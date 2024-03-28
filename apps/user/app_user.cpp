@@ -59,6 +59,7 @@
 #include "iir_process.h"
 #include "aud_section.h"
 #include "co_math.h"
+#include "customparam_section.h"
 
 #if defined(IBRT)
 #include "app_ibrt_internal.h"
@@ -622,6 +623,44 @@ int8_t user_custom_redefine_key_func(TOTA_BLE_LR_EARBUD_MAP lr, TOTA_BLE_KET_COD
 	return 0;
 }
 
+void update_earphone_color(void)
+{
+	uint8_t color_param;
+	bool isSuccessfullyLoaded;
+
+	isSuccessfullyLoaded = Get_EarphoneColor(&color_param);
+	if(isSuccessfullyLoaded)
+	{
+		switch(color_param)
+		{
+			case BLE_COLOR_MAP_BLACK:
+			case BLE_COLOR_MAP_WHITE:
+			case BLE_COLOR_MAP_BLUE:
+			case BLE_COLOR_MAP_RED:
+			case BLE_COLOR_MAP_GREEN:
+			case BLE_COLOR_MAP_PURPLE:
+			case BLE_COLOR_MAP_COLOR7:
+				user_data.earphone_color = (TOTA_BLE_COLOR_MAP)color_param;
+			break;
+
+			default:
+				user_data.earphone_color = BLE_COLOR_MAP_DEFAULT;
+			break;
+		}
+	} else
+	{
+		user_data.earphone_color = BLE_COLOR_MAP_DEFAULT;
+	}
+
+	TRACE(0, "%s earphone_color: 0x%02x", __func__, user_data.earphone_color);
+}
+
+TOTA_BLE_COLOR_MAP user_custom_get_earphone_color(void)
+{
+	return user_data.earphone_color;
+}
+
+
 void user_custom_restore_default_settings(bool promt_on)
 {
 	struct nvrecord_user_t *nvrecord_user;
@@ -981,6 +1020,9 @@ void user_custom_nvrecord_user_info_get(void)
 		local_key_cfg[i] = nv_key_cfg[i];
 		TRACE(0, "*** [%s] R touch-->event/func: %d/%d", __func__, local_key_cfg[i].key_event, local_key_cfg[i].key_function);
 	}
+
+	update_earphone_color();
+	TRACE(0, "*** [%s] earphone color: 0x%02x", __func__, user_data.earphone_color);
 }
 
 void user_custom_nvrecord_rebuild_user_info(uint8_t *pUserInfo, bool isRebuildAll)

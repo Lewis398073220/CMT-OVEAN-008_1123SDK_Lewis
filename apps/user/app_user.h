@@ -77,6 +77,8 @@ typedef struct {
 	BUTTON_REDEFINE_T button_redefine;
 		
 	uint8_t quick_conversation_mode;
+
+	TOTA_BLE_COLOR_MAP earphone_color; //don't need to save into nvrecord flash sector
 } app_user_custom_data_t;
 
 //Record user info's history
@@ -203,6 +205,8 @@ TOTA_BLE_KET_FUN_MAP user_custom_find_key_func(TOTA_BLE_LR_EARBUD_MAP lr,
 int8_t user_custom_redefine_key_func(TOTA_BLE_LR_EARBUD_MAP lr, TOTA_BLE_KET_CODE_MAP key_code, 
 			TOTA_BLE_KET_EVENT_MAP key_event, TOTA_BLE_KET_FUN_MAP key_fun, bool isSave);
 void user_custom_restore_default_settings(bool promt_on);
+void update_earphone_color(void);
+TOTA_BLE_COLOR_MAP user_custom_get_earphone_color(void);
 void user_custom_nvrecord_rebuild_user_info(uint8_t *pUserInfo, bool isRebuildAll);
 void user_custom_nvrecord_user_info_get(void);
 

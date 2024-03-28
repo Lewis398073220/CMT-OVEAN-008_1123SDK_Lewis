@@ -46,8 +46,8 @@ typedef struct
 #define CUSTOM_PARAM_Mode_ID_INDEX      0
 #define CUSTOM_PARAM_Model_ID_LEN       3
 
-#define CUSTOM_PARAM_SERIAL_NUM_INDEX   0
-#define CUSTOM_PARAM_SERIAL_NUM_LEN     16
+#define CUSTOM_PARAM_SERIAL_NUM_INDEX   1 //Modify by lewis from 0 to 1
+#define CUSTOM_PARAM_SERIAL_NUM_LEN     18 //Modify by lewis from 16 to 18
 typedef struct
 {
     uint8_t sn[CUSTOM_PARAM_SERIAL_NUM_LEN];
@@ -55,11 +55,19 @@ typedef struct
 
 // TODO:
 // Add your own custom parameters here
+/* Add by lewis */
+#define CUSTOM_PARAM_COLOR_INDEX        2
+#define CUSTOM_PARAM_COLOR_LEN          1
+/* End Add by lewis */
 
 
 void nv_custom_parameter_section_init(void);
 bool nv_custom_parameter_section_get_entry(
 	uint16_t paramIndex, uint8_t* pParamVal, uint32_t* pParamLen);
+/* Add by lewis */
+bool nv_custom_parameter_section_write_entry(uint16_t paramIndex, uint8_t* pParamVal, uint16_t paramLen);
+bool Get_EarphoneColor(uint8_t *earphone_color_param);
+/* End Add by lewis */
 uint32_t Get_ModelId(void);
 
 #ifdef __cplusplus

@@ -95,7 +95,8 @@ subdir-ccflags-y += \
     -Iapps/anc/inc \
     -Iservices/osif \
     -Iservices/tota_v2 \
-    -Iapps/user
+    -Iapps/user \
+    -Iservices/nv_section/customparam_section
 
 ifeq ($(AUDIO_RESAMPLE),1)
 CFLAGS_voice_over_ble.o += -D__AUDIO_RESAMPLE__

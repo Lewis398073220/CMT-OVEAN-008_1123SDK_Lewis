@@ -68,7 +68,8 @@ ccflags-y +=  \
     -Iservices/nv_section/aud_section \
     -Iservices/nv_section/include \
     -Iplatform/drivers/ac107 \
-    -Iplatform/drivers/cst820
+    -Iplatform/drivers/cst820 \
+    -Iservices/nv_section/customparam_section
     
 ifeq ($(IBRT),1)
 

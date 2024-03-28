@@ -122,6 +122,17 @@ typedef enum {
 	BLE_KEY_FUN_MAP_INVALID = 0xFF,
 } TOTA_BLE_KET_FUN_MAP;
 
+typedef enum {
+	BLE_COLOR_MAP_BLACK = 0x00,
+	BLE_COLOR_MAP_WHITE = 0x01,
+	BLE_COLOR_MAP_BLUE = 0x02,
+	BLE_COLOR_MAP_RED = 0x03,
+	BLE_COLOR_MAP_GREEN = 0x04,
+	BLE_COLOR_MAP_PURPLE = 0x05,
+	BLE_COLOR_MAP_COLOR7 = 0x06,
+	BLE_COLOR_MAP_DEFAULT = BLE_COLOR_MAP_BLACK,
+} TOTA_BLE_COLOR_MAP;
+
 //record the app's setting params
 typedef struct {
 	TOTA_BLE_ANC_MODE_MAP ble_anc_mode;
@@ -152,7 +163,7 @@ typedef struct {
 #define TOTA_BLE_CMT_COMMAND_SET_SWITCHING_SOUND_PROMPTS             0x0013  /*Set switching sound prompts*/
 #define TOTA_BLE_CMT_COMMAND_SET_SOUND_PROMPTS_LEVEL                 0x0016  /*Set sound prompts level*/
 #define TOTA_BLE_CMT_COMMAND_SET_SHUTDOWN_TIME                       0x0017  /*Set shutdown time*/
-#define TOTA_BLE_CMT_COMMAND_SET_CAMERA_SWITCH                       0x0018  /*Set camera switch*/
+#define TOTA_BLE_CMT_COMMAND_SET_EARBUD_COLOR                        0x0018  /*Set earbud color*/
 #define TOTA_BLE_CMT_COMMAND_SET_STANDBY_TIME                        0x0019  /*Set standby time*/
 #define TOTA_BLE_CMT_COMMAND_SET_EQ_MODE                             0x001A  /*Set EQ mode*/
 #define TOTA_BLE_CMT_COMMAND_SET_USER_DEFINED_EQ                     0x001B  /*Set user defined EQ*/
@@ -164,6 +175,7 @@ typedef struct {
 #define TOTA_BLE_CMT_COMMAND_SET_STANDBY_MODE_ACTIVELY               0x0026  /*Set standby mode actively*/
 #define TOTA_BLE_CMT_COMMAND_SET_KEY_REDEFINITION                    0x0027  /*Set keys redefinition*/
 #define TOTA_BLE_CMT_COMMAND_SET_VOICE_NOISE_REDUCTION_MODE          0x0028  /*Set Voice Noise Reduction Mode*/
+#define TOTA_BLE_CMT_COMMAND_SET_SERIAL_NUMBER                       0x0030  /*Set serial number*/
 #define TOTA_BLE_CMT_COMMAND_SET_VOICE_ASSISTANT_CONTROL             0x0031  /*Set voice assistant Control*/
 #define TOTA_BLE_CMT_COMMAND_SET_FLASHING_LIGHTS                     0x0032  /*Set flashing lights(find my)*/
 #define TOTA_BLE_CMT_COMMAND_SET_HARSH_SOUND                         0x0033  /*Set harsh sound(find my)*/
@@ -188,7 +200,7 @@ typedef struct {
 #define TOTA_BLE_CMT_COMMAND_GET_AUDIO_CODEC_FORMAT                  0x0015  /*Get audio codec format*/
 #define TOTA_BLE_CMT_COMMAND_GET_SOUND_PROMPTS_LEVEL                 0x0016  /*Get sound prompts level*/
 #define TOTA_BLE_CMT_COMMAND_GET_SHUTDOWN_TIME                       0x0017  /*Get shutdown time*/
-#define TOTA_BLE_CMT_COMMAND_GET_CAMERA_SWITCH_STATE                 0x0018  /*Get camera switch state*/
+#define TOTA_BLE_CMT_COMMAND_GET_EARBUD_COLOR                        0x0018  /*Get earbud color*/
 #define TOTA_BLE_CMT_COMMAND_GET_STANDBY_TIME                        0x0019  /*Get standby time*/
 #define TOTA_BLE_CMT_COMMAND_GET_EQ_MODE                             0x001A  /*Get EQ mode*/
 #define TOTA_BLE_CMT_COMMAND_GET_USER_DEFINED_EQ                     0x001B  /*Get user defined EQ*/
@@ -202,7 +214,7 @@ typedef struct {
 #define TOTA_BLE_CMT_COMMAND_GET_KEY_REDEFINITION                    0x0027  /*Get keys redefinition*/
 #define TOTA_BLE_CMT_COMMAND_GET_VOICE_NOISE_REDUCTION_MODE          0x0028  /*Get Voice Noise Reduction Mode*/
 #define TOTA_BLE_CMT_COMMAND_GET_FIRMWARE_VERSION                    0x0029  /*Get firmware version*/
-#define TOTA_BLE_CMT_COMMAND_GET_PRODUCT_INFO                        0x0030  /*Get product info*/
+#define TOTA_BLE_CMT_COMMAND_GET_SERIAL_NUMBER                       0x0030  /*Get serial number*/
 #define TOTA_BLE_CMT_COMMAND_GET_VOICE_ASSISTANT_CONTROL             0x0031  /*Get voice assistant Control*/
 #define TOTA_BLE_CMT_COMMAND_GET_VOKALEN_SOUND                       0x0034  /*Get vokalen sound*/
 

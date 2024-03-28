@@ -57,6 +57,7 @@
 #include "app_user.h"
 #include "ble_datapath.h"
 #include "co_math.h"
+#include "customparam_section.h"
 
 #if defined(IBRT)
 #include "app_ibrt_internal.h"
@@ -332,6 +333,51 @@ static void user_custom_tota_ble_command_set_handle(PACKET_STRUCTURE *ptrPacket)
 				}
 				
             	user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_SET, ptrPacket->cmdID, rsp_status, NULL, 0);
+			}
+		break;
+
+		case TOTA_BLE_CMT_COMMAND_SET_EARBUD_COLOR:
+			{
+				TOTA_BLE_COLOR_MAP earphone_color;
+				bool isSuccessfullyWrite;
+
+				//should check payloadLen
+				if(ptrPacket->payloadLen != 1)
+				{
+					rsp_status = PARAMETER_ERROR_STATUS;
+				} else
+				{
+					earphone_color = ptrPacket->payload[0];
+					switch(earphone_color)
+					{
+						case BLE_COLOR_MAP_BLACK:
+						case BLE_COLOR_MAP_WHITE:
+						case BLE_COLOR_MAP_BLUE:
+						case BLE_COLOR_MAP_RED:
+						case BLE_COLOR_MAP_GREEN:
+						case BLE_COLOR_MAP_PURPLE:
+						case BLE_COLOR_MAP_COLOR7:
+							isSuccessfullyWrite = nv_custom_parameter_section_write_entry(CUSTOM_PARAM_COLOR_INDEX, 
+																						ptrPacket->payload, CUSTOM_PARAM_COLOR_LEN);
+							if(isSuccessfullyWrite)
+							{
+								update_earphone_color();
+								TOTA_LOG_DBG(0, "write color ok:0x%02x", earphone_color);
+								rsp_status = SUCCESS_STATUS;
+							} else
+							{
+								TOTA_LOG_DBG(0, "write color fail");
+								rsp_status = FAIL_STATUS;
+							}
+						break;
+						
+						default:
+							rsp_status = PARAMETER_ERROR_STATUS;
+						break;
+					}
+				}
+					
+				user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_SET, ptrPacket->cmdID, rsp_status, NULL, 0);
 			}
 		break;
 		
@@ -651,6 +697,17 @@ static void user_custom_tota_ble_command_get_handle(PACKET_STRUCTURE *ptrPacket)
 				temp[2] = big_endian[1];
 				temp[3] = big_endian[0];
 				
+				rsp_status = NO_NEED_STATUS_RESP;
+
+				user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_GET, ptrPacket->cmdID, rsp_status, temp, sizeof(temp));
+			}
+		break;
+
+		case TOTA_BLE_CMT_COMMAND_GET_EARBUD_COLOR:
+			{
+        		uint8_t temp[1] = {0};
+				
+        		temp[0] = user_custom_get_earphone_color();
 				rsp_status = NO_NEED_STATUS_RESP;
 
 				user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_GET, ptrPacket->cmdID, rsp_status, temp, sizeof(temp));
