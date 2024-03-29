@@ -308,29 +308,52 @@ static void user_custom_tota_ble_command_set_handle(PACKET_STRUCTURE *ptrPacket)
 				uint8_t temp[2] = {0};
 				uint16_t min = 0;
 				bool is_BT_connected = false;
-
+				bool is_shutdown_timer_need_repeat = false;
+				
 				temp[0] = ptrPacket->payload[1];
 				temp[1] = ptrPacket->payload[0];
 				min = *((uint16_t *)temp);
-				TOTA_LOG_DBG(0, "shutdown time: %dmins", min);
+				is_shutdown_timer_need_repeat = ptrPacket->payload[4];
+				TOTA_LOG_DBG(0, "shutdown time: %dmins, is need repeat: %d", min, is_shutdown_timer_need_repeat);
+
+				if(is_shutdown_timer_need_repeat) {
+					user_custom_on_off_shutdown_timer_repeat_switch(true, true);
+				} else{
+					user_custom_on_off_shutdown_timer_repeat_switch(false, true);
+				}
 				
 				switch(min)
 				{
 					case BLE_SHUTDOWN_TIME_MAP_SHUTDOWN_NOW:
+						//don't need check is_shutdown_timer_need_repeat
 						app_shutdown();
 					break;
 
 					case BLE_SHUTDOWN_TIME_MAP_NEVER_SHUTDOWN:
+						//don't need check is_shutdown_timer_need_repeat
 						user_custom_set_shutdown_time(min, true);
 						update_power_savingmode_shutdown_timer(min, false);
 					break;
 					
 					default:
-						user_custom_set_shutdown_time(min, true);
+						//need check is_shutdown_timer_need_repeat
+						if(is_shutdown_timer_need_repeat)
+						{
+							user_custom_set_shutdown_time(min, true);
+						} else
+						{
+							//power on next time, timer should be never shutdown
+							user_custom_set_shutdown_time(BLE_SHUTDOWN_TIME_MAP_NEVER_SHUTDOWN, true);
+							//don't save min to flash
+							user_custom_set_shutdown_time(min, false);
+						}
+						
 						is_BT_connected = app_bt_get_connected_device_num()? true : false;
 						update_power_savingmode_shutdown_timer(min, is_BT_connected);
 					break;
 				}
+
+				rsp_status = SUCCESS_STATUS;
 				
             	user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_SET, ptrPacket->cmdID, rsp_status, NULL, 0);
 			}
@@ -711,9 +734,10 @@ static void user_custom_tota_ble_command_get_handle(PACKET_STRUCTURE *ptrPacket)
 
 		case TOTA_BLE_CMT_COMMAND_GET_SHUTDOWN_TIME:
 			{
-				uint8_t temp[4] = {0};
+				uint8_t temp[5] = {0};
         		uint16_t shutdown_time = 0;
 				uint16_t remaining_time = 0;
+				bool is_shutdown_timer_repeat = false;
 				uint16_t big_endian_temp = 0;
 				uint8_t *big_endian = (uint8_t *)&big_endian_temp;
 				
@@ -726,6 +750,9 @@ static void user_custom_tota_ble_command_get_handle(PACKET_STRUCTURE *ptrPacket)
 				big_endian_temp = remaining_time;
 				temp[2] = big_endian[1];
 				temp[3] = big_endian[0];
+
+				is_shutdown_timer_repeat = user_custom_is_shutdown_timer_need_repeat();
+				temp[4] = is_shutdown_timer_repeat;
 				
 				rsp_status = NO_NEED_STATUS_RESP;
 

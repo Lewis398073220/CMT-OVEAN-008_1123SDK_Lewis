@@ -375,6 +375,25 @@ uint16_t user_custom_get_remaining_time(void)
 	return remaining_time;
 }
 
+bool user_custom_is_shutdown_timer_need_repeat(void)
+{
+    return user_data.is_shutdown_timer_need_repeat;
+}
+
+void user_custom_on_off_shutdown_timer_repeat_switch(bool isOn, bool isSave)
+{
+	user_data.is_shutdown_timer_need_repeat = isOn;
+
+	if(isSave)
+	{
+		struct nvrecord_user_t *nvrecord_user;
+
+		nv_record_user_info_get(&nvrecord_user);
+		nvrecord_user->is_shutdown_timer_need_repeat = isOn;
+		nv_record_user_info_set(nvrecord_user);
+	}
+}
+
 uint8_t user_custom_get_nr_mode_level(void)
 {
 	return user_data.nr_mode_level;
@@ -767,6 +786,9 @@ void user_custom_restore_default_settings(bool promt_on)
 		nv_key_cfg[i] = R_touch_key_cfg[i];
 	}
 
+	//default shutdown timer repeat switch config
+	nvrecord_user->is_shutdown_timer_need_repeat = false;
+
 	nv_record_user_info_set(nvrecord_user);
 	
 	//update local user infor
@@ -792,6 +814,7 @@ void user_custom_restore_default_settings(bool promt_on)
 	{
 		local_key_cfg[i] = nv_key_cfg[i];
 	}
+	user_data.is_shutdown_timer_need_repeat = nvrecord_user->is_shutdown_timer_need_repeat;
 	
 	//update function status via local user infor
 	app_reset_anc_switch();
@@ -881,6 +904,9 @@ void nvrecord_user_info_init_for_ota(struct nvrecord_user_t *pUserInfo)
 		{
 			nv_key_cfg[i] = R_touch_key_cfg[i];
 		}
+
+		//default shutdown timer repeat switch config
+		pUserInfo->is_shutdown_timer_need_repeat = false;
 	}
 	else if(strncmp((const char *)saved_user_info_ver, "V0.0.2", strlen("V0.0.2")) == 0)
 	{
@@ -904,6 +930,9 @@ void nvrecord_user_info_init_for_ota(struct nvrecord_user_t *pUserInfo)
 		{
 			nv_key_cfg[i] = R_touch_key_cfg[i];
 		}
+
+		//default shutdown timer repeat switch config
+		pUserInfo->is_shutdown_timer_need_repeat = false;
 	}
 	else if(strncmp((const char *)saved_user_info_ver, "V0.0.3", strlen("V0.0.3")) == 0)
 	{
@@ -914,6 +943,14 @@ void nvrecord_user_info_init_for_ota(struct nvrecord_user_t *pUserInfo)
 		{
 			nv_key_cfg[i] = R_touch_key_cfg[i];
 		}
+
+		//default shutdown timer repeat switch config
+		pUserInfo->is_shutdown_timer_need_repeat = false;
+	}
+	else if(strncmp((const char *)saved_user_info_ver, "V0.0.4", strlen("V0.0.4")) == 0)
+	{
+		//default shutdown timer repeat switch config
+		pUserInfo->is_shutdown_timer_need_repeat = false;
 	}
 	//if saved user infor ver is V0.0.0 or other, should init all user infor
 	else
@@ -955,6 +992,9 @@ void nvrecord_user_info_init_for_ota(struct nvrecord_user_t *pUserInfo)
 		{
 			nv_key_cfg[i] = R_touch_key_cfg[i];
 		}
+
+		//default shutdown timer repeat switch config
+		pUserInfo->is_shutdown_timer_need_repeat = false;
 	}
 	
 	//update user info's history
@@ -1053,6 +1093,10 @@ void user_custom_nvrecord_user_info_get(void)
 
 	update_earphone_sn();
 	TRACE(0, "*** [%s] earphone sn: %s", __func__, user_data.sn);
+
+	//default shutdown timer repeat switch config
+	user_data.is_shutdown_timer_need_repeat = nvrecord_user->is_shutdown_timer_need_repeat;
+	TRACE(0, "*** [%s] is shutdown timer need repeat: %d", __func__, user_data.is_shutdown_timer_need_repeat);
 }
 
 void user_custom_nvrecord_rebuild_user_info(uint8_t *pUserInfo, bool isRebuildAll)
@@ -1130,6 +1174,9 @@ void user_custom_nvrecord_rebuild_user_info(uint8_t *pUserInfo, bool isRebuildAl
 	{
 		nv_key_cfg[i] = R_touch_key_cfg[i];
 	}
+
+	//default shutdown timer repeat switch config
+	user_info->is_shutdown_timer_need_repeat = false;
 	
 	//when BES chip is blank, nv_record_extension_init
 	if(isRebuildAll)
@@ -1165,6 +1212,7 @@ void user_custom_nvrecord_rebuild_user_info(uint8_t *pUserInfo, bool isRebuildAl
 		{
 			local_key_cfg[i] = nv_key_cfg[i];
 		}
+		user_data.is_shutdown_timer_need_repeat = user_info->is_shutdown_timer_need_repeat;
 	}
 }
 /********************************************** User Info End **********************************************/

@@ -285,6 +285,8 @@ struct nvrecord_user_t {
 	bool VA_control_on;
 
 	BUTTON_REDEFINE_T button_redefine;
+
+	bool is_shutdown_timer_need_repeat;
 };
 /* End Add by lewis */
 

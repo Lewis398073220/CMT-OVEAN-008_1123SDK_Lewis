@@ -75,8 +75,10 @@ typedef struct {
 	bool VA_control_on;
 
 	BUTTON_REDEFINE_T button_redefine;
-		
-	uint8_t quick_conversation_mode;
+
+	bool is_shutdown_timer_need_repeat;
+	
+	uint8_t quick_conversation_mode; //don't need to save into nvrecord flash sector
 
 	TOTA_BLE_COLOR_MAP earphone_color; //don't need to save into nvrecord flash sector
 
@@ -86,7 +88,7 @@ typedef struct {
 //Record user info's history
 #define NV_USER_VERSION_H       0
 #define NV_USER_VERSION_M       0
-#define NV_USER_VERSION_L       4
+#define NV_USER_VERSION_L       5
 
 #define BT_NAME_LEN             27 //27 = CLASSIC_BTNAME_LEN
 /********************************************** User Info End **********************************************/
@@ -193,6 +195,8 @@ uint16_t user_custom_get_shutdown_time(void);
 void user_custom_set_shutdown_time(uint16_t minute, bool isSave);
 void update_power_savingmode_shutdown_timer(uint16_t minute, bool isEn);
 uint16_t user_custom_get_remaining_time(void);
+bool user_custom_is_shutdown_timer_need_repeat(void);
+void user_custom_on_off_shutdown_timer_repeat_switch(bool isOn, bool isSave);
 uint8_t user_custom_get_nr_mode_level(void);
 void user_custom_set_nr_mode_level(uint8_t anc_level, bool isSave);
 uint8_t user_custom_get_awareness_mode_level(void);
