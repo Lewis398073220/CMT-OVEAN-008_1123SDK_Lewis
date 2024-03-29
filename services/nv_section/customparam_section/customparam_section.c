@@ -227,17 +227,43 @@ bool nv_custom_parameter_section_write_entry(uint16_t paramIndex, uint8_t* pPara
     return false;
 }
 
-bool Get_EarphoneColor(uint8_t *earphone_color_param)
+/**
+  * function: get earphone color whose length is CUSTOM_PARAM_COLOR_LEN
+ **/
+bool Get_EarphoneColor(uint8_t *earphone_color)
 {
-	uint8_t Color_Param;
-	uint32_t Color_ParamLen = 0;
+	uint8_t color;
+	uint32_t colorLen = 0;
 	bool ret;
 
 	ret = nv_custom_parameter_section_get_entry(CUSTOM_PARAM_COLOR_INDEX,
-                                             &Color_Param, &Color_ParamLen);
+                                             &color, &colorLen);
+	//make sure that colorLen is equal to CUSTOM_PARAM_COLOR_LEN
 	if(ret)
 	{
-		*earphone_color_param = Color_Param;
+		*earphone_color = color;
+		return true;
+	}
+
+	return false;
+}
+
+/**
+  * function: get serial number whose length is CUSTOM_PARAM_SERIAL_NUM_LEN
+ **/
+bool Get_EarphoneSN(char *earphone_sn, uint32_t *earphone_snLen)
+{
+	char sn[CUSTOM_PARAM_SERIAL_NUM_LEN] = {0};
+	uint32_t snLen = 0;
+	bool ret;
+
+	ret = nv_custom_parameter_section_get_entry(CUSTOM_PARAM_SERIAL_NUM_INDEX,
+                                             (uint8_t *)sn, &snLen);
+	//make sure that snLen is equal to CUSTOM_PARAM_SERIAL_NUM_LEN
+	if(ret)
+	{
+		memcpy(earphone_sn, sn, snLen);
+		*earphone_snLen = snLen;
 		return true;
 	}
 

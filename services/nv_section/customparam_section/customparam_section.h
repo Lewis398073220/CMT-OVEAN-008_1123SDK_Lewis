@@ -67,6 +67,7 @@ bool nv_custom_parameter_section_get_entry(
 /* Add by lewis */
 bool nv_custom_parameter_section_write_entry(uint16_t paramIndex, uint8_t* pParamVal, uint16_t paramLen);
 bool Get_EarphoneColor(uint8_t *earphone_color_param);
+bool Get_EarphoneSN(char *earphone_sn, uint32_t *earphone_snLen);
 /* End Add by lewis */
 uint32_t Get_ModelId(void);
 

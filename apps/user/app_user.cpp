@@ -652,7 +652,7 @@ void update_earphone_color(void)
 		user_data.earphone_color = BLE_COLOR_MAP_DEFAULT;
 	}
 
-	TRACE(0, "%s earphone_color: 0x%02x", __func__, user_data.earphone_color);
+	TRACE(0, "%s earphone color: 0x%02x", __func__, user_data.earphone_color);
 }
 
 TOTA_BLE_COLOR_MAP user_custom_get_earphone_color(void)
@@ -660,6 +660,33 @@ TOTA_BLE_COLOR_MAP user_custom_get_earphone_color(void)
 	return user_data.earphone_color;
 }
 
+void update_earphone_sn(void)
+{
+	char sn[CUSTOM_PARAM_SERIAL_NUM_LEN] = {0};
+	uint32_t snLen;
+	bool isSuccessfullyLoaded;
+
+	isSuccessfullyLoaded = Get_EarphoneSN(sn, &snLen);
+	if(isSuccessfullyLoaded)
+	{
+		if(snLen > CUSTOM_PARAM_SERIAL_NUM_LEN) snLen = CUSTOM_PARAM_SERIAL_NUM_LEN;
+		memset(user_data.sn, 0, sizeof(user_data.sn));
+		memcpy(user_data.sn, sn, snLen);
+		
+	} else
+	{
+		//default sn
+		memset(user_data.sn, 0, sizeof(user_data.sn));
+		memcpy(user_data.sn, "0123456789ABCDEFGH", CUSTOM_PARAM_SERIAL_NUM_LEN);
+	}
+
+	TRACE(0, "%s earphone sn: %s", __func__, user_data.sn);
+}
+
+const char *user_custom_get_sn(void)
+{
+	return user_data.sn;
+}
 
 void user_custom_restore_default_settings(bool promt_on)
 {
@@ -1023,6 +1050,9 @@ void user_custom_nvrecord_user_info_get(void)
 
 	update_earphone_color();
 	TRACE(0, "*** [%s] earphone color: 0x%02x", __func__, user_data.earphone_color);
+
+	update_earphone_sn();
+	TRACE(0, "*** [%s] earphone sn: %s", __func__, user_data.sn);
 }
 
 void user_custom_nvrecord_rebuild_user_info(uint8_t *pUserInfo, bool isRebuildAll)

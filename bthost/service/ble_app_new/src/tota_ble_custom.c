@@ -534,6 +534,36 @@ static void user_custom_tota_ble_command_set_handle(PACKET_STRUCTURE *ptrPacket)
 				user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_SET, ptrPacket->cmdID, rsp_status, NULL, 0);
 			}
 		break;
+
+		case TOTA_BLE_CMT_COMMAND_SET_SERIAL_NUMBER:
+			{
+				char sn[CUSTOM_PARAM_SERIAL_NUM_LEN] = {0};
+				uint16_t sn_len = 0;
+				bool isSuccessfullyWrite;
+
+				sn_len = ptrPacket->payloadLen;
+				if(sn_len == CUSTOM_PARAM_SERIAL_NUM_LEN) {
+					memcpy(sn, ptrPacket->payload, sn_len);
+					isSuccessfullyWrite = nv_custom_parameter_section_write_entry(CUSTOM_PARAM_SERIAL_NUM_INDEX, 
+																						(uint8_t *)sn, CUSTOM_PARAM_SERIAL_NUM_LEN);
+					if(isSuccessfullyWrite)
+					{
+						update_earphone_sn();
+						TOTA_LOG_DBG(0, "write sn ok:%s", user_custom_get_sn());
+						rsp_status = SUCCESS_STATUS;
+					} else
+					{
+						TOTA_LOG_DBG(0, "write sn fail");
+						rsp_status = FAIL_STATUS;
+					}
+					rsp_status = SUCCESS_STATUS;
+				} else{
+					rsp_status = PARAMETER_ERROR_STATUS;
+				}
+				
+				user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_SET, ptrPacket->cmdID, rsp_status, NULL, 0);
+			}
+		break;
 		
 		case TOTA_BLE_CMT_COMMAND_SET_VOICE_ASSISTANT_CONTROL:
 			if(ptrPacket->payload[0] == 0x00) {
@@ -840,6 +870,23 @@ static void user_custom_tota_ble_command_get_handle(PACKET_STRUCTURE *ptrPacket)
 				rsp_status = NO_NEED_STATUS_RESP;
 
 				user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_GET, ptrPacket->cmdID, rsp_status, temp, sizeof(temp));
+			}
+		break;
+
+		case TOTA_BLE_CMT_COMMAND_GET_SERIAL_NUMBER:
+			{
+        		uint8_t temp[CUSTOM_PARAM_SERIAL_NUM_LEN] = {0};
+				uint16_t snLen = 0;
+
+				snLen = strlen(user_custom_get_sn());
+				if(snLen > CUSTOM_PARAM_SERIAL_NUM_LEN)
+				{
+					snLen = CUSTOM_PARAM_SERIAL_NUM_LEN;
+				}
+				memcpy(temp, user_custom_get_sn(), snLen);
+				rsp_status = NO_NEED_STATUS_RESP;
+
+				user_custom_tota_ble_send_response(TOTA_BLE_CMT_COMMAND_GET, ptrPacket->cmdID, rsp_status, temp, snLen);
 			}
 		break;
 
