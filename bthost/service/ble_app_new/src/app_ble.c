@@ -1922,7 +1922,7 @@ void app_ble_dt_add_adv_data(ble_adv_activity_t *adv, BLE_ADV_PARAM_T *a, const 
 	manuf_data[1] = 0x09; //Company ID
 	manuf_data[2] = 0x00; //Reserved
 	manuf_data[3] = 0x08; //Machine model, "0x08" means CMT-OVEAN-008
-	manuf_data[5] = 0x02; //TODO
+	manuf_data[5] = user_custom_get_earphone_color(); //earphone color
 	
 	temp = (app_bt_count_connected_device()? 1 : 0) << 2;
 	manuf_data[6] = temp;

@@ -82,7 +82,7 @@ typedef struct {
 
 	TOTA_BLE_COLOR_MAP earphone_color; //don't need to save into nvrecord flash sector
 
-	char sn[19]; //19:CUSTOM_PARAM_SERIAL_NUM_LEN +1, don't need to save into nvrecord flash sector
+	char sn[15]; //19:CUSTOM_PARAM_SERIAL_NUM_LEN +1, don't need to save into nvrecord flash sector
 } app_user_custom_data_t;
 
 //Record user info's history
